@@ -149,34 +149,48 @@ export function importKaggleData() {
       pace: Math.max(30, Math.min(99, pace)),
       stamina: Math.max(40, Math.min(99, stamina)),
       overall,
-      basePrice
+      basePrice,
     });
   }
 
   // Mevkilerine göre sıralayıp en iyi kontenjanı al:
   // GK: 20, DEF: 45, MID: 45, FWD: 35 (Toplam 145 elit oyuncu)
-  const gks = rawCandidates.filter((p) => p.position === 'GK').sort((a, b) => b.overall - a.overall).slice(0, 20);
-  const defs = rawCandidates.filter((p) => p.position === 'DEF').sort((a, b) => b.overall - a.overall).slice(0, 45);
-  const mids = rawCandidates.filter((p) => p.position === 'MID').sort((a, b) => b.overall - a.overall).slice(0, 45);
-  const fwds = rawCandidates.filter((p) => p.position === 'FWD').sort((a, b) => b.overall - a.overall).slice(0, 35);
+  const gks = rawCandidates
+    .filter((p) => p.position === 'GK')
+    .sort((a, b) => b.overall - a.overall)
+    .slice(0, 20);
+  const defs = rawCandidates
+    .filter((p) => p.position === 'DEF')
+    .sort((a, b) => b.overall - a.overall)
+    .slice(0, 45);
+  const mids = rawCandidates
+    .filter((p) => p.position === 'MID')
+    .sort((a, b) => b.overall - a.overall)
+    .slice(0, 45);
+  const fwds = rawCandidates
+    .filter((p) => p.position === 'FWD')
+    .sort((a, b) => b.overall - a.overall)
+    .slice(0, 35);
 
   const selected = [...gks, ...defs, ...mids, ...fwds];
 
   const finalPlayers: Footballer[] = selected.map((p, index) => ({
     id: `kgl-${p.position.toLowerCase()}-${String(index + 1).padStart(3, '0')}`,
-    ...p
+    ...p,
   }));
 
   const output = {
     _comment: `Kaggle Official FIFA 23 Dataset'ten derlenmiş ${finalPlayers.length} adet futbolcu havuzu (20 GK, 45 DEF, 45 MID, 35 FWD).`,
-    players: finalPlayers
+    players: finalPlayers,
   };
 
   fs.writeFileSync(targetJsonPath, JSON.stringify(output, null, 2), 'utf-8');
   console.log(`[Kaggle İçe Aktarma] Başarıyla tamamlandı!`);
   console.log(`Hedef Dosya: ${targetJsonPath}`);
   console.log(`Toplam Aktarılan Oyuncu: ${finalPlayers.length}`);
-  console.log(`Mevki Dağılımı: GK: ${gks.length}, DEF: ${defs.length}, MID: ${mids.length}, FWD: ${fwds.length}`);
+  console.log(
+    `Mevki Dağılımı: GK: ${gks.length}, DEF: ${defs.length}, MID: ${mids.length}, FWD: ${fwds.length}`,
+  );
 }
 
 importKaggleData();

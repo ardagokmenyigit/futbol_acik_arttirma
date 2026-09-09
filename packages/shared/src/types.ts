@@ -205,4 +205,3 @@ export interface TournamentState {
   currentMatchId: string | null;
   championId: string | null;
 }
-
