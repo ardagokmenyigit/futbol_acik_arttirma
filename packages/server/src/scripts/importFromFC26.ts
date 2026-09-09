@@ -36,7 +36,7 @@ function mapPositions(posStr: string): Position | null {
     .replace(/"/g, '')
     .split(',')
     .map((s) => s.trim().toUpperCase());
-  
+
   const primary = tokens[0] ?? '';
   if (primary === 'GK') return 'GK';
   if (['CB', 'LB', 'RB', 'LWB', 'RWB'].includes(primary)) return 'DEF';
@@ -133,28 +133,40 @@ export function importFC26Data() {
       position,
       attack: Math.max(15, Math.min(99, attack)),
       defense: Math.max(15, Math.min(99, defense)),
-      overall
+      overall,
     });
   }
 
   // 108 adet en kaliteli EA SPORTS FC 26 oyuncusu: 16 GK, 34 DEF, 34 MID, 24 FWD
-  const gks = candidates.filter((p) => p.position === 'GK').sort((a, b) => b.overall - a.overall).slice(0, 16);
-  const defs = candidates.filter((p) => p.position === 'DEF').sort((a, b) => b.overall - a.overall).slice(0, 34);
-  const mids = candidates.filter((p) => p.position === 'MID').sort((a, b) => b.overall - a.overall).slice(0, 34);
-  const fwds = candidates.filter((p) => p.position === 'FWD').sort((a, b) => b.overall - a.overall).slice(0, 24);
+  const gks = candidates
+    .filter((p) => p.position === 'GK')
+    .sort((a, b) => b.overall - a.overall)
+    .slice(0, 16);
+  const defs = candidates
+    .filter((p) => p.position === 'DEF')
+    .sort((a, b) => b.overall - a.overall)
+    .slice(0, 34);
+  const mids = candidates
+    .filter((p) => p.position === 'MID')
+    .sort((a, b) => b.overall - a.overall)
+    .slice(0, 34);
+  const fwds = candidates
+    .filter((p) => p.position === 'FWD')
+    .sort((a, b) => b.overall - a.overall)
+    .slice(0, 24);
 
   const selected = [...gks, ...defs, ...mids, ...fwds];
 
-function getBasePrice(overall: number): number {
-  if (overall >= 91) return 25;
-  if (overall >= 88) return 20;
-  if (overall >= 85) return 15;
-  if (overall >= 82) return 12;
-  if (overall >= 80) return 10;
-  if (overall >= 78) return 8;
-  if (overall >= 75) return 6;
-  return 4;
-}
+  function getBasePrice(overall: number): number {
+    if (overall >= 91) return 25;
+    if (overall >= 88) return 20;
+    if (overall >= 85) return 15;
+    if (overall >= 82) return 12;
+    if (overall >= 80) return 10;
+    if (overall >= 78) return 8;
+    if (overall >= 75) return 6;
+    return 4;
+  }
 
   const finalPlayers: Footballer[] = selected.map((p, index) => ({
     id: `fc26-${p.position.toLowerCase()}-${String(index + 1).padStart(3, '0')}`,
@@ -164,14 +176,16 @@ function getBasePrice(overall: number): number {
 
   const output = {
     _comment: `EA SPORTS FC 26 Veri Tabanından derlenmiş en iyi ${finalPlayers.length} elit futbolcu (16 GK, 34 DEF, 34 MID, 24 FWD). Dengeli açık artırma taban fiyatları dahil edilmiştir.`,
-    players: finalPlayers
+    players: finalPlayers,
   };
 
   fs.writeFileSync(targetJsonPath, JSON.stringify(output, null, 2), 'utf-8');
   console.log(`[FC 26 İçe Aktarma] Taban fiyatsız veri başarıyla oluşturuldu!`);
   console.log(`Hedef Dosya: ${targetJsonPath}`);
   console.log(`Toplam Aktarılan Elit Oyuncu: ${finalPlayers.length}`);
-  console.log(`Mevki Dağılımı: GK: ${gks.length}, DEF: ${defs.length}, MID: ${mids.length}, FWD: ${fwds.length}`);
+  console.log(
+    `Mevki Dağılımı: GK: ${gks.length}, DEF: ${defs.length}, MID: ${mids.length}, FWD: ${fwds.length}`,
+  );
 }
 
 importFC26Data();

@@ -4,7 +4,7 @@ import type {
   TournamentMatch,
   TournamentRound,
   TournamentSize,
-  TournamentState
+  TournamentState,
 } from '@fal/shared';
 import { simulateMatch } from '../simulation/simulator.js';
 import { buildTeam } from '../simulation/teamStats.js';
@@ -24,7 +24,7 @@ const BOT_TEAM_NAMES = [
   'Inter Milan (Bot)',
   'Paris Saint-Germain (Bot)',
   'FC Barcelona (Bot)',
-  'Bayer Leverkusen (Bot)'
+  'Bayer Leverkusen (Bot)',
 ];
 
 /**
@@ -33,7 +33,7 @@ const BOT_TEAM_NAMES = [
 export function fillWithBotTeams(
   participants: ParticipantTeamInfo[],
   targetSize: TournamentSize,
-  fallbackPlayers: Footballer[] = []
+  fallbackPlayers: Footballer[] = [],
 ): ParticipantTeamInfo[] {
   const result: ParticipantTeamInfo[] = [...participants];
   const needed = targetSize - result.length;
@@ -47,14 +47,17 @@ export function fillWithBotTeams(
     // Havuzdan 15 rastgele oyuncu veya sentetik kadro ata
     const squad: Footballer[] =
       fallbackPlayers.length >= 15
-        ? fallbackPlayers.slice((i * 15) % (fallbackPlayers.length - 15), (i * 15) % (fallbackPlayers.length - 15) + 15)
+        ? fallbackPlayers.slice(
+            (i * 15) % (fallbackPlayers.length - 15),
+            ((i * 15) % (fallbackPlayers.length - 15)) + 15,
+          )
         : [];
 
     result.push({
       id: botId,
       nickname: botName,
       squad,
-      isBot: true
+      isBot: true,
     });
   }
 
@@ -66,7 +69,7 @@ export function fillWithBotTeams(
  */
 export function createTournament(
   teams: ParticipantTeamInfo[],
-  size: TournamentSize = 4
+  size: TournamentSize = 4,
 ): TournamentState {
   if (size === 4) {
     const team1 = teams[0]?.id ?? null;
@@ -82,7 +85,7 @@ export function createTournament(
         homeId: team1,
         awayId: team2,
         homePlaceholder: 'Takım 1',
-        awayPlaceholder: 'Takım 2'
+        awayPlaceholder: 'Takım 2',
       },
       {
         matchId: 'semi-2',
@@ -91,8 +94,8 @@ export function createTournament(
         homeId: team3,
         awayId: team4,
         homePlaceholder: 'Takım 3',
-        awayPlaceholder: 'Takım 4'
-      }
+        awayPlaceholder: 'Takım 4',
+      },
     ];
 
     const finalMatch: TournamentMatch = {
@@ -102,19 +105,19 @@ export function createTournament(
       homeId: null,
       awayId: null,
       homePlaceholder: 'Yarı Final 1 Kazananı',
-      awayPlaceholder: 'Yarı Final 2 Kazananı'
+      awayPlaceholder: 'Yarı Final 2 Kazananı',
     };
 
     const rounds: TournamentRound[] = [
       { name: 'semi', title: 'Yarı Final', matches: semiMatches },
-      { name: 'final', title: 'Büyük Final', matches: [finalMatch] }
+      { name: 'final', title: 'Büyük Final', matches: [finalMatch] },
     ];
 
     return {
       size: 4,
       rounds,
       currentMatchId: semiMatches[0]?.matchId ?? null,
-      championId: null
+      championId: null,
     };
   }
 
@@ -130,7 +133,7 @@ export function createTournament(
       homeId: home,
       awayId: away,
       homePlaceholder: `Takım ${i * 2 + 1}`,
-      awayPlaceholder: `Takım ${i * 2 + 2}`
+      awayPlaceholder: `Takım ${i * 2 + 2}`,
     });
   }
 
@@ -142,7 +145,7 @@ export function createTournament(
       homeId: null,
       awayId: null,
       homePlaceholder: 'Çeyrek Final 1 Kazananı',
-      awayPlaceholder: 'Çeyrek Final 2 Kazananı'
+      awayPlaceholder: 'Çeyrek Final 2 Kazananı',
     },
     {
       matchId: 'semi-2',
@@ -151,8 +154,8 @@ export function createTournament(
       homeId: null,
       awayId: null,
       homePlaceholder: 'Çeyrek Final 3 Kazananı',
-      awayPlaceholder: 'Çeyrek Final 4 Kazananı'
-    }
+      awayPlaceholder: 'Çeyrek Final 4 Kazananı',
+    },
   ];
 
   const finalMatch: TournamentMatch = {
@@ -162,20 +165,20 @@ export function createTournament(
     homeId: null,
     awayId: null,
     homePlaceholder: 'Yarı Final 1 Kazananı',
-    awayPlaceholder: 'Yarı Final 2 Kazananı'
+    awayPlaceholder: 'Yarı Final 2 Kazananı',
   };
 
   const rounds: TournamentRound[] = [
     { name: 'quarter', title: 'Çeyrek Final', matches: quarterMatches },
     { name: 'semi', title: 'Yarı Final', matches: semiMatches },
-    { name: 'final', title: 'Büyük Final', matches: [finalMatch] }
+    { name: 'final', title: 'Büyük Final', matches: [finalMatch] },
   ];
 
   return {
     size: 8,
     rounds,
     currentMatchId: quarterMatches[0]?.matchId ?? null,
-    championId: null
+    championId: null,
   };
 }
 
@@ -184,7 +187,7 @@ export function createTournament(
  */
 export function advanceTournament(
   state: TournamentState,
-  matchResult: MatchResult
+  matchResult: MatchResult,
 ): TournamentState {
   const winnerId = matchResult.winnerId;
   if (!winnerId) return state;
@@ -196,7 +199,7 @@ export function advanceTournament(
         return { ...m, result: matchResult };
       }
       return m;
-    })
+    }),
   }));
 
   // Maçın hangi turda olduğunu bul
@@ -222,7 +225,7 @@ export function advanceTournament(
       ...state,
       rounds,
       currentMatchId: null,
-      championId: winnerId
+      championId: winnerId,
     };
   }
 
@@ -256,7 +259,7 @@ export function advanceTournament(
   return {
     ...state,
     rounds,
-    currentMatchId: nextMatchId
+    currentMatchId: nextMatchId,
   };
 }
 
@@ -266,7 +269,7 @@ export function advanceTournament(
 export function simulateFullTournament(
   teams: ParticipantTeamInfo[],
   size: TournamentSize = 4,
-  baseSeed = 2026
+  baseSeed = 2026,
 ): { state: TournamentState; results: MatchResult[] } {
   let state = createTournament(teams, size);
   const results: MatchResult[] = [];
@@ -295,18 +298,30 @@ export function simulateFullTournament(
 
     const homeTeam = rawHome
       ? buildTeam(rawHome)
-      : { participantId: matchToPlay.homeId, nickname: 'Takım 1', players: [], attack: 78, defense: 78 };
+      : {
+          participantId: matchToPlay.homeId,
+          nickname: 'Takım 1',
+          players: [],
+          attack: 78,
+          defense: 78,
+        };
 
     const awayTeam = rawAway
       ? buildTeam(rawAway)
-      : { participantId: matchToPlay.awayId, nickname: 'Takım 2', players: [], attack: 78, defense: 78 };
+      : {
+          participantId: matchToPlay.awayId,
+          nickname: 'Takım 2',
+          players: [],
+          attack: 78,
+          defense: 78,
+        };
 
     const result = simulateMatch({
       matchId: matchToPlay.matchId,
       homeTeam,
       awayTeam,
       seed: baseSeed + seedCount * 777,
-      isTournament: true
+      isTournament: true,
     });
 
     results.push(result);

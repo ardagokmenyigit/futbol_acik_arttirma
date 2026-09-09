@@ -27,7 +27,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.05,
     baseGoalRate = 0.0148,
-    isTournament = true
+    isTournament = true,
   } = options;
 
   const prng = createPRNG(seed);
@@ -55,7 +55,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
       events.push({
         minute,
         teamId: homeTeam.participantId,
-        type: 'goal'
+        type: 'goal',
       });
       continue;
     }
@@ -69,7 +69,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
       events.push({
         minute,
         teamId: awayTeam.participantId,
-        type: 'goal'
+        type: 'goal',
       });
     }
   }
@@ -117,6 +117,6 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     events,
     penaltiesHome,
     penaltiesAway,
-    winnerId
+    winnerId,
   };
 }

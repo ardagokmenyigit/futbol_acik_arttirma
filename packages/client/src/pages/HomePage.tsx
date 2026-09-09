@@ -32,59 +32,60 @@ export function HomePage() {
   }
 
   return (
-    <div className="stack">
-      <div>
-        <h1>
-          ⚽ Açık Artırma
-          <br />
-          Ligi
-        </h1>
-        <p className="subtitle">Oda kur ya da bir oda koduyla katıl.</p>
+    <div className="panel gold">
+      <h1 className="headline">
+        Kadronu
+        <br />
+        artırmayla kur
+      </h1>
+      <p className="lede">Yeni bir oda kur ya da bir oda koduyla arkadaşlarına katıl.</p>
+
+      <div className="field-block">
+        <label className="field-label" htmlFor="nick">
+          Takma adın
+        </label>
+        <input
+          id="nick"
+          type="text"
+          value={nickname}
+          maxLength={20}
+          placeholder="örn. Kaptan Mert"
+          onChange={(e) => setNickname(e.target.value)}
+        />
       </div>
 
-      <div className="panel stack">
-        <div>
-          <label htmlFor="nick">Takma adın</label>
+      <button className="btn-primary" disabled={!canSubmit} onClick={() => void handle('create')}>
+        Yeni oda kur
+      </button>
+
+      <hr className="divider-line" />
+
+      <div className="field-block" style={{ marginBottom: 0 }}>
+        <label className="field-label" htmlFor="code">
+          Oda kodu
+        </label>
+        <div style={{ display: 'flex', gap: 10 }}>
           <input
-            id="nick"
+            id="code"
             type="text"
-            value={nickname}
-            maxLength={20}
-            placeholder="örn. Kaptan"
-            onChange={(e) => setNickname(e.target.value)}
+            value={code}
+            maxLength={6}
+            placeholder="ABC123"
+            style={{ flex: 1, textTransform: 'uppercase', letterSpacing: '2px' }}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
           />
+          <button
+            className="btn-outline"
+            disabled={!canSubmit || code.trim().length < 4}
+            onClick={() => void handle('join')}
+          >
+            Katıl
+          </button>
         </div>
-
-        <button className="primary" disabled={!canSubmit} onClick={() => void handle('create')}>
-          Yeni oda kur
-        </button>
-
-        <div className="divider" />
-
-        <div>
-          <label htmlFor="code">Oda kodu</label>
-          <div className="row">
-            <input
-              id="code"
-              type="text"
-              value={code}
-              maxLength={6}
-              placeholder="ABC123"
-              style={{ textTransform: 'uppercase', maxWidth: 160, letterSpacing: '2px' }}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-            />
-            <button
-              disabled={!canSubmit || code.trim().length < 4}
-              onClick={() => void handle('join')}
-            >
-              Odaya katıl
-            </button>
-          </div>
-        </div>
-
-        {!connected && <p className="muted">Sunucuya bağlanılıyor…</p>}
-        {error && <p className="error">{error}</p>}
       </div>
+
+      {!connected && <p className="footnote">Sunucuya bağlanılıyor…</p>}
+      {error && <p className="error">{error}</p>}
     </div>
   );
 }

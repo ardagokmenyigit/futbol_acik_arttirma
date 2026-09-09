@@ -8,8 +8,6 @@ interface Props {
 }
 
 const POSITIONS: Position[] = ['GK', 'DEF', 'MID', 'FWD'];
-const RING_R = 27;
-const RING_C = 2 * Math.PI * RING_R;
 
 export function DraftPage({ room }: Props) {
   const you = useRoomStore(selectYou);
@@ -27,7 +25,6 @@ export function DraftPage({ room }: Props) {
   const [amount, setAmount] = useState(floor);
   const [bidError, setBidError] = useState<string | null>(null);
 
-  // Taban teklif değişince input'u ona hizala.
   useEffect(() => {
     setAmount(floor);
     setBidError(null);
@@ -39,15 +36,11 @@ export function DraftPage({ room }: Props) {
 
   if (!auction) {
     return (
-      <div className="stack">
-        <div>
-          <div className="kicker">Açık Artırma</div>
-          <h1>Draft</h1>
-        </div>
-        {lastWon && <WonBanner text={wonText(lastWon)} />}
-        <div className="panel">
-          <p className="muted">Sıradaki futbolcu hazırlanıyor…</p>
-        </div>
+      <div className="panel crimson">
+        <div className="round-label">Açık Artırma</div>
+        <h1 style={{ fontSize: 30, marginBottom: 16 }}>Draft</h1>
+        {lastWon && <Ticker text={wonText(lastWon)} />}
+        <p className="footnote">Sıradaki futbolcu için hazırlanıyor…</p>
       </div>
     );
   }
@@ -56,7 +49,8 @@ export function DraftPage({ room }: Props) {
   const secs = Math.max(0, Math.ceil(remainingMs / 1000));
   const totalMs = Math.max(1, room.config.bidDurationSec * 1000);
   const progress = Math.max(0, Math.min(1, remainingMs / totalMs));
-  const ringColor = secs <= 5 ? 'var(--danger)' : 'var(--accent)';
+  const ringLead = secs <= 5 ? 'var(--crimson)' : 'var(--gold)';
+  const deg = Math.round(progress * 360);
 
   const leaderNick =
     room.participants.find((p) => p.id === auction.highestBid?.playerId)?.nickname ?? null;
@@ -76,116 +70,108 @@ export function DraftPage({ room }: Props) {
 
   return (
     <div className="stack">
-      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div className="kicker">Açık Artırma</div>
-          <h1>Round {auction.round}</h1>
-        </div>
-        <div className="countdown">
-          <svg width="66" height="66" viewBox="0 0 66 66">
-            <circle cx="33" cy="33" r={RING_R} fill="none" stroke="#25324a" strokeWidth="5" />
-            <circle
-              cx="33"
-              cy="33"
-              r={RING_R}
-              fill="none"
-              stroke={ringColor}
-              strokeWidth="5"
-              strokeLinecap="round"
-              strokeDasharray={RING_C}
-              strokeDashoffset={RING_C * (1 - progress)}
-              transform="rotate(-90 33 33)"
-              style={{ transition: 'stroke-dashoffset 0.4s linear' }}
-            />
-          </svg>
-          <span className="num">{secs}</span>
-        </div>
-      </div>
-
-      {lastWon && <WonBanner text={wonText(lastWon)} />}
-
-      <div className="hero-card">
-        <div className="hero-inner">
+      <div className="panel crimson">
+        <div className="live-head">
+          <div>
+            <div className="round-label">Tur {auction.round}</div>
+            <h1>Açık Artırma</h1>
+          </div>
           <div
-            className="row"
-            style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}
+            className="timer-ring"
+            style={{
+              background: `conic-gradient(${ringLead} 0deg ${deg}deg, var(--panel-raised) ${deg}deg 360deg)`,
+              transition: 'background 0.4s linear',
+            }}
           >
-            <div>
-              <div className="display" style={{ fontSize: '1.6rem', lineHeight: 1 }}>
-                {f.name}
-              </div>
-              <div className="muted" style={{ fontSize: '0.75rem', marginTop: 4 }}>
-                Başlangıç {f.basePrice}M
-              </div>
-            </div>
-            <span className="pill">{f.position}</span>
+            <div className="timer-ring-inner">{secs}</div>
+          </div>
+        </div>
+
+        {lastWon && <Ticker text={wonText(lastWon)} />}
+
+        <div className="player-card">
+          <div className="player-top">
+            <span className="player-name">{f.name}</span>
+            <span className="position-chip">{f.position}</span>
+          </div>
+          <div className="player-meta">Başlangıç değeri {f.basePrice}M</div>
+
+          <div className="stat-row">
+            <StatItem label="GEN" value={f.overall} />
+            <StatItem label="HÜC" value={f.attack} />
+            <StatItem label="DEF" value={f.defense} />
           </div>
 
-          <div className="statgrid">
-            <StatBar label="GEN" value={f.overall} />
-            <StatBar label="HÜC" value={f.attack} />
-            <StatBar label="DEF" value={f.defense} />
-          </div>
-
-          <div className="hi-bid">
+          <div className="top-bid-row">
+            <span className="lbl">En yüksek teklif</span>
             {auction.highestBid ? (
-              <>
-                <span className="kicker">En yüksek</span>
-                <span className="amount">{auction.highestBid.amount}M</span>
-                {leaderNick && <span className="muted">— {leaderNick}</span>}
-              </>
+              <span>
+                <span className="amt">{auction.highestBid.amount}M</span>{' '}
+                {leaderNick && <span className="who">— {leaderNick}</span>}
+              </span>
             ) : (
-              <span className="muted">Henüz teklif yok · başlangıç {f.basePrice}M</span>
+              <span className="who">henüz yok</span>
             )}
           </div>
         </div>
-      </div>
 
-      <div className="panel stack">
-        <label htmlFor="bid">Teklifin — kalan bütçe {you.budget}M</label>
-        <div className="row" style={{ gap: 8 }}>
+        <div className="budget-strip">
+          <span className="lbl">Kalan bütçe</span>
+          <span className="amt">{you.budget}M</span>
+        </div>
+        <div className="bid-input-row">
           <input
-            id="bid"
             type="text"
             inputMode="numeric"
             value={String(amount)}
-            style={{ maxWidth: 74, textAlign: 'center' }}
             onChange={(e) => {
               const n = Number(e.target.value.replace(/[^0-9]/g, ''));
               setAmount(Number.isFinite(n) ? n : 0);
             }}
           />
-          <button onClick={() => setAmount(floor)}>min {floor}M</button>
-          <button onClick={() => setAmount(Math.min(floor + 1, you.budget))}>+1</button>
-          <button onClick={() => setAmount(Math.min(floor + 5, you.budget))}>+5</button>
-          <button
-            className="primary"
-            disabled={!canBid || amount < floor}
-            onClick={() => void submitBid()}
-          >
-            Teklif ver
+          <button className="step-btn" onClick={() => setAmount(floor)}>
+            MIN
+          </button>
+          <button className="step-btn" onClick={() => setAmount(Math.min(floor + 1, you.budget))}>
+            +1
+          </button>
+          <button className="step-btn" onClick={() => setAmount(Math.min(floor + 5, you.budget))}>
+            +5
           </button>
         </div>
-        {youAreLeading && <p className="muted">En yüksek teklif sende.</p>}
-        {posFull && (
-          <p className="muted">{f.position} kadron dolu — bu futbolcuya teklif veremezsin.</p>
-        )}
-        {budgetShort && !posFull && <p className="muted">Bütçen bu round için yetmiyor.</p>}
-        {bidError && <p className="error">{bidError}</p>}
-      </div>
+        <button
+          className="btn-primary"
+          disabled={!canBid || amount < floor}
+          onClick={() => void submitBid()}
+        >
+          Teklif ver
+        </button>
 
-      <div className="panel">
-        <label>
-          Kadron — {you.squad.length}/{room.config.squadSize}
-        </label>
-        <div className="postiles">
+        {youAreLeading && <p className="footnote">En yüksek teklif sende.</p>}
+        {posFull && (
+          <p className="footnote">{f.position} kadron dolu — bu futbolcuya teklif veremezsin.</p>
+        )}
+        {budgetShort && !posFull && <p className="footnote">Bütçen bu tur için yetmiyor.</p>}
+        {bidError && <p className="error">{bidError}</p>}
+
+        <div className="squad-grid">
           {POSITIONS.map((pos) => {
             const met = squadCount(pos) >= room.config.squad[pos];
+            const target = room.config.squad[pos];
             return (
-              <div key={pos} className={`postile${met ? ' met' : ''}`}>
+              <div key={pos} className={`squad-tile${pos === f.position ? ' active' : ''}`}>
                 <div className="pos">{pos}</div>
-                <div className="count">
-                  {squadCount(pos)}/{room.config.squad[pos]}
+                <div className="frac">
+                  {squadCount(pos)}/{target}
+                </div>
+                <div className="strack">
+                  <div
+                    className="sfill"
+                    style={{
+                      width: `${(squadCount(pos) / target) * 100}%`,
+                      background: met ? 'var(--ready)' : 'var(--gold)',
+                    }}
+                  />
                 </div>
               </div>
             );
@@ -194,16 +180,16 @@ export function DraftPage({ room }: Props) {
       </div>
 
       <div className="panel">
-        <label>Rakipler</label>
+        <div className="section-label">Rakipler</div>
         {room.participants
           .filter((p) => p.id !== you.id)
           .map((p) => (
-            <div key={p.id} className="hist-row" style={{ padding: '3px 0' }}>
-              <span>
-                <span className={`dot ${p.connected ? 'on' : 'off'}`} />
+            <div key={p.id} className="kv-row">
+              <span className="roster-name">
+                <span className={`dot ${p.connected ? '' : 'off'}`} />
                 {p.nickname}
               </span>
-              <span className="muted" style={{ fontFamily: 'ui-monospace, Menlo, monospace' }}>
+              <span className="mono">
                 {p.budget}M · {p.squad.length}/{room.config.squadSize}
               </span>
             </div>
@@ -211,19 +197,25 @@ export function DraftPage({ room }: Props) {
       </div>
 
       <div className="panel">
-        <label>Teklif geçmişi</label>
-        {auction.history.length === 0 && <p className="muted">—</p>}
+        <div className="section-label">Teklif geçmişi</div>
+        {auction.history.length === 0 && (
+          <p className="footnote" style={{ marginTop: 0 }}>
+            —
+          </p>
+        )}
         {[...auction.history]
           .reverse()
           .slice(0, 6)
           .map((b, i) => {
             const nick = room.participants.find((p) => p.id === b.playerId)?.nickname ?? '?';
             return (
-              <div key={`${b.at}-${i}`} className="hist-row" style={{ padding: '3px 0' }}>
-                <span className={i === 0 ? undefined : 'muted'}>{nick}</span>
+              <div key={`${b.at}-${i}`} className="kv-row">
+                <span style={{ color: i === 0 ? 'var(--chalk)' : 'var(--chalk-faint)' }}>
+                  {nick}
+                </span>
                 <span
-                  className={i === 0 ? 'display' : 'muted'}
-                  style={i === 0 ? { color: 'var(--accent)' } : undefined}
+                  className="mono"
+                  style={i === 0 ? { color: 'var(--gold-bright)' } : undefined}
                 >
                   {b.amount}M
                 </span>
@@ -235,35 +227,31 @@ export function DraftPage({ room }: Props) {
   );
 }
 
-function StatBar({ label, value }: { label: string; value: number }) {
+function StatItem({ label, value }: { label: string; value: number }) {
   const pct = Math.max(0, Math.min(100, value));
   return (
-    <div className="stat">
-      <div className="stat-head">
-        <span>{label}</span>
-        <b>{value}</b>
-      </div>
+    <div className="stat-item">
+      <div className="lbl">{label}</div>
+      <div className="val">{value}</div>
       <div className="stat-track">
-        <i style={{ width: `${pct}%` }} />
+        <div className="stat-fill" style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
 }
 
-function WonBanner({ text }: { text: string }) {
+function Ticker({ text }: { text: string }) {
   return (
-    <div className="banner">
+    <div className="ticker">
       <svg
-        width="15"
-        height="15"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="var(--accent)"
-        strokeWidth="2.2"
+        stroke="currentColor"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       >
-        <path d="M20 6L9 17l-5-5" />
+        <polyline points="20 6 9 17 4 12" />
       </svg>
       <span>{text}</span>
     </div>
