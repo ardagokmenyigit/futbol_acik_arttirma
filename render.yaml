@@ -1,0 +1,20 @@
+# Render.com Blueprint — Socket.io sunucusu (ücretsiz plan).
+# Render panelinde: New > Blueprint > bu repoyu seç. Aşağıdaki servis otomatik kurulur.
+# Kurulumdan sonra CLIENT_ORIGIN env değişkenini Vercel adresinle güncelle (bkz. DEPLOY.md).
+services:
+  - type: web
+    name: fal-server
+    runtime: node
+    plan: free
+    region: frankfurt
+    # Monorepo: önce shared, sonra server derlenir.
+    buildCommand: npm ci && npm run build -w @fal/shared && npm run build -w @fal/server
+    startCommand: node packages/server/dist/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: '20'
+      # Vercel client adresi. Blueprint kurulumunda sorulur; sonradan panelden değiştirilebilir.
+      # Birden fazla origin virgülle ayrılır. Hızlı deneme için "*" verilebilir.
+      - key: CLIENT_ORIGIN
+        sync: false

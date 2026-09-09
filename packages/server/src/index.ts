@@ -8,10 +8,35 @@ import type { InterServerEvents, SocketData, TypedServer } from './socketTypes.j
 import type { ClientToServerEvents, ServerToClientEvents } from '@fal/shared';
 
 const PORT = Number(process.env.PORT ?? 3001);
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN ?? 'http://localhost:5173';
+
+/**
+ * İzin verilen istemci origin'leri. Virgülle ayrılmış birden fazla değer
+ * verilebilir (örn. prod Vercel URL'si + yerel geliştirme).
+ * Prod'da Render/host paneline `CLIENT_ORIGIN` olarak Vercel adresini girin.
+ */
+const ALLOWED_ORIGINS = (process.env.CLIENT_ORIGIN ?? 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+/** '*' verildiyse tüm origin'lere izin ver (yalnız hızlı deneme için). */
+const ALLOW_ANY = ALLOWED_ORIGINS.includes('*');
+
+function isAllowedOrigin(origin: string | undefined): boolean {
+  // origin yoksa (curl, health check, aynı-origin istek) serbest bırak.
+  if (!origin) return true;
+  if (ALLOW_ANY) return true;
+  return ALLOWED_ORIGINS.includes(origin);
+}
+
+const corsOptions: cors.CorsOptions = {
+  origin(origin, callback) {
+    callback(null, isAllowedOrigin(origin));
+  },
+};
 
 const app = express();
-app.use(cors({ origin: CLIENT_ORIGIN }));
+app.use(cors(corsOptions));
 app.get('/health', (_req, res) => {
   res.json({ ok: true, uptime: process.uptime() });
 });
@@ -24,7 +49,11 @@ const io: TypedServer = new Server<
   InterServerEvents,
   SocketData
 >(httpServer, {
-  cors: { origin: CLIENT_ORIGIN },
+  cors: {
+    origin(origin, callback) {
+      callback(null, isAllowedOrigin(origin));
+    },
+  },
 });
 
 io.on('connection', (socket) => {
@@ -44,6 +73,8 @@ io.on('connection', (socket) => {
   });
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`⚽ server hazır: http://localhost:${PORT}  (client origin: ${CLIENT_ORIGIN})`);
+httpServer.listen(PORT, '0.0.0.0', () => {
+  console.log(
+    `⚽ server hazır: http://0.0.0.0:${PORT}  (izinli origin: ${ALLOW_ANY ? '*' : ALLOWED_ORIGINS.join(', ')})`,
+  );
 });
