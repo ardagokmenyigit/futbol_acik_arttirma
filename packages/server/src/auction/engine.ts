@@ -6,8 +6,11 @@ import { findFootballer, loadFootballers, shuffled } from './pool.js';
 import { positionCount, validateBid } from './validateBid.js';
 
 const TICK_MS = 1000;
-/** Bitişe bu süreden az kala gelen teklif turu uzatır (sniping önleme). */
-const ANTI_SNIPE_MS = 3000;
+/**
+ * Bitişe bu süreden az kala gelen teklif turu uzatır (sniping önleme).
+ * Teklif sonrası rakibin karşılık verebilmesi için garanti edilen süre.
+ */
+const ANTI_SNIPE_MS = 5000;
 
 interface RoomTimers {
   tick: NodeJS.Timeout;
