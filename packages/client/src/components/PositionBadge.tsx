@@ -1,4 +1,4 @@
-﻿import type { Position } from '@fal/shared';
+import type { Position } from '@fal/shared';
 
 interface Props {
   position: Position;
