@@ -12,7 +12,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
   tournament,
   getTeamName,
   onSimulateMatch,
-  isSimulating = false
+  isSimulating = false,
 }) => {
   return (
     <div style={{ overflowX: 'auto', paddingBottom: 16 }}>
@@ -22,7 +22,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
           gap: 32,
           minWidth: tournament.size === 8 ? 950 : 650,
           justifyContent: 'center',
-          alignItems: 'stretch'
+          alignItems: 'stretch',
         }}
       >
         {tournament.rounds.map((round: TournamentRound, roundIdx) => {
@@ -34,7 +34,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
               style={{
                 flex: 1,
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
               }}
             >
               {/* Tur Başlığı */}
@@ -43,16 +43,19 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                   textAlign: 'center',
                   padding: '8px 12px',
                   backgroundColor: isFinal ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-secondary)',
-                  border: isFinal ? '1px solid var(--accent-gold)' : '1px solid var(--border-color)',
+                  border: isFinal
+                    ? '1px solid var(--accent-gold)'
+                    : '1px solid var(--border-color)',
                   borderRadius: 8,
                   marginBottom: 20,
                   fontWeight: 800,
                   color: isFinal ? 'var(--accent-gold)' : 'var(--text-primary)',
                   fontSize: '0.95rem',
-                  letterSpacing: 1
+                  letterSpacing: 1,
                 }}
               >
-                {isFinal ? '🏆 ' : ''}{round.title.toUpperCase()}
+                {isFinal ? '🏆 ' : ''}
+                {round.title.toUpperCase()}
               </div>
 
               {/* Maç Kartları */}
@@ -62,7 +65,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                   flexDirection: 'column',
                   justifyContent: 'space-around',
                   flex: 1,
-                  gap: 20
+                  gap: 20,
                 }}
               >
                 {round.matches.map((match) => {
@@ -89,7 +92,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                             ? '1px solid var(--border-color)'
                             : '1px dashed var(--border-color)',
                         boxShadow: isCurrent ? '0 0 15px var(--accent-gold-glow)' : 'none',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
                       }}
                     >
                       {/* Üst Bilgi Rozeti */}
@@ -100,7 +103,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                           alignItems: 'center',
                           fontSize: '0.75rem',
                           marginBottom: 8,
-                          color: 'var(--text-secondary)'
+                          color: 'var(--text-secondary)',
                         }}
                       >
                         <span style={{ fontWeight: 600 }}>{match.matchId.toUpperCase()}</span>
@@ -111,13 +114,15 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                               fontWeight: 700,
                               backgroundColor: 'rgba(245, 158, 11, 0.2)',
                               padding: '1px 6px',
-                              borderRadius: 4
+                              borderRadius: 4,
                             }}
                           >
                             SIRADAKİ MAÇ ⚡
                           </span>
                         )}
-                        {hasResult && <span style={{ color: 'var(--accent-green)' }}>TAMAMLANDI ✓</span>}
+                        {hasResult && (
+                          <span style={{ color: 'var(--accent-green)' }}>TAMAMLANDI ✓</span>
+                        )}
                       </div>
 
                       {/* Ev Sahibi Takım Satırı */}
@@ -128,9 +133,11 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                           alignItems: 'center',
                           padding: '6px 8px',
                           borderRadius: 6,
-                          backgroundColor: isHomeWinner ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                          backgroundColor: isHomeWinner
+                            ? 'rgba(16, 185, 129, 0.15)'
+                            : 'transparent',
                           fontWeight: isHomeWinner ? 700 : 400,
-                          marginBottom: 4
+                          marginBottom: 4,
                         }}
                       >
                         <span
@@ -144,7 +151,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            maxWidth: 160
+                            maxWidth: 160,
                           }}
                         >
                           {homeName}
@@ -162,8 +169,10 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                           alignItems: 'center',
                           padding: '6px 8px',
                           borderRadius: 6,
-                          backgroundColor: isAwayWinner ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
-                          fontWeight: isAwayWinner ? 700 : 400
+                          backgroundColor: isAwayWinner
+                            ? 'rgba(16, 185, 129, 0.15)'
+                            : 'transparent',
+                          fontWeight: isAwayWinner ? 700 : 400,
                         }}
                       >
                         <span
@@ -177,7 +186,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                            maxWidth: 160
+                            maxWidth: 160,
                           }}
                         >
                           {awayName}
@@ -195,7 +204,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                             textAlign: 'center',
                             marginTop: 6,
                             color: 'var(--accent-gold)',
-                            fontWeight: 600
+                            fontWeight: 600,
                           }}
                         >
                           Penaltılar: {match.result.penaltiesHome} - {match.result.penaltiesAway}
@@ -211,10 +220,12 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                             width: '100%',
                             marginTop: 8,
                             padding: '8px 0',
-                            backgroundColor: isCurrent ? 'var(--accent-gold)' : 'var(--accent-green)',
+                            backgroundColor: isCurrent
+                              ? 'var(--accent-gold)'
+                              : 'var(--accent-green)',
                             color: '#000',
                             fontWeight: 800,
-                            fontSize: '0.85rem'
+                            fontSize: '0.85rem',
                           }}
                         >
                           {isSimulating ? 'Simüle Ediliyor...' : '▶ Bu Maçı Simüle Et'}

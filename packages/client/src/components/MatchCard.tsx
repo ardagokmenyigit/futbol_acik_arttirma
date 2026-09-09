@@ -14,7 +14,7 @@ export const MatchCard: FC<MatchCardProps> = ({
   homeName,
   awayName,
   result,
-  isLive = false
+  isLive = false,
 }) => {
   const [showDetails, setShowDetails] = useState(false);
   const isFinished = Boolean(result);
@@ -29,10 +29,17 @@ export const MatchCard: FC<MatchCardProps> = ({
           : isFinished
             ? '4px solid var(--accent-green)'
             : '4px solid var(--border-color)',
-        transition: 'all 0.2s ease'
+        transition: 'all 0.2s ease',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 8,
+        }}
+      >
         <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
           MAÇ #{matchIndex}
         </span>
@@ -47,22 +54,25 @@ export const MatchCard: FC<MatchCardProps> = ({
               fontWeight: 700,
               display: 'flex',
               alignItems: 'center',
-              gap: 4
+              gap: 4,
             }}
           >
-            <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--accent-gold)' }} />
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                backgroundColor: 'var(--accent-gold)',
+              }}
+            />
             OYNANIYOR
           </span>
         )}
         {isFinished && (
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            MAÇ SONUCU
-          </span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>MAÇ SONUCU</span>
         )}
         {!isLive && !isFinished && (
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            BEKLİYOR
-          </span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>BEKLİYOR</span>
         )}
       </div>
 
@@ -73,7 +83,7 @@ export const MatchCard: FC<MatchCardProps> = ({
           gridTemplateColumns: '1fr auto 1fr',
           alignItems: 'center',
           gap: 16,
-          padding: '8px 0'
+          padding: '8px 0',
         }}
       >
         <div style={{ textAlign: 'right' }}>
@@ -87,7 +97,7 @@ export const MatchCard: FC<MatchCardProps> = ({
             borderRadius: 8,
             fontWeight: 800,
             fontSize: '1.25rem',
-            letterSpacing: 2
+            letterSpacing: 2,
           }}
         >
           {isFinished ? `${result?.scoreHome} - ${result?.scoreAway}` : 'VS'}
@@ -111,7 +121,7 @@ export const MatchCard: FC<MatchCardProps> = ({
                 background: 'transparent',
                 color: 'var(--accent-green)',
                 fontSize: '0.8rem',
-                padding: '2px 6px'
+                padding: '2px 6px',
               }}
             >
               {showDetails ? 'Detayları Gizle ▲' : 'Golleri Gör ▼'}
@@ -130,7 +140,7 @@ export const MatchCard: FC<MatchCardProps> = ({
                       display: 'flex',
                       alignItems: 'center',
                       gap: 8,
-                      color: 'var(--text-primary)'
+                      color: 'var(--text-primary)',
                     }}
                   >
                     <span style={{ color: 'var(--accent-gold)', fontWeight: 700, width: 28 }}>

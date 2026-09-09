@@ -1,5 +1,12 @@
 import { useEffect, useState, type FC } from 'react';
-import type { MatchResult, Participant, TournamentMatch, TournamentRound, TournamentSize, TournamentState } from '@fal/shared';
+import type {
+  MatchResult,
+  Participant,
+  TournamentMatch,
+  TournamentRound,
+  TournamentSize,
+  TournamentState,
+} from '@fal/shared';
 import { useSocket } from '../hooks/useSocket.js';
 import { TournamentBracket } from '../components/TournamentBracket.js';
 import { LiveMatchTicker } from '../components/LiveMatchTicker.js';
@@ -19,12 +26,12 @@ const BOT_NAMES = [
   'Inter Milan (Bot)',
   'Paris Saint-Germain (Bot)',
   'FC Barcelona (Bot)',
-  'Bayer Leverkusen (Bot)'
+  'Bayer Leverkusen (Bot)',
 ];
 
 function createClientTournament(
   userParticipants: Participant[],
-  targetSize: TournamentSize
+  targetSize: TournamentSize,
 ): { tournament: TournamentState; allParticipants: Participant[] } {
   const all: Participant[] = [...userParticipants];
   const needed = targetSize - all.length;
@@ -37,7 +44,7 @@ function createClientTournament(
       isReady: true,
       connected: true,
       budget: 0,
-      squad: []
+      squad: [],
     });
   }
 
@@ -50,7 +57,7 @@ function createClientTournament(
         homeId: all[0]?.id ?? null,
         awayId: all[1]?.id ?? null,
         homePlaceholder: 'Takım 1',
-        awayPlaceholder: 'Takım 2'
+        awayPlaceholder: 'Takım 2',
       },
       {
         matchId: 'semi-2',
@@ -59,8 +66,8 @@ function createClientTournament(
         homeId: all[2]?.id ?? null,
         awayId: all[3]?.id ?? null,
         homePlaceholder: 'Takım 3',
-        awayPlaceholder: 'Takım 4'
-      }
+        awayPlaceholder: 'Takım 4',
+      },
     ];
 
     const finalMatch: TournamentMatch = {
@@ -70,7 +77,7 @@ function createClientTournament(
       homeId: null,
       awayId: null,
       homePlaceholder: 'Yarı Final 1 Kazananı',
-      awayPlaceholder: 'Yarı Final 2 Kazananı'
+      awayPlaceholder: 'Yarı Final 2 Kazananı',
     };
 
     return {
@@ -78,12 +85,12 @@ function createClientTournament(
         size: 4,
         rounds: [
           { name: 'semi', title: 'Yarı Final', matches: semiMatches },
-          { name: 'final', title: 'Büyük Final', matches: [finalMatch] }
+          { name: 'final', title: 'Büyük Final', matches: [finalMatch] },
         ],
         currentMatchId: 'semi-1',
-        championId: null
+        championId: null,
       },
-      allParticipants: all
+      allParticipants: all,
     };
   }
 
@@ -97,7 +104,7 @@ function createClientTournament(
       homeId: all[i * 2]?.id ?? null,
       awayId: all[i * 2 + 1]?.id ?? null,
       homePlaceholder: `Takım ${i * 2 + 1}`,
-      awayPlaceholder: `Takım ${i * 2 + 2}`
+      awayPlaceholder: `Takım ${i * 2 + 2}`,
     });
   }
 
@@ -109,7 +116,7 @@ function createClientTournament(
       homeId: null,
       awayId: null,
       homePlaceholder: 'Çeyrek Final 1 Kazananı',
-      awayPlaceholder: 'Çeyrek Final 2 Kazananı'
+      awayPlaceholder: 'Çeyrek Final 2 Kazananı',
     },
     {
       matchId: 'semi-2',
@@ -118,8 +125,8 @@ function createClientTournament(
       homeId: null,
       awayId: null,
       homePlaceholder: 'Çeyrek Final 3 Kazananı',
-      awayPlaceholder: 'Çeyrek Final 4 Kazananı'
-    }
+      awayPlaceholder: 'Çeyrek Final 4 Kazananı',
+    },
   ];
 
   const finalMatch: TournamentMatch = {
@@ -129,7 +136,7 @@ function createClientTournament(
     homeId: null,
     awayId: null,
     homePlaceholder: 'Yarı Final 1 Kazananı',
-    awayPlaceholder: 'Yarı Final 2 Kazananı'
+    awayPlaceholder: 'Yarı Final 2 Kazananı',
   };
 
   return {
@@ -138,20 +145,17 @@ function createClientTournament(
       rounds: [
         { name: 'quarter', title: 'Çeyrek Final', matches: quarterMatches },
         { name: 'semi', title: 'Yarı Final', matches: semiMatches },
-        { name: 'final', title: 'Büyük Final', matches: [finalMatch] }
+        { name: 'final', title: 'Büyük Final', matches: [finalMatch] },
       ],
       currentMatchId: 'qtr-1',
-      championId: null
+      championId: null,
     },
-    allParticipants: all
+    allParticipants: all,
   };
 }
 
 // Saf ve derin kopyalama ile tur atlatma
-function advanceTournamentState(
-  state: TournamentState,
-  matchResult: MatchResult
-): TournamentState {
+function advanceTournamentState(state: TournamentState, matchResult: MatchResult): TournamentState {
   const winnerId = matchResult.winnerId;
   if (!winnerId) return state;
 
@@ -164,7 +168,7 @@ function advanceTournamentState(
         return { ...m, result: matchResult };
       }
       return { ...m };
-    })
+    }),
   }));
 
   let currentRoundIdx = -1;
@@ -189,7 +193,7 @@ function advanceTournamentState(
       ...state,
       rounds,
       currentMatchId: null,
-      championId: winnerId
+      championId: winnerId,
     };
   }
 
@@ -222,14 +226,14 @@ function advanceTournamentState(
   return {
     ...state,
     rounds,
-    currentMatchId: nextMatchId
+    currentMatchId: nextMatchId,
   };
 }
 
 export const SimulationPage: FC<SimulationPageProps> = ({
   myParticipantId,
   initialParticipants = [],
-  onFinish
+  onFinish,
 }) => {
   const { socket: _socket } = useSocket();
   const [tournamentSize, setTournamentSize] = useState<TournamentSize>(4);
@@ -244,8 +248,24 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       initialParticipants.length > 0
         ? initialParticipants
         : [
-            { id: 'user-1', nickname: 'Kerem FK', isHost: true, isReady: true, connected: true, budget: 0, squad: [] },
-            { id: 'user-2', nickname: 'Arda United', isHost: false, isReady: true, connected: true, budget: 0, squad: [] }
+            {
+              id: 'user-1',
+              nickname: 'Kerem FK',
+              isHost: true,
+              isReady: true,
+              connected: true,
+              budget: 0,
+              squad: [],
+            },
+            {
+              id: 'user-2',
+              nickname: 'Arda United',
+              isHost: false,
+              isReady: true,
+              connected: true,
+              budget: 0,
+              squad: [],
+            },
           ];
 
     const { tournament: t, allParticipants: p } = createClientTournament(baseUsers, tournamentSize);
@@ -275,10 +295,18 @@ export const SimulationPage: FC<SimulationPageProps> = ({
 
     const events = [];
     for (let i = 0; i < homeScore; i++) {
-      events.push({ minute: Math.floor(Math.random() * 80) + 5, teamId: match.homeId, type: 'goal' as const });
+      events.push({
+        minute: Math.floor(Math.random() * 80) + 5,
+        teamId: match.homeId,
+        type: 'goal' as const,
+      });
     }
     for (let i = 0; i < awayScore; i++) {
-      events.push({ minute: Math.floor(Math.random() * 80) + 5, teamId: match.awayId, type: 'goal' as const });
+      events.push({
+        minute: Math.floor(Math.random() * 80) + 5,
+        teamId: match.awayId,
+        type: 'goal' as const,
+      });
     }
     events.sort((a, b) => a.minute - b.minute);
 
@@ -305,7 +333,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       events,
       penaltiesHome: penHome,
       penaltiesAway: penAway,
-      winnerId
+      winnerId,
     };
 
     setLiveSimulatingResult(matchResult);
@@ -365,11 +393,19 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           alignItems: 'center',
           marginBottom: 24,
           flexWrap: 'wrap',
-          gap: 16
+          gap: 16,
         }}
       >
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h1
+            style={{
+              fontSize: '1.8rem',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}
+          >
             <span>🏆</span> Turnuva Ağacı (Playoff Bracket)
           </h1>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
@@ -389,15 +425,31 @@ export const SimulationPage: FC<SimulationPageProps> = ({
                 padding: '8px 18px',
                 fontWeight: 800,
                 fontSize: '0.9rem',
-                boxShadow: '0 0 10px var(--accent-gold-glow)'
+                boxShadow: '0 0 10px var(--accent-gold-glow)',
               }}
             >
               {isSimulating ? 'Simüle Ediliyor...' : '⚡ Sıradaki Maçı Simüle Et'}
             </button>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, backgroundColor: 'var(--bg-secondary)', padding: 4, borderRadius: 8 }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', padding: '0 8px', fontWeight: 600 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              backgroundColor: 'var(--bg-secondary)',
+              padding: 4,
+              borderRadius: 8,
+            }}
+          >
+            <span
+              style={{
+                fontSize: '0.8rem',
+                color: 'var(--text-secondary)',
+                padding: '0 8px',
+                fontWeight: 600,
+              }}
+            >
               Format:
             </span>
             <button
@@ -408,7 +460,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
                 fontSize: '0.85rem',
                 fontWeight: 700,
                 backgroundColor: tournamentSize === 4 ? 'var(--accent-green)' : 'transparent',
-                color: tournamentSize === 4 ? '#000' : 'var(--text-secondary)'
+                color: tournamentSize === 4 ? '#000' : 'var(--text-secondary)',
               }}
             >
               4 Takım
@@ -421,7 +473,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
                 fontSize: '0.85rem',
                 fontWeight: 700,
                 backgroundColor: tournamentSize === 8 ? 'var(--accent-green)' : 'transparent',
-                color: tournamentSize === 8 ? '#000' : 'var(--text-secondary)'
+                color: tournamentSize === 8 ? '#000' : 'var(--text-secondary)',
               }}
             >
               8 Takım
@@ -443,7 +495,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
             goalsFor: 6,
             goalsAgainst: 2,
             goalDifference: 4,
-            points: 9
+            points: 9,
           }}
           isMe={champion.id === myParticipantId}
           onReset={() => handleSelectSize(tournamentSize)}
@@ -464,7 +516,14 @@ export const SimulationPage: FC<SimulationPageProps> = ({
       {/* Turnuva Ağacı Görseli */}
       {tournament && (
         <div className="card" style={{ padding: 24 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
             <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>
               🌿 {tournamentSize} Takımlı Eleme Tablosu
             </h2>

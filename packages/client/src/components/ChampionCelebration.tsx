@@ -10,7 +10,7 @@ interface ChampionCelebrationProps {
 export const ChampionCelebration: FC<ChampionCelebrationProps> = ({
   championRow,
   isMe = false,
-  onReset
+  onReset,
 }) => {
   return (
     <div
@@ -21,12 +21,10 @@ export const ChampionCelebration: FC<ChampionCelebrationProps> = ({
         background: 'radial-gradient(circle at center, #2e260e 0%, #161b22 100%)',
         border: '2px solid var(--accent-gold)',
         boxShadow: '0 0 30px var(--accent-gold-glow)',
-        marginBottom: 24
+        marginBottom: 24,
       }}
     >
-      <div style={{ fontSize: '4rem', marginBottom: 8, animation: 'bounce 1.5s infinite' }}>
-        🏆
-      </div>
+      <div style={{ fontSize: '4rem', marginBottom: 8, animation: 'bounce 1.5s infinite' }}>🏆</div>
 
       <span
         style={{
@@ -34,7 +32,7 @@ export const ChampionCelebration: FC<ChampionCelebrationProps> = ({
           letterSpacing: 2,
           fontSize: '0.85rem',
           color: 'var(--accent-gold)',
-          fontWeight: 700
+          fontWeight: 700,
         }}
       >
         LİG ŞAMPİYONU
@@ -54,7 +52,7 @@ export const ChampionCelebration: FC<ChampionCelebrationProps> = ({
             borderRadius: 20,
             fontWeight: 800,
             fontSize: '0.95rem',
-            marginBottom: 16
+            marginBottom: 16,
           }}
         >
           🎉 TEBRİKLER! KUPAYI KAZANDIN! 🎉
@@ -75,7 +73,7 @@ export const ChampionCelebration: FC<ChampionCelebrationProps> = ({
           maxWidth: 400,
           padding: 16,
           backgroundColor: 'rgba(0,0,0,0.3)',
-          borderRadius: 12
+          borderRadius: 12,
         }}
       >
         <div>
@@ -92,7 +90,9 @@ export const ChampionCelebration: FC<ChampionCelebrationProps> = ({
         </div>
         <div>
           <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-green)' }}>
-            {championRow.goalDifference > 0 ? `+${championRow.goalDifference}` : championRow.goalDifference}
+            {championRow.goalDifference > 0
+              ? `+${championRow.goalDifference}`
+              : championRow.goalDifference}
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>AVERAJ</div>
         </div>
@@ -107,7 +107,7 @@ export const ChampionCelebration: FC<ChampionCelebrationProps> = ({
             color: '#000',
             fontWeight: 700,
             padding: '12px 28px',
-            fontSize: '1rem'
+            fontSize: '1rem',
           }}
         >
           Lobiye Dön / Yeni Sezon

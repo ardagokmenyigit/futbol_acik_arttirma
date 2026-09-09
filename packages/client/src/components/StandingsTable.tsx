@@ -10,12 +10,27 @@ interface StandingsTableProps {
 export const StandingsTable: FC<StandingsTableProps> = ({
   standings,
   myParticipantId,
-  title = 'Lig Puan Tablosu'
+  title = 'Lig Puan Tablosu',
 }) => {
   return (
     <div className="card" style={{ overflowX: 'auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 16,
+        }}
+      >
+        <h2
+          style={{
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
           <span>📊</span> {title}
         </h2>
         <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
@@ -23,25 +38,59 @@ export const StandingsTable: FC<StandingsTableProps> = ({
         </span>
       </div>
 
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.95rem' }}>
+      <table
+        style={{
+          width: '100%',
+          borderCollapse: 'collapse',
+          textAlign: 'left',
+          fontSize: '0.95rem',
+        }}
+      >
         <thead>
-          <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)' }}>
+          <tr
+            style={{
+              borderBottom: '2px solid var(--border-color)',
+              color: 'var(--text-secondary)',
+            }}
+          >
             <th style={{ padding: '10px 8px', width: 48, textAlign: 'center' }}>#</th>
             <th style={{ padding: '10px 8px' }}>Takım / Oyuncu</th>
-            <th style={{ padding: '10px 8px', width: 44, textAlign: 'center' }} title="Oynanan Maç">O</th>
-            <th style={{ padding: '10px 8px', width: 44, textAlign: 'center' }} title="Galibiyet">G</th>
-            <th style={{ padding: '10px 8px', width: 44, textAlign: 'center' }} title="Beraberlik">B</th>
-            <th style={{ padding: '10px 8px', width: 44, textAlign: 'center' }} title="Mağlubiyet">M</th>
-            <th style={{ padding: '10px 8px', width: 48, textAlign: 'center' }} title="Atılan Gol">AG</th>
-            <th style={{ padding: '10px 8px', width: 48, textAlign: 'center' }} title="Yenen Gol">YG</th>
-            <th style={{ padding: '10px 8px', width: 52, textAlign: 'center' }} title="Averaj">AV</th>
-            <th style={{ padding: '10px 8px', width: 64, textAlign: 'center', fontWeight: 700 }} title="Puan">Puan</th>
+            <th style={{ padding: '10px 8px', width: 44, textAlign: 'center' }} title="Oynanan Maç">
+              O
+            </th>
+            <th style={{ padding: '10px 8px', width: 44, textAlign: 'center' }} title="Galibiyet">
+              G
+            </th>
+            <th style={{ padding: '10px 8px', width: 44, textAlign: 'center' }} title="Beraberlik">
+              B
+            </th>
+            <th style={{ padding: '10px 8px', width: 44, textAlign: 'center' }} title="Mağlubiyet">
+              M
+            </th>
+            <th style={{ padding: '10px 8px', width: 48, textAlign: 'center' }} title="Atılan Gol">
+              AG
+            </th>
+            <th style={{ padding: '10px 8px', width: 48, textAlign: 'center' }} title="Yenen Gol">
+              YG
+            </th>
+            <th style={{ padding: '10px 8px', width: 52, textAlign: 'center' }} title="Averaj">
+              AV
+            </th>
+            <th
+              style={{ padding: '10px 8px', width: 64, textAlign: 'center', fontWeight: 700 }}
+              title="Puan"
+            >
+              Puan
+            </th>
           </tr>
         </thead>
         <tbody>
           {standings.length === 0 ? (
             <tr>
-              <td colSpan={10} style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
+              <td
+                colSpan={10}
+                style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}
+              >
                 Henüz lig maçı oynanmadı.
               </td>
             </tr>
@@ -58,14 +107,16 @@ export const StandingsTable: FC<StandingsTableProps> = ({
                   style={{
                     borderBottom: '1px solid var(--border-color)',
                     backgroundColor: isMe ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
-                    fontWeight: isMe ? 600 : 400
+                    fontWeight: isMe ? 600 : 400,
                   }}
                 >
                   <td style={{ padding: '12px 8px', textAlign: 'center' }}>
                     {isLeader && <span style={{ color: 'var(--accent-gold)' }}>🥇</span>}
                     {isSecond && <span>🥈</span>}
                     {isThird && <span>🥉</span>}
-                    {!isLeader && !isSecond && !isThird && <span style={{ color: 'var(--text-muted)' }}>{index + 1}</span>}
+                    {!isLeader && !isSecond && !isThird && (
+                      <span style={{ color: 'var(--text-muted)' }}>{index + 1}</span>
+                    )}
                   </td>
                   <td style={{ padding: '12px 8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -80,7 +131,7 @@ export const StandingsTable: FC<StandingsTableProps> = ({
                             borderRadius: 4,
                             backgroundColor: 'var(--accent-green)',
                             color: '#000',
-                            fontWeight: 700
+                            fontWeight: 700,
                           }}
                         >
                           SEN
@@ -103,12 +154,20 @@ export const StandingsTable: FC<StandingsTableProps> = ({
                           ? 'var(--accent-green)'
                           : row.goalDifference < 0
                             ? 'var(--danger-color)'
-                            : 'inherit'
+                            : 'inherit',
                     }}
                   >
                     {row.goalDifference > 0 ? `+${row.goalDifference}` : row.goalDifference}
                   </td>
-                  <td style={{ padding: '12px 8px', textAlign: 'center', fontWeight: 700, fontSize: '1.05rem', color: 'var(--accent-green)' }}>
+                  <td
+                    style={{
+                      padding: '12px 8px',
+                      textAlign: 'center',
+                      fontWeight: 700,
+                      fontSize: '1.05rem',
+                      color: 'var(--accent-green)',
+                    }}
+                  >
                     {row.points}
                   </td>
                 </tr>

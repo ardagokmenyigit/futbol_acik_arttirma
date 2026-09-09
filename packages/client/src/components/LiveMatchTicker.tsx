@@ -14,7 +14,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   awayName,
   result,
   onComplete,
-  speedMs = 30
+  speedMs = 30,
 }) => {
   const [minute, setMinute] = useState(1);
   const [liveHomeScore, setLiveHomeScore] = useState(0);
@@ -37,7 +37,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     setIsFinished(true);
     setTickerLogs((prev) => [
       `90' 🏁 Maç Bitti: ${homeName} ${result.scoreHome} - ${result.scoreAway} ${awayName}`,
-      ...prev
+      ...prev,
     ]);
   };
 
@@ -60,7 +60,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         setIsFinished(true);
         setTickerLogs((prev) => [
           `90' 🏁 Maç Bitti! Sonuç: ${homeName} ${result.scoreHome} - ${result.scoreAway} ${awayName}`,
-          ...prev
+          ...prev,
         ]);
         return;
       }
@@ -106,10 +106,17 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         border: '1px solid var(--accent-gold)',
         boxShadow: '0 0 20px var(--accent-gold-glow)',
         padding: 24,
-        marginBottom: 24
+        marginBottom: 24,
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 12,
+        }}
+      >
         <span
           style={{
             backgroundColor: isFinished ? 'rgba(16, 185, 129, 0.2)' : 'rgba(245, 158, 11, 0.2)',
@@ -118,7 +125,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             borderRadius: 16,
             fontSize: '0.8rem',
             fontWeight: 700,
-            letterSpacing: 1
+            letterSpacing: 1,
           }}
         >
           {isFinished ? '✓ MAÇ TAMAMLANDI' : '● CANLI MAÇ OYNANIYOR'}
@@ -132,7 +139,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               color: 'var(--text-secondary)',
               padding: '4px 12px',
               fontSize: '0.8rem',
-              border: '1px solid var(--border-color)'
+              border: '1px solid var(--border-color)',
             }}
           >
             ⏩ Sonuca Git
@@ -147,7 +154,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           gridTemplateColumns: '1fr auto 1fr',
           alignItems: 'center',
           gap: 20,
-          margin: '16px 0'
+          margin: '16px 0',
         }}
       >
         <div style={{ textAlign: 'right' }}>
@@ -164,13 +171,20 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               backgroundColor: 'var(--bg-tertiary)',
               padding: '6px 28px',
               borderRadius: 12,
-              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)'
+              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)',
             }}
           >
             {liveHomeScore} - {liveAwayScore}
           </div>
-          <div style={{ fontSize: '0.95rem', color: 'var(--accent-gold)', fontWeight: 700, marginTop: 6 }}>
-            {isFinished ? 'Maç Sonu (90\')' : `Dakika: ${minute}'`}
+          <div
+            style={{
+              fontSize: '0.95rem',
+              color: 'var(--accent-gold)',
+              fontWeight: 700,
+              marginTop: 6,
+            }}
+          >
+            {isFinished ? "Maç Sonu (90')" : `Dakika: ${minute}'`}
           </div>
         </div>
 
@@ -191,7 +205,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             textAlign: 'center',
             color: 'var(--accent-gold)',
             fontWeight: 800,
-            marginBottom: 12
+            marginBottom: 12,
           }}
         >
           ⚽ Beraberlik Sonrası Penaltı Atışları: {result.penaltiesHome} - {result.penaltiesAway}
@@ -199,13 +213,21 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       )}
 
       {/* İlerleme Çubuğu */}
-      <div style={{ height: 6, backgroundColor: 'var(--bg-tertiary)', borderRadius: 3, overflow: 'hidden', margin: '16px 0' }}>
+      <div
+        style={{
+          height: 6,
+          backgroundColor: 'var(--bg-tertiary)',
+          borderRadius: 3,
+          overflow: 'hidden',
+          margin: '16px 0',
+        }}
+      >
         <div
           style={{
             width: `${progressPct}%`,
             height: '100%',
             backgroundColor: 'var(--accent-green)',
-            transition: 'width 0.1s linear'
+            transition: 'width 0.1s linear',
           }}
         />
       </div>
@@ -221,7 +243,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             borderRadius: 8,
             textAlign: 'center',
             fontWeight: 700,
-            marginBottom: 12
+            marginBottom: 12,
           }}
         >
           {latestGoal}
@@ -238,11 +260,17 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           padding: 12,
           display: 'flex',
           flexDirection: 'column',
-          gap: 6
+          gap: 6,
         }}
       >
         {tickerLogs.slice(0, 4).map((log, idx) => (
-          <div key={idx} style={{ fontSize: '0.85rem', color: idx === 0 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
+          <div
+            key={idx}
+            style={{
+              fontSize: '0.85rem',
+              color: idx === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
+            }}
+          >
             {log}
           </div>
         ))}
@@ -258,7 +286,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               color: '#000',
               fontWeight: 800,
               padding: '10px 24px',
-              fontSize: '0.95rem'
+              fontSize: '0.95rem',
             }}
           >
             Ağaca İşle ve Sonraki Tura Geç ✓
