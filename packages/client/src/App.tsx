@@ -74,15 +74,24 @@ export function App() {
 
   return (
     <div className="app">
-      <div className="conn" style={{ marginBottom: 8 }}>
-        {connected ? '🟢 bağlı' : '🔴 bağlanıyor…'}
+      <div className="conn" style={{ marginBottom: 12 }}>
+        <span className={`dot ${connected ? 'on' : 'off'}`} />
+        {connected ? 'sunucuya bağlı' : 'bağlanıyor…'}
       </div>
 
       {!roomState && <HomePage />}
       {roomState?.phase === 'lobby' && <LobbyPage room={roomState} />}
       {roomState?.phase === 'draft' && <DraftPage room={roomState} />}
       {roomState && (roomState.phase === 'simulation' || roomState.phase === 'finished') && (
-        <p className="muted">Simülasyon / sonuç ekranları Kişi 2 tarafından gelecek.</p>
+        <div className="stack">
+          <div>
+            <div className="kicker">Draft tamamlandı</div>
+            <h1>Simülasyon</h1>
+          </div>
+          <div className="panel">
+            <p className="muted">Maç simülasyonu ve sonuç ekranları Kişi 2 tarafından gelecek.</p>
+          </div>
+        </div>
       )}
 
       {error && roomState && <p className="error">{error}</p>}

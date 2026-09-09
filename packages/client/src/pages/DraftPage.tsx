@@ -8,6 +8,8 @@ interface Props {
 }
 
 const POSITIONS: Position[] = ['GK', 'DEF', 'MID', 'FWD'];
+const RING_R = 27;
+const RING_C = 2 * Math.PI * RING_R;
 
 export function DraftPage({ room }: Props) {
   const you = useRoomStore(selectYou);
@@ -38,10 +40,13 @@ export function DraftPage({ room }: Props) {
   if (!auction) {
     return (
       <div className="stack">
-        <h1>Draft</h1>
+        <div>
+          <div className="kicker">Açık Artırma</div>
+          <h1>Draft</h1>
+        </div>
+        {lastWon && <WonBanner text={wonText(lastWon)} />}
         <div className="panel">
           <p className="muted">Sıradaki futbolcu hazırlanıyor…</p>
-          {lastWon && <WonLine text={wonText(lastWon)} />}
         </div>
       </div>
     );
@@ -49,6 +54,10 @@ export function DraftPage({ room }: Props) {
 
   const f = auction.footballer;
   const secs = Math.max(0, Math.ceil(remainingMs / 1000));
+  const totalMs = Math.max(1, room.config.bidDurationSec * 1000);
+  const progress = Math.max(0, Math.min(1, remainingMs / totalMs));
+  const ringColor = secs <= 5 ? 'var(--danger)' : 'var(--accent)';
+
   const leaderNick =
     room.participants.find((p) => p.id === auction.highestBid?.playerId)?.nickname ?? null;
   const youAreLeading = auction.highestBid?.playerId === you.id;
@@ -67,48 +76,82 @@ export function DraftPage({ room }: Props) {
 
   return (
     <div className="stack">
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h1 style={{ margin: 0 }}>Round {auction.round}</h1>
-        <span className="code-badge" style={{ fontSize: '1.1rem' }}>
-          {secs}s
-        </span>
-      </div>
-
-      {lastWon && <WonLine text={wonText(lastWon)} />}
-
-      <div className="panel stack">
-        <div className="row" style={{ justifyContent: 'space-between' }}>
-          <strong style={{ fontSize: '1.2rem' }}>{f.name}</strong>
-          <span className="tag">{f.position}</span>
-        </div>
-        <div className="row muted" style={{ gap: 16, fontSize: '0.9rem' }}>
-          <span>Genel {f.overall}</span>
-          <span>Hücum {f.attack}</span>
-          <span>Defans {f.defense}</span>
-          <span>Hız {f.pace}</span>
-          <span>Kondisyon {f.stamina}</span>
-        </div>
+      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          {auction.highestBid ? (
-            <span>
-              En yüksek: <strong>{auction.highestBid.amount}M</strong>
-              {leaderNick && <span className="muted"> — {leaderNick}</span>}
-            </span>
-          ) : (
-            <span className="muted">Henüz teklif yok · başlangıç {f.basePrice}M</span>
-          )}
+          <div className="kicker">Açık Artırma</div>
+          <h1>Round {auction.round}</h1>
+        </div>
+        <div className="countdown">
+          <svg width="66" height="66" viewBox="0 0 66 66">
+            <circle cx="33" cy="33" r={RING_R} fill="none" stroke="#25324a" strokeWidth="5" />
+            <circle
+              cx="33"
+              cy="33"
+              r={RING_R}
+              fill="none"
+              stroke={ringColor}
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeDasharray={RING_C}
+              strokeDashoffset={RING_C * (1 - progress)}
+              transform="rotate(-90 33 33)"
+              style={{ transition: 'stroke-dashoffset 0.4s linear' }}
+            />
+          </svg>
+          <span className="num">{secs}</span>
+        </div>
+      </div>
+
+      {lastWon && <WonBanner text={wonText(lastWon)} />}
+
+      <div className="hero-card">
+        <div className="hero-inner">
+          <div
+            className="row"
+            style={{ justifyContent: 'space-between', alignItems: 'flex-start' }}
+          >
+            <div>
+              <div className="display" style={{ fontSize: '1.6rem', lineHeight: 1 }}>
+                {f.name}
+              </div>
+              <div className="muted" style={{ fontSize: '0.75rem', marginTop: 4 }}>
+                Başlangıç {f.basePrice}M
+              </div>
+            </div>
+            <span className="pill">{f.position}</span>
+          </div>
+
+          <div className="statgrid">
+            <StatBar label="GEN" value={f.overall} />
+            <StatBar label="HÜC" value={f.attack} />
+            <StatBar label="DEF" value={f.defense} />
+            <StatBar label="HIZ" value={f.pace} />
+            <StatBar label="KND" value={f.stamina} />
+          </div>
+
+          <div className="hi-bid">
+            {auction.highestBid ? (
+              <>
+                <span className="kicker">En yüksek</span>
+                <span className="amount">{auction.highestBid.amount}M</span>
+                {leaderNick && <span className="muted">— {leaderNick}</span>}
+              </>
+            ) : (
+              <span className="muted">Henüz teklif yok · başlangıç {f.basePrice}M</span>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="panel stack">
-        <label htmlFor="bid">Teklifin (kalan bütçe {you.budget}M)</label>
-        <div className="row">
+        <label htmlFor="bid">Teklifin — kalan bütçe {you.budget}M</label>
+        <div className="row" style={{ gap: 8 }}>
           <input
             id="bid"
             type="text"
             inputMode="numeric"
             value={String(amount)}
-            style={{ maxWidth: 120 }}
+            style={{ maxWidth: 74, textAlign: 'center' }}
             onChange={(e) => {
               const n = Number(e.target.value.replace(/[^0-9]/g, ''));
               setAmount(Number.isFinite(n) ? n : 0);
@@ -137,12 +180,18 @@ export function DraftPage({ room }: Props) {
         <label>
           Kadron — {you.squad.length}/{room.config.squadSize}
         </label>
-        <div className="row" style={{ gap: 14 }}>
-          {POSITIONS.map((pos) => (
-            <span key={pos} className={squadCount(pos) >= room.config.squad[pos] ? '' : 'muted'}>
-              {pos} {squadCount(pos)}/{room.config.squad[pos]}
-            </span>
-          ))}
+        <div className="postiles">
+          {POSITIONS.map((pos) => {
+            const met = squadCount(pos) >= room.config.squad[pos];
+            return (
+              <div key={pos} className={`postile${met ? ' met' : ''}`}>
+                <div className="pos">{pos}</div>
+                <div className="count">
+                  {squadCount(pos)}/{room.config.squad[pos]}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -151,12 +200,12 @@ export function DraftPage({ room }: Props) {
         {room.participants
           .filter((p) => p.id !== you.id)
           .map((p) => (
-            <div key={p.id} className="row" style={{ justifyContent: 'space-between' }}>
+            <div key={p.id} className="hist-row" style={{ padding: '3px 0' }}>
               <span>
                 <span className={`dot ${p.connected ? 'on' : 'off'}`} />
                 {p.nickname}
               </span>
-              <span className="muted">
+              <span className="muted" style={{ fontFamily: 'ui-monospace, Menlo, monospace' }}>
                 {p.budget}M · {p.squad.length}/{room.config.squadSize}
               </span>
             </div>
@@ -172,9 +221,14 @@ export function DraftPage({ room }: Props) {
           .map((b, i) => {
             const nick = room.participants.find((p) => p.id === b.playerId)?.nickname ?? '?';
             return (
-              <div key={`${b.at}-${i}`} className="row" style={{ justifyContent: 'space-between' }}>
-                <span>{nick}</span>
-                <span>{b.amount}M</span>
+              <div key={`${b.at}-${i}`} className="hist-row" style={{ padding: '3px 0' }}>
+                <span className={i === 0 ? undefined : 'muted'}>{nick}</span>
+                <span
+                  className={i === 0 ? 'display' : 'muted'}
+                  style={i === 0 ? { color: 'var(--accent)' } : undefined}
+                >
+                  {b.amount}M
+                </span>
               </div>
             );
           })}
@@ -183,10 +237,37 @@ export function DraftPage({ room }: Props) {
   );
 }
 
-function WonLine({ text }: { text: string }) {
+function StatBar({ label, value }: { label: string; value: number }) {
+  const pct = Math.max(0, Math.min(100, value));
   return (
-    <div className="panel" style={{ padding: '10px 14px', borderColor: 'var(--accent)' }}>
-      {text}
+    <div className="stat">
+      <div className="stat-head">
+        <span>{label}</span>
+        <b>{value}</b>
+      </div>
+      <div className="stat-track">
+        <i style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function WonBanner({ text }: { text: string }) {
+  return (
+    <div className="banner">
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="var(--accent)"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M20 6L9 17l-5-5" />
+      </svg>
+      <span>{text}</span>
     </div>
   );
 }
