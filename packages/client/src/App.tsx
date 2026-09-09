@@ -93,20 +93,23 @@ export function App() {
   }, [connected]);
 
   return (
-    <div className="app">
-      <div className="conn" style={{ marginBottom: 12 }}>
-        <span className={`dot ${connected ? 'on' : 'off'}`} />
-        {connected ? 'sunucuya bağlı' : 'bağlanıyor…'}
+    <>
+      <div className="pitch-mark" />
+      <div className="app">
+        <div className="status-row">
+          <span className={`dot ${connected ? '' : 'off'}`} />
+          {connected ? 'Sunucuya bağlı' : 'Bağlanıyor…'}
+        </div>
+
+        {!roomState && <HomePage />}
+        {roomState?.phase === 'lobby' && <LobbyPage room={roomState} />}
+        {roomState?.phase === 'draft' && <DraftPage room={roomState} />}
+        {roomState && (roomState.phase === 'simulation' || roomState.phase === 'finished') && (
+          <ResultsPage room={roomState} />
+        )}
+
+        {error && roomState && <p className="error">{error}</p>}
       </div>
-
-      {!roomState && <HomePage />}
-      {roomState?.phase === 'lobby' && <LobbyPage room={roomState} />}
-      {roomState?.phase === 'draft' && <DraftPage room={roomState} />}
-      {roomState && (roomState.phase === 'simulation' || roomState.phase === 'finished') && (
-        <ResultsPage room={roomState} />
-      )}
-
-      {error && roomState && <p className="error">{error}</p>}
-    </div>
+    </>
   );
 }
