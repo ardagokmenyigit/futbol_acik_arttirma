@@ -19,6 +19,10 @@ export function App() {
 
     function onRoomState(next: RoomState) {
       useRoomStore.getState().updateRoom(next);
+      // Tick'ler arasında / reconnect sonrası geri sayımı endsAt'ten türet.
+      if (next.auction) {
+        useRoomStore.getState().setRemainingMs(Math.max(0, next.auction.endsAt - Date.now()));
+      }
     }
     function onRoomError({ message }: { message: string }) {
       useRoomStore.getState().setError(message);

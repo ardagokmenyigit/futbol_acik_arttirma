@@ -17,9 +17,11 @@ export function LobbyPage({ room }: Props) {
   if (!you) return null;
 
   const isHost = room.hostId === you.id;
-  const readyCount = room.participants.filter((p) => p.isReady).length;
-  const enoughPlayers = room.participants.length >= room.config.minPlayers;
-  const allReady = readyCount === room.participants.length;
+  // Sunucu gibi: sadece bağlı oyunculara bak (kopuk oyuncu "hazır" olamaz).
+  const connectedPlayers = room.participants.filter((p) => p.connected);
+  const readyCount = connectedPlayers.filter((p) => p.isReady).length;
+  const enoughPlayers = connectedPlayers.length >= room.config.minPlayers;
+  const allReady = connectedPlayers.length > 0 && readyCount === connectedPlayers.length;
   const canStart = isHost && enoughPlayers && allReady;
 
   function copyCode() {
@@ -49,7 +51,7 @@ export function LobbyPage({ room }: Props) {
       <div>
         <h1>Lobi</h1>
         <p className="subtitle">
-          {room.participants.length}/{room.config.maxPlayers} oyuncu · {readyCount} hazır
+          {connectedPlayers.length}/{room.config.maxPlayers} bağlı oyuncu · {readyCount} hazır
         </p>
       </div>
 
@@ -100,8 +102,8 @@ export function LobbyPage({ room }: Props) {
         {isHost && !canStart && (
           <p className="muted" style={{ fontSize: '0.85rem' }}>
             {!enoughPlayers
-              ? `Başlatmak için en az ${room.config.minPlayers} oyuncu gerekli.`
-              : 'Tüm oyuncular "Hazırım" demeden başlatılamaz.'}
+              ? `Başlatmak için en az ${room.config.minPlayers} bağlı oyuncu gerekli.`
+              : 'Bağlı oyuncuların hepsi "Hazırım" demeden başlatılamaz.'}
           </p>
         )}
         {!isHost && (

@@ -116,27 +116,44 @@ class RoomStore {
     return room;
   }
 
-  /** Socket kopunca: katılımcıyı "bağlı değil" işaretler ama odadan silmez. */
+  /**
+   * Socket kopunca: katılımcıyı "bağlı değil" işaretler ama odadan silmez.
+   * Lobide host koparsa hostluk bağlı bir oyuncuya devredilir (aksi halde
+   * kimse oyunu başlatamaz).
+   */
   markDisconnected(roomId: string, playerId: string): RoomState | undefined {
     const room = this.rooms.get(roomId);
     if (!room) return undefined;
     const participant = room.participants.find((p) => p.id === playerId);
-    if (participant) participant.connected = false;
+    if (!participant) return room;
+    participant.connected = false;
+
+    if (room.phase === 'lobby' && room.hostId === playerId) {
+      const nextHost = room.participants.find((p) => p.connected);
+      if (nextHost) {
+        participant.isHost = false;
+        nextHost.isHost = true;
+        room.hostId = nextHost.id;
+      }
+    }
     return room;
   }
 
-  /** Host oyunu başlatabilir mi? */
+  /**
+   * Host oyunu başlatabilir mi? Bağlantısı kopuk oyuncular "hazır" kilidini
+   * açamayacağı için sadece BAĞLI oyuncular üzerinden değerlendirilir.
+   */
   canStart(room: RoomState): { ok: true } | { ok: false; reason: string } {
     if (room.phase !== 'lobby') return { ok: false, reason: 'Oyun zaten başlamış' };
-    const active = room.participants;
-    if (active.length < room.config.minPlayers) {
-      return { ok: false, reason: `En az ${room.config.minPlayers} oyuncu gerekli` };
-    }
-    if (active.length > room.config.maxPlayers) {
+    if (room.participants.length > room.config.maxPlayers) {
       return { ok: false, reason: `En fazla ${room.config.maxPlayers} oyuncu` };
     }
-    if (!active.every((p) => p.isReady)) {
-      return { ok: false, reason: 'Tüm oyuncular hazır değil' };
+    const connected = room.participants.filter((p) => p.connected);
+    if (connected.length < room.config.minPlayers) {
+      return { ok: false, reason: `En az ${room.config.minPlayers} bağlı oyuncu gerekli` };
+    }
+    if (!connected.every((p) => p.isReady)) {
+      return { ok: false, reason: 'Bağlı oyuncuların hepsi hazır değil' };
     }
     return { ok: true };
   }
