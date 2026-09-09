@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Footballer, Position, RoomState } from '@fal/shared';
+import { PositionBadge } from '../components/PositionBadge.js';
 import { placeBid } from '../lib/auctionClient.js';
 import { selectYou, useRoomStore } from '../store.js';
 
@@ -101,7 +102,7 @@ export function DraftPage({ room }: Props) {
         <div className="player-card">
           <div className="player-top">
             <span className="player-name">{f.name}</span>
-            <span className="position-chip">{f.position}</span>
+            <PositionBadge position={f.position} size="md" showLabel />
           </div>
           <div className="player-meta">Başlangıç değeri {f.basePrice}M</div>
 
@@ -168,8 +169,13 @@ export function DraftPage({ room }: Props) {
             const met = squadCount(pos) >= room.config.squad[pos];
             const target = room.config.squad[pos];
             return (
-              <div key={pos} className={`squad-tile${pos === f.position ? ' active' : ''}`}>
-                <div className="pos">{pos}</div>
+              <div
+                key={pos}
+                className={`squad-tile tile-${pos.toLowerCase()}${pos === f.position ? ' active' : ''}`}
+              >
+                <div className="pos" style={{ marginBottom: 6 }}>
+                  <PositionBadge position={pos} size="sm" />
+                </div>
                 <div className="frac">
                   {squadCount(pos)}/{target}
                 </div>
@@ -194,28 +200,45 @@ export function DraftPage({ room }: Props) {
         </div>
         {you.squad.length === 0 ? (
           <p className="footnote" style={{ margin: '6px 0 0' }}>
-            Henüz futbolcu almadın. Aldığın futbolcular özellikleri ile birlikte burada
+            Henüz futbolcu almadın. Aldığın futbolcular mevkilerine göre gruplanarak burada
             listelenecek.
           </p>
         ) : (
-          <div className="squad-player-list">
-            {you.squad.map((pl) => (
-              <div key={pl.id} className="squad-player-item">
-                <div className="squad-player-info">
-                  <span className="position-chip" style={{ fontSize: 11, padding: '2px 7px' }}>
-                    {pl.position}
-                  </span>
-                  <span className="squad-player-name">{pl.name}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {POSITIONS.map((pos) => {
+              const posPlayers = you.squad.filter((pl) => pl.position === pos);
+              const quota = room.config.squad[pos];
+              return (
+                <div key={pos} className={`position-group-block pos-block-${pos.toLowerCase()}`}>
+                  <div className="position-group-header">
+                    <PositionBadge position={pos} size="sm" showLabel />
+                    <span className="position-group-count">
+                      {posPlayers.length}/{quota} Oyuncu
+                    </span>
+                  </div>
+                  {posPlayers.length === 0 ? (
+                    <div className="squad-empty-slot">Henüz oyuncu alınmadı</div>
+                  ) : (
+                    <div className="squad-player-list" style={{ marginTop: 2, gap: 5 }}>
+                      {posPlayers.map((pl) => (
+                        <div key={pl.id} className="squad-player-item">
+                          <div className="squad-player-info">
+                            <span className="squad-player-name">{pl.name}</span>
+                          </div>
+                          <div className="squad-player-stats">
+                            <span className="stat-tag gen">GEN {pl.overall}</span>
+                            <span className="sep">|</span>
+                            <span className="stat-tag">HÜC {pl.attack}</span>
+                            <span className="sep">|</span>
+                            <span className="stat-tag">DEF {pl.defense}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="squad-player-stats">
-                  <span className="stat-tag gen">GEN {pl.overall}</span>
-                  <span className="sep">|</span>
-                  <span className="stat-tag">HÜC {pl.attack}</span>
-                  <span className="sep">|</span>
-                  <span className="stat-tag">DEF {pl.defense}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -225,32 +248,11 @@ export function DraftPage({ room }: Props) {
         {room.participants
           .filter((p) => p.id !== you.id)
           .map((p) => (
-            <div
-              key={p.id}
-              className="kv-row"
-              style={{ alignItems: p.squad.length > 0 ? 'flex-start' : 'center' }}
-            >
-              <div>
-                <span className="roster-name">
-                  <span className={`dot ${p.connected ? '' : 'off'}`} />
-                  {p.nickname}
-                  {p.isBot && <span className="tag bot">bot</span>}
-                </span>
-                {p.squad.length > 0 && (
-                  <div
-                    style={{
-                      fontSize: 12,
-                      color: 'var(--chalk-faint)',
-                      marginTop: 3,
-                      paddingLeft: 17,
-                    }}
-                  >
-                    {p.squad.map((s) => `${s.name} (${s.position} · GEN ${s.overall})`).join(', ')}
-                  </div>
-                )}
-              </div>
-              <span className="mono">
-                {p.squad.length}/{room.config.squadSize} oyuncu
+            <div key={p.id} className="kv-row">
+              <span className="roster-name">
+                <span className={`dot ${p.connected ? '' : 'off'}`} />
+                {p.nickname}
+                {p.isBot && <span className="tag bot">bot</span>}
               </span>
             </div>
           ))}

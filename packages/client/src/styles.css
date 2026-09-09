@@ -491,15 +491,76 @@ button:disabled {
 .position-chip {
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   justify-content: center;
   font-family: var(--font-cond);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.5px;
+  padding: 3.5px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  color: #ffffff;
   background: var(--cobalt);
-  color: #eaf2f7;
-  padding: 4px 9px;
-  border-radius: 3px;
+  user-select: none;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s ease;
+}
+
+.position-chip svg {
+  flex-shrink: 0;
+}
+
+/* Boyut varyantları */
+.position-chip.size-sm {
+  font-size: 10px;
+  padding: 2px 6px;
+  gap: 3.5px;
+  letter-spacing: 0.4px;
+}
+.position-chip.size-md {
+  font-size: 12px;
+  padding: 3.5px 8px;
+  gap: 5px;
+}
+.position-chip.size-lg {
+  font-size: 14px;
+  padding: 5px 12px;
+  gap: 6px;
+  letter-spacing: 0.6px;
+}
+
+/* Kaleci (GK) — Kehribar Sarısı / Altın */
+.position-chip.pos-gk {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+  border: 1px solid rgba(251, 191, 36, 0.5);
+  box-shadow: 0 1px 6px rgba(217, 119, 6, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Defans (DEF) — Kraliyet Mavisi */
+.position-chip.pos-def {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  box-shadow: 0 1px 6px rgba(37, 99, 235, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Orta Saha (MID) — Zümrüt Yeşili */
+.position-chip.pos-mid {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  box-shadow: 0 1px 6px rgba(5, 150, 105, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Forvet (FWD) — Ateş Kırmızısı */
+.position-chip.pos-fwd {
+  background: linear-gradient(135deg, #991b1b 0%, #dc2626 100%);
+  border: 1px solid rgba(248, 113, 113, 0.5);
+  box-shadow: 0 1px 6px rgba(220, 38, 38, 0.35);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .stat-row {
@@ -616,12 +677,42 @@ button:disabled {
 .squad-tile {
   background: var(--turf);
   border: 1px solid var(--hairline-strong);
-  border-top: 2px solid var(--hairline-strong);
-  border-radius: 3px;
+  border-top: 3px solid var(--hairline-strong);
+  border-radius: 4px;
   padding: 10px 10px 12px;
+  transition: all 0.2s ease;
 }
-.squad-tile.active {
-  border-top-color: var(--crimson);
+.squad-tile.tile-gk {
+  border-top-color: rgba(217, 119, 6, 0.5);
+}
+.squad-tile.tile-gk.active {
+  border-top-color: #f59e0b;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);
+  background: var(--panel-raised);
+}
+.squad-tile.tile-def {
+  border-top-color: rgba(37, 99, 235, 0.5);
+}
+.squad-tile.tile-def.active {
+  border-top-color: #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.25);
+  background: var(--panel-raised);
+}
+.squad-tile.tile-mid {
+  border-top-color: rgba(5, 150, 105, 0.5);
+}
+.squad-tile.tile-mid.active {
+  border-top-color: #10b981;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.25);
+  background: var(--panel-raised);
+}
+.squad-tile.tile-fwd {
+  border-top-color: rgba(220, 38, 38, 0.5);
+}
+.squad-tile.tile-fwd.active {
+  border-top-color: #ef4444;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+  background: var(--panel-raised);
 }
 .squad-tile .pos {
   font-family: var(--font-cond);
@@ -691,6 +782,55 @@ button:disabled {
 }
 .squad-player-stats .sep {
   color: var(--hairline-strong);
+}
+
+/* ---------- position grouped roster blocks ---------- */
+.position-group-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--turf);
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--hairline-strong);
+  border-radius: 4px;
+  padding: 8px 10px;
+}
+.position-group-block.pos-block-gk {
+  border-left-color: #d97706;
+}
+.position-group-block.pos-block-def {
+  border-left-color: #2563eb;
+}
+.position-group-block.pos-block-mid {
+  border-left-color: #059669;
+}
+.position-group-block.pos-block-fwd {
+  border-left-color: #dc2626;
+}
+
+.position-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--hairline);
+  padding-bottom: 5px;
+  margin-bottom: 2px;
+}
+.position-group-count {
+  font-family: var(--font-cond);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--chalk-dim);
+  letter-spacing: 0.3px;
+}
+.squad-empty-slot {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--chalk-faint);
+  padding: 6px 8px;
+  border: 1px dashed var(--hairline);
+  border-radius: 4px;
+  text-align: center;
 }
 
 /* generic key/value list row (rakipler, teklif geçmişi) */
@@ -910,6 +1050,85 @@ button:disabled {
   text-transform: uppercase;
   color: var(--chalk-faint);
   margin-bottom: 18px;
+}
+
+/* ---------- Top Scorer (Gol Kralı) Card ---------- */
+.top-scorer-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 18px auto 22px;
+  padding: 16px 24px;
+  background: linear-gradient(145deg, rgba(201, 151, 74, 0.12) 0%, rgba(16, 36, 31, 0.95) 100%);
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  box-shadow: 0 0 24px rgba(201, 151, 74, 0.22);
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.top-scorer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-cond);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--gold-bright);
+  background: rgba(201, 151, 74, 0.2);
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(201, 151, 74, 0.45);
+}
+
+.top-scorer-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--chalk);
+  letter-spacing: 0.5px;
+}
+
+.top-scorer-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 13.5px;
+}
+
+.top-scorer-meta .team-pill {
+  color: var(--chalk-dim);
+}
+
+.top-scorer-meta .team-pill strong {
+  color: var(--chalk);
+}
+
+.top-scorer-meta .goals-pill {
+  background: rgba(220, 38, 38, 0.22);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  color: #fca5a5;
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-family: var(--font-cond);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.top-scorer-meta .stat-pill {
+  color: var(--gold-bright);
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 13.5px;
 }
 
 /* ============================================================

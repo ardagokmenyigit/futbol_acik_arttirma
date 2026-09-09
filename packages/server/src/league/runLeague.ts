@@ -10,15 +10,34 @@ import {
 
 /** Maçlar arası "canlı" akış aralığı. */
 const MATCH_INTERVAL_MS = 900;
+/** Açık artırma sonrası kadroların incelenmesi için başlangıç bekleme süresi. */
+const SQUAD_REVIEW_DELAY_MS = 15000;
 
-const leagueTimers = new Map<string, NodeJS.Timeout>();
+interface ActiveLeague {
+  startTimer: NodeJS.Timeout | null;
+  matchTimer: NodeJS.Timeout | null;
+  startNow: () => void;
+}
+
+const activeLeagues = new Map<string, ActiveLeague>();
 
 /** Oda kapanınca / yarıda kalınca lig akış timer'ını temizle. */
 export function cancelLeague(roomId: string): void {
-  const t = leagueTimers.get(roomId);
-  if (t) {
-    clearInterval(t);
-    leagueTimers.delete(roomId);
+  const active = activeLeagues.get(roomId);
+  if (active) {
+    if (active.startTimer) clearTimeout(active.startTimer);
+    if (active.matchTimer) clearInterval(active.matchTimer);
+    activeLeagues.delete(roomId);
+  }
+}
+
+/** Host "Simülasyonu Başlat" butonuna basarsa beklemeden hemen başlatır. */
+export function startLeagueImmediately(roomId: string): void {
+  const active = activeLeagues.get(roomId);
+  if (active?.startTimer) {
+    clearTimeout(active.startTimer);
+    active.startTimer = null;
+    active.startNow();
   }
 }
 
@@ -65,30 +84,45 @@ export function runLeague(io: TypedServer, roomId: string): void {
 
   cancelLeague(roomId);
   let i = 0;
-  const timer = setInterval(() => {
-    const result = full.results[i];
-    if (!result) {
-      cancelLeague(roomId);
-      const current = roomStore.getRoom(roomId);
-      if (!current) return;
-      current.league = full;
-      current.phase = 'finished';
-      io.to(roomId).emit('room:state', current);
-      io.to(roomId).emit('league:finished', { league: full });
-      return;
-    }
-    revealed.push(result);
-    standings = updateStandings(standings, result);
-    io.to(roomId).emit('league:matchResult', {
-      result,
-      league: {
-        fixtures: full.fixtures,
-        results: [...revealed],
-        standings,
-        championId: null,
-      },
-    });
-    i += 1;
-  }, MATCH_INTERVAL_MS);
-  leagueTimers.set(roomId, timer);
+
+  const startMatches = () => {
+    const active = activeLeagues.get(roomId);
+    if (active) active.startTimer = null;
+
+    const timer = setInterval(() => {
+      const result = full.results[i];
+      if (!result) {
+        cancelLeague(roomId);
+        const current = roomStore.getRoom(roomId);
+        if (!current) return;
+        current.league = full;
+        current.phase = 'finished';
+        io.to(roomId).emit('room:state', current);
+        io.to(roomId).emit('league:finished', { league: full });
+        return;
+      }
+      revealed.push(result);
+      standings = updateStandings(standings, result);
+      io.to(roomId).emit('league:matchResult', {
+        result,
+        league: {
+          fixtures: full.fixtures,
+          results: [...revealed],
+          standings,
+          championId: null,
+        },
+      });
+      i += 1;
+    }, MATCH_INTERVAL_MS);
+
+    const curr = activeLeagues.get(roomId);
+    if (curr) curr.matchTimer = timer;
+  };
+
+  const startTimer = setTimeout(startMatches, SQUAD_REVIEW_DELAY_MS);
+  activeLeagues.set(roomId, {
+    startTimer,
+    matchTimer: null,
+    startNow: startMatches,
+  });
 }

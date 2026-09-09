@@ -134,12 +134,82 @@ export interface Team {
   defense: number;
 }
 
-/** Maç içindeki bir olay (şimdilik sadece gol). */
+/** Maç içindeki bir olay (gol). */
 export interface MatchEvent {
   minute: number;
   /** Golü atan takımın participantId'si. */
   teamId: string;
   type: 'goal';
+  /** Golü atan futbolcunun id'si. */
+  playerId?: string;
+  /** Golü atan futbolcunun adı. */
+  playerName?: string;
+}
+
+/** Turnuva veya lig sonunda gol krallığı bilgisi. */
+export interface TopScorer {
+  playerId: string;
+  playerName: string;
+  teamId: string;
+  teamNickname: string;
+  goals: number;
+  position?: Position;
+  overall?: number;
+}
+
+/**
+ * Oynanmış maç sonuçlarından turnuvanın/ligin gol kralını hesaplar.
+ */
+export function getTopScorer(
+  results: MatchResult[],
+  participants: Participant[],
+): TopScorer | null {
+  const goalMap = new Map<
+    string,
+    { playerId: string; playerName: string; teamId: string; goals: number }
+  >();
+
+  for (const match of results) {
+    if (!match?.events) continue;
+    for (const evt of match.events) {
+      if (evt.type === 'goal' && evt.playerName) {
+        const key = evt.playerId || evt.playerName;
+        const current = goalMap.get(key);
+        if (current) {
+          current.goals += 1;
+        } else {
+          goalMap.set(key, {
+            playerId: evt.playerId ?? key,
+            playerName: evt.playerName,
+            teamId: evt.teamId,
+            goals: 1,
+          });
+        }
+      }
+    }
+  }
+
+  let top: { playerId: string; playerName: string; teamId: string; goals: number } | null = null;
+  for (const scorer of goalMap.values()) {
+    if (!top || scorer.goals > top.goals) {
+      top = scorer;
+    }
+  }
+
+  if (!top) return null;
+
+  const team = participants.find((p) => p.id === top.teamId);
+  const player = team?.squad.find((pl) => pl.id === top.playerId || pl.name === top.playerName);
+
+  return {
+    playerId: top.playerId,
+    playerName: top.playerName,
+    teamId: top.teamId,
+    teamNickname: team?.nickname ?? 'Bilinmeyen Takım',
+    goals: top.goals,
+    position: player?.position,
+    overall: player?.overall,
+  };
 }
 
 export interface Fixture {

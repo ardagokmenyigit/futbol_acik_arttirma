@@ -1,4 +1,4 @@
-import type { MatchEvent, MatchResult, Team } from '@fal/shared';
+﻿import type { Footballer, MatchEvent, MatchResult, Team } from '@fal/shared';
 import { createPRNG, stringToSeed } from './random.js';
 
 export interface SimulateMatchOptions {
@@ -47,6 +47,33 @@ const PROTECTING_DEFENSE = 1.06;
 
 /** Son 20 dakikada tempo artar (yorgunluk + risk alma). */
 const LATE_TEMPO = 1.18;
+
+function pickScorer(team: Team, prng: () => number): Footballer | undefined {
+  if (!team.players || team.players.length === 0) return undefined;
+
+  const weights = team.players.map((p) => {
+    let posWeight = 1.0;
+    if (p.position === 'FWD') posWeight = 6.0;
+    else if (p.position === 'MID') posWeight = 2.8;
+    else if (p.position === 'DEF') posWeight = 0.7;
+    else if (p.position === 'GK') posWeight = 0.05;
+
+    const attMult = Math.max(1, p.attack / 20);
+    return posWeight * attMult;
+  });
+
+  const totalWeight = weights.reduce((s, w) => s + w, 0);
+  if (totalWeight <= 0) {
+    return team.players[Math.floor(prng() * team.players.length)];
+  }
+
+  let r = prng() * totalWeight;
+  for (let i = 0; i < team.players.length; i++) {
+    r -= weights[i]!;
+    if (r <= 0) return team.players[i];
+  }
+  return team.players[team.players.length - 1];
+}
 
 /**
  * İki takım arasındaki futbol maçını dakika dakika simüle eder.
@@ -149,10 +176,24 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     if (prng() < conversion) {
       if (isHomeChance) {
         scoreHome++;
-        events.push({ minute, teamId: homeTeam.participantId, type: 'goal' });
+        const scorer = pickScorer(homeTeam, prng);
+        events.push({
+          minute,
+          teamId: homeTeam.participantId,
+          type: 'goal',
+          playerId: scorer?.id,
+          playerName: scorer?.name ?? `${homeTeam.nickname} Forveti`,
+        });
       } else {
         scoreAway++;
-        events.push({ minute, teamId: awayTeam.participantId, type: 'goal' });
+        const scorer = pickScorer(awayTeam, prng);
+        events.push({
+          minute,
+          teamId: awayTeam.participantId,
+          type: 'goal',
+          playerId: scorer?.id,
+          playerName: scorer?.name ?? `${awayTeam.nickname} Forveti`,
+        });
       }
     }
   }

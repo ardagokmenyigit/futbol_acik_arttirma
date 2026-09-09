@@ -1,4 +1,8 @@
-import type { MatchResult, RoomState } from '@fal/shared';
+import { useMemo, useState } from 'react';
+import { getTopScorer, type MatchResult, type RoomState } from '@fal/shared';
+import { PositionBadge } from '../components/PositionBadge.js';
+import { SquadsOverview } from '../components/SquadsOverview.js';
+import { useSocket } from '../hooks/useSocket.js';
 import { leaveRoom } from '../lib/roomClient.js';
 import { clearSession } from '../lib/session.js';
 import { useRoomStore } from '../store.js';
@@ -11,6 +15,8 @@ export function ResultsPage({ room }: Props) {
   const league = useRoomStore((s) => s.league);
   const exitRoom = useRoomStore((s) => s.exitRoom);
   const youId = useRoomStore((s) => s.youId);
+  const { socket } = useSocket();
+  const [showSquads, setShowSquads] = useState(true);
   const finished = room.phase === 'finished';
 
   const nick = (id: string) =>
@@ -26,14 +32,12 @@ export function ResultsPage({ room }: Props) {
 
   if (!league) {
     return (
-      <div className="panel gold">
-        <div className="round-label" style={{ color: 'var(--chalk-faint)' }}>
-          Draft tamamlandı
-        </div>
-        <h1 style={{ fontSize: 30, marginBottom: 12 }}>Lig hazırlanıyor</h1>
-        <p className="footnote" style={{ marginTop: 0 }}>
-          Fikstür oluşturuluyor, maçlar birazdan başlıyor…
-        </p>
+      <div className="stack">
+        <SquadsOverview
+          room={room}
+          isPreSimulation={true}
+          onStartImmediately={() => socket.emit('room:startSimulation')}
+        />
       </div>
     );
   }
@@ -44,6 +48,11 @@ export function ResultsPage({ room }: Props) {
   const champRow = finished
     ? league.standings.find((r) => r.participantId === league.championId)
     : undefined;
+
+  const topScorer = useMemo(() => {
+    if (!league?.results || league.results.length === 0) return null;
+    return getTopScorer(league.results, room.participants);
+  }, [league?.results, room.participants]);
 
   return (
     <div className="stack">
@@ -68,6 +77,24 @@ export function ResultsPage({ room }: Props) {
           <div className="champ-meta">
             {champRow.points} puan · {fmtGD(champRow.goalDifference)} averaj
           </div>
+
+          {topScorer && (
+            <div className="top-scorer-card">
+              <div className="top-scorer-badge">👑 Lig Gol Kralı</div>
+              <div className="top-scorer-name">
+                <span>{topScorer.playerName}</span>
+                {topScorer.position && <PositionBadge position={topScorer.position} size="sm" />}
+              </div>
+              <div className="top-scorer-meta">
+                <span className="team-pill">
+                  🛡️ Takım: <strong>{topScorer.teamNickname}</strong>
+                </span>
+                <span className="goals-pill">⚽ {topScorer.goals} Gol</span>
+                {topScorer.overall && <span className="stat-pill">GEN {topScorer.overall}</span>}
+              </div>
+            </div>
+          )}
+
           <button className="btn-primary" onClick={newGame}>
             Yeni oyun
           </button>
@@ -80,6 +107,27 @@ export function ResultsPage({ room }: Props) {
           <h1 style={{ fontSize: 30 }}>Lig oynanıyor</h1>
         </div>
       )}
+
+      {played === 0 ? (
+        <SquadsOverview
+          room={room}
+          isPreSimulation={true}
+          onStartImmediately={() => socket.emit('room:startSimulation')}
+        />
+      ) : (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            className="btn-outline"
+            style={{ padding: '6px 12px', fontSize: 13 }}
+            onClick={() => setShowSquads((v) => !v)}
+          >
+            {showSquads ? 'Kadroları Gizle' : '👥 Kadroları Göster'}
+          </button>
+        </div>
+      )}
+
+      {played > 0 && showSquads && <SquadsOverview room={room} isPreSimulation={false} />}
 
       {!finished && latest && (
         <div className="scoreline">

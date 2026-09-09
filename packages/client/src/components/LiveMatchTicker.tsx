@@ -76,8 +76,9 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         setLiveHomeScore(hScore);
         setLiveAwayScore(aScore);
 
-        const scorer = isHome ? homeName : awayName;
-        const msg = `⚽ ${min}' GOOOL! ${scorer} golü buldu! (${hScore} - ${aScore})`;
+        const teamName = isHome ? homeName : awayName;
+        const scorer = goal.playerName ? `${goal.playerName} (${teamName})` : teamName;
+        const msg = `⚽ ${min}' GOOOL! ${scorer} topu ağlara gönderdi! (${hScore} - ${aScore})`;
         setLatestGoal(msg);
         setTickerLogs((prev) => [msg, ...prev]);
       }

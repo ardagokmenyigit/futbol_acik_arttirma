@@ -1,7 +1,7 @@
 import type { RoomState } from '@fal/shared';
 import { beginDraft, cancelAuction, dropBidderIfLeading } from '../auction/index.js';
-import { cancelLeague } from '../league/index.js';
-import { cancelTournament } from '../tournament/runTournament.js';
+import { cancelLeague, startLeagueImmediately } from '../league/index.js';
+import { cancelTournament, startTournamentImmediately } from '../tournament/runTournament.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { RoomError, roomStore } from './roomStore.js';
 
@@ -98,6 +98,15 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     } catch (err) {
       ack({ ok: false, error: errorMessage(err) });
     }
+  });
+
+  socket.on('room:startSimulation', () => {
+    const { roomId, playerId } = socket.data;
+    if (!roomId || !playerId) return;
+    const room = roomStore.getRoom(roomId);
+    if (!room || room.hostId !== playerId) return;
+    startTournamentImmediately(roomId);
+    startLeagueImmediately(roomId);
   });
 
   socket.on('room:leave', () => {

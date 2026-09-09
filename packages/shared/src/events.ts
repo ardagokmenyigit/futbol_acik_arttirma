@@ -40,6 +40,7 @@ export interface ClientToServerEvents {
     ack: (res: AckResult<{ roomState: RoomState }>) => void,
   ) => void;
   'room:start': (ack: (res: AckResult<{ roomState: RoomState }>) => void) => void;
+  'room:startSimulation': () => void;
 
   'auction:bid': (
     payload: { amount: number },

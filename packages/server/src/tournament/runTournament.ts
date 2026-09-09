@@ -10,15 +10,34 @@ import {
 
 /** Maçlar arası "canlı" akış aralığı — bracket'te tur tur ilerlesin. */
 const MATCH_INTERVAL_MS = 1400;
+/** Açık artırma sonrası kadroların incelenmesi için başlangıç bekleme süresi. */
+const SQUAD_REVIEW_DELAY_MS = 15000;
 
-const tournamentTimers = new Map<string, NodeJS.Timeout>();
+interface ActiveTournament {
+  startTimer: NodeJS.Timeout | null;
+  matchTimer: NodeJS.Timeout | null;
+  startNow: () => void;
+}
+
+const activeTournaments = new Map<string, ActiveTournament>();
 
 /** Oda kapanınca / yarıda kalınca turnuva akış timer'ını temizle. */
 export function cancelTournament(roomId: string): void {
-  const t = tournamentTimers.get(roomId);
-  if (t) {
-    clearInterval(t);
-    tournamentTimers.delete(roomId);
+  const active = activeTournaments.get(roomId);
+  if (active) {
+    if (active.startTimer) clearTimeout(active.startTimer);
+    if (active.matchTimer) clearInterval(active.matchTimer);
+    activeTournaments.delete(roomId);
+  }
+}
+
+/** Host "Simülasyonu Başlat" butonuna basarsa beklemeden hemen başlatır. */
+export function startTournamentImmediately(roomId: string): void {
+  const active = activeTournaments.get(roomId);
+  if (active?.startTimer) {
+    clearTimeout(active.startTimer);
+    active.startTimer = null;
+    active.startNow();
   }
 }
 
@@ -53,7 +72,7 @@ export function runTournament(io: TypedServer, roomId: string): void {
 
   const { results } = simulateFullTournament(teams, size);
 
-  // Ağacı hemen (sonuçsuz) yayınla — oyuncular eşleşmeleri görsün.
+  // Ağacı hemen (sonuçsuz) yayınla — oyuncular eşleşmeleri ve kadroları görsün.
   let live: TournamentState = createTournament(teams, size);
   room.tournament = live;
   io.to(roomId).emit('room:state', room);
@@ -61,28 +80,43 @@ export function runTournament(io: TypedServer, roomId: string): void {
 
   cancelTournament(roomId);
   let i = 0;
-  const timer = setInterval(() => {
-    const result = results[i];
-    const current = roomStore.getRoom(roomId);
-    if (!current) {
-      cancelTournament(roomId);
-      return;
-    }
 
-    if (!result) {
-      cancelTournament(roomId);
+  const startMatches = () => {
+    const active = activeTournaments.get(roomId);
+    if (active) active.startTimer = null;
+
+    const timer = setInterval(() => {
+      const result = results[i];
+      const current = roomStore.getRoom(roomId);
+      if (!current) {
+        cancelTournament(roomId);
+        return;
+      }
+
+      if (!result) {
+        cancelTournament(roomId);
+        current.tournament = live;
+        current.phase = 'finished';
+        io.to(roomId).emit('room:state', current);
+        io.to(roomId).emit('tournament:finished', { tournament: live });
+        return;
+      }
+
+      live = advanceTournament(live, result);
       current.tournament = live;
-      current.phase = 'finished';
+      io.to(roomId).emit('tournament:matchResult', { result, tournament: live });
       io.to(roomId).emit('room:state', current);
-      io.to(roomId).emit('tournament:finished', { tournament: live });
-      return;
-    }
+      i += 1;
+    }, MATCH_INTERVAL_MS);
 
-    live = advanceTournament(live, result);
-    current.tournament = live;
-    io.to(roomId).emit('tournament:matchResult', { result, tournament: live });
-    io.to(roomId).emit('room:state', current);
-    i += 1;
-  }, MATCH_INTERVAL_MS);
-  tournamentTimers.set(roomId, timer);
+    const curr = activeTournaments.get(roomId);
+    if (curr) curr.matchTimer = timer;
+  };
+
+  const startTimer = setTimeout(startMatches, SQUAD_REVIEW_DELAY_MS);
+  activeTournaments.set(roomId, {
+    startTimer,
+    matchTimer: null,
+    startNow: startMatches,
+  });
 }

@@ -1,4 +1,13 @@
-import type { RoomState, TournamentMatch, TournamentState } from '@fal/shared';
+import { useMemo, useState } from 'react';
+import {
+  getTopScorer,
+  type RoomState,
+  type TournamentMatch,
+  type TournamentState,
+} from '@fal/shared';
+import { PositionBadge } from '../components/PositionBadge.js';
+import { SquadsOverview } from '../components/SquadsOverview.js';
+import { useSocket } from '../hooks/useSocket.js';
 import { leaveRoom } from '../lib/roomClient.js';
 import { clearSession } from '../lib/session.js';
 import { useRoomStore } from '../store.js';
@@ -11,6 +20,8 @@ interface Props {
 export function TournamentPage({ room, tournament }: Props) {
   const exitRoom = useRoomStore((s) => s.exitRoom);
   const youId = useRoomStore((s) => s.youId);
+  const { socket } = useSocket();
+  const [showSquads, setShowSquads] = useState(true);
 
   const nameOf = (id: string | null, placeholder?: string) => {
     if (!id) return placeholder ?? 'Bekleniyor';
@@ -21,6 +32,17 @@ export function TournamentPage({ room, tournament }: Props) {
 
   const champId = tournament.championId;
   const champ = champId ? room.participants.find((p) => p.id === champId) : undefined;
+
+  const allResults = useMemo(() => {
+    return tournament.rounds
+      .flatMap((r) => r.matches)
+      .map((m) => m.result)
+      .filter((res): res is NonNullable<typeof res> => !!res);
+  }, [tournament.rounds]);
+
+  const topScorer = useMemo(() => {
+    return getTopScorer(allResults, room.participants);
+  }, [allResults, room.participants]);
 
   const played = tournament.rounds.flatMap((r) => r.matches).filter((m) => m.result).length;
   const total = tournament.rounds.reduce((s, r) => s + r.matches.length, 0);
@@ -54,6 +76,24 @@ export function TournamentPage({ room, tournament }: Props) {
           <div className="champ-meta">
             {tournament.size} takımlı turnuva{champ.id === youId ? ' · tebrikler!' : ''}
           </div>
+
+          {topScorer && (
+            <div className="top-scorer-card">
+              <div className="top-scorer-badge">👑 Turnuva Gol Kralı</div>
+              <div className="top-scorer-name">
+                <span>{topScorer.playerName}</span>
+                {topScorer.position && <PositionBadge position={topScorer.position} size="sm" />}
+              </div>
+              <div className="top-scorer-meta">
+                <span className="team-pill">
+                  🛡️ Takım: <strong>{topScorer.teamNickname}</strong>
+                </span>
+                <span className="goals-pill">⚽ {topScorer.goals} Gol</span>
+                {topScorer.overall && <span className="stat-pill">GEN {topScorer.overall}</span>}
+              </div>
+            </div>
+          )}
+
           <button className="btn-primary" onClick={newGame}>
             Yeni oyun
           </button>
@@ -66,6 +106,27 @@ export function TournamentPage({ room, tournament }: Props) {
           <h1 style={{ fontSize: 30 }}>Turnuva oynanıyor</h1>
         </div>
       )}
+
+      {played === 0 ? (
+        <SquadsOverview
+          room={room}
+          isPreSimulation={true}
+          onStartImmediately={() => socket.emit('room:startSimulation')}
+        />
+      ) : (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            className="btn-outline"
+            style={{ padding: '6px 12px', fontSize: 13 }}
+            onClick={() => setShowSquads((v) => !v)}
+          >
+            {showSquads ? 'Kadroları Gizle' : '👥 Kadroları Göster'}
+          </button>
+        </div>
+      )}
+
+      {played > 0 && showSquads && <SquadsOverview room={room} isPreSimulation={false} />}
 
       {tournament.rounds.map((round) => (
         <div className="panel" key={round.name}>
