@@ -1,35 +1,66 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import type { RoomState } from '@fal/shared';
 import { useSocket } from './hooks/useSocket.js';
+import { rejoinRoom } from './lib/roomClient.js';
+import { clearSession, loadSession } from './lib/session.js';
+import { DraftPage } from './pages/DraftPage.js';
+import { HomePage } from './pages/HomePage.js';
+import { LobbyPage } from './pages/LobbyPage.js';
+import { useRoomStore } from './store.js';
 
-/**
- * FAZ 0 — hello-world doğrulaması.
- * Sunucuya bağlanır, "hello" gönderir, ack yanıtını ekranda gösterir.
- * Lobi / Draft / Sonuç ekranları buradan yönlendirilecek (Kişi 1 & Kişi 2).
- */
 export function App() {
   const { socket, connected } = useSocket();
-  const [reply, setReply] = useState<string>('(henüz yanıt yok)');
+  const roomState = useRoomStore((s) => s.roomState);
+  const error = useRoomStore((s) => s.error);
 
+  // Sunucudan gelen tam durum güncellemeleri (client sadece render eder).
+  useEffect(() => {
+    const store = useRoomStore.getState();
+
+    function onRoomState(next: RoomState) {
+      useRoomStore.getState().updateRoom(next);
+    }
+    function onRoomError({ message }: { message: string }) {
+      useRoomStore.getState().setError(message);
+    }
+
+    store.setConnected(connected);
+    socket.on('room:state', onRoomState);
+    socket.on('room:error', onRoomError);
+
+    return () => {
+      socket.off('room:state', onRoomState);
+      socket.off('room:error', onRoomError);
+    };
+  }, [socket, connected]);
+
+  // Bağlantı kurulunca kayıtlı oturumla odaya geri dön (CLAUDE.md §4.5).
   useEffect(() => {
     if (!connected) return;
-    socket.emit('hello', 'client hazır', (res) => {
-      setReply(res);
-    });
-  }, [connected, socket]);
+    const store = useRoomStore.getState();
+    if (store.roomState) return;
+    const session = loadSession();
+    if (!session) return;
+
+    rejoinRoom(session.roomId, session.playerId)
+      .then((res) => useRoomStore.getState().enterRoom(res.roomState, res.you.id))
+      .catch(() => clearSession());
+  }, [connected]);
 
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', padding: 32, lineHeight: 1.6 }}>
-      <h1>⚽ Açık Artırma Ligi</h1>
-      <p>
-        Sunucu bağlantısı: <strong>{connected ? '🟢 bağlı' : '🔴 bağlanıyor…'}</strong>
-      </p>
-      <p>
-        Sunucu yanıtı: <code>{reply}</code>
-      </p>
-      <hr />
-      <p style={{ color: '#666' }}>
-        Faz 0 iskeleti. Sıradaki: Lobi ekranı (Kişi 1) &amp; veri seti (Kişi 2).
-      </p>
-    </main>
+    <div className="app">
+      <div className="conn" style={{ marginBottom: 8 }}>
+        {connected ? '🟢 bağlı' : '🔴 bağlanıyor…'}
+      </div>
+
+      {!roomState && <HomePage />}
+      {roomState?.phase === 'lobby' && <LobbyPage room={roomState} />}
+      {roomState?.phase === 'draft' && <DraftPage room={roomState} />}
+      {roomState && (roomState.phase === 'simulation' || roomState.phase === 'finished') && (
+        <p className="muted">Simülasyon / sonuç ekranları Kişi 2 tarafından gelecek.</p>
+      )}
+
+      {error && roomState && <p className="error">{error}</p>}
+    </div>
   );
 }

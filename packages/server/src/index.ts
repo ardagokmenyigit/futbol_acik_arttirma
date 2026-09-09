@@ -2,6 +2,8 @@ import { createServer } from 'node:http';
 import cors from 'cors';
 import express from 'express';
 import { Server } from 'socket.io';
+import { registerRoomHandlers } from './rooms/index.js';
+import type { InterServerEvents, SocketData, TypedServer } from './socketTypes.js';
 import type { ClientToServerEvents, ServerToClientEvents } from '@fal/shared';
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -15,21 +17,14 @@ app.get('/health', (_req, res) => {
 
 const httpServer = createServer(app);
 
-/** Faz 0: sadece bağlantı + hello-world doğrulaması. */
-interface InterServerEvents {
-  ping: () => void;
-}
-interface SocketData {
-  playerId?: string;
-  roomId?: string;
-}
-
-const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(
-  httpServer,
-  {
-    cors: { origin: CLIENT_ORIGIN },
-  },
-);
+const io: TypedServer = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(httpServer, {
+  cors: { origin: CLIENT_ORIGIN },
+});
 
 io.on('connection', (socket) => {
   console.log(`[socket] connected: ${socket.id}`);
@@ -39,6 +34,8 @@ io.on('connection', (socket) => {
     console.log(`[hello] ${socket.id}: ${msg}`);
     ack(`merhaba ${socket.id} — sunucu seni duydu`);
   });
+
+  registerRoomHandlers(io, socket);
 
   socket.on('disconnect', (reason) => {
     console.log(`[socket] disconnected: ${socket.id} (${reason})`);
