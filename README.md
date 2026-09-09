@@ -1,4 +1,5 @@
 # futbol_acik_arttirma
+
 # ⚽ Açık Artırma Ligi (Football Auction League)
 
 Gerçek zamanlı, çok oyunculu bir web oyunu: oyuncular başlangıç bütçeleriyle
@@ -18,12 +19,12 @@ kadroyu kurar ve turnuva sonunda takımlar simüle edilen maçlarla yarışır.
 
 ## 🛠️ Teknoloji Yığını
 
-| Katman   | Teknoloji                          |
-|----------|-------------------------------------|
-| Frontend | React + TypeScript + Vite           |
-| Backend  | Node.js + TypeScript + Socket.io + Express |
-| Paylaşılan kod | TypeScript tipleri (`packages/shared`) |
-| Deployment | Vercel (client) / Railway veya Fly.io (server) |
+| Katman         | Teknoloji                                      |
+| -------------- | ---------------------------------------------- |
+| Frontend       | React + TypeScript + Vite                      |
+| Backend        | Node.js + TypeScript + Socket.io + Express     |
+| Paylaşılan kod | TypeScript tipleri (`packages/shared`)         |
+| Deployment     | Vercel (client) / Railway veya Fly.io (server) |
 
 ## 📁 Proje Yapısı
 
