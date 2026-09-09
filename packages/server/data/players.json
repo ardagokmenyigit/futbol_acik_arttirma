@@ -1,0 +1,27 @@
+{
+  "_comment": "FAZ 0 PLACEHOLDER — Kişi 2 bu dosyayı 50-100 futbolcu ile dolduracak (CLAUDE.md §4). Şema: Footballer (packages/shared/src/types.ts).",
+  "players": [
+    {
+      "id": "demo-1",
+      "name": "Örnek Kaleci",
+      "position": "GK",
+      "attack": 20,
+      "defense": 78,
+      "pace": 55,
+      "stamina": 70,
+      "overall": 74,
+      "basePrice": 8
+    },
+    {
+      "id": "demo-2",
+      "name": "Örnek Forvet",
+      "position": "FWD",
+      "attack": 85,
+      "defense": 30,
+      "pace": 88,
+      "stamina": 76,
+      "overall": 82,
+      "basePrice": 15
+    }
+  ]
+}
