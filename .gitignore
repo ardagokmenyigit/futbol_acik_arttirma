@@ -10,3 +10,4 @@ npm-debug.log*
 .env.*.local
 *.tsbuildinfo
 .vite/
+*.csv

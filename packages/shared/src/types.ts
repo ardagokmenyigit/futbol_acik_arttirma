@@ -108,6 +108,8 @@ export interface RoomState {
   remainingPoolIds: string[];
   /** phase 'simulation' | 'finished' iken dolu (Kişi 2). */
   league: LeagueState | null;
+  /** Turnuva ağacı sistemi (Kişi 2). */
+  tournament?: TournamentState | null;
 }
 
 /* ==========================================================================
@@ -145,6 +147,11 @@ export interface MatchResult {
   scoreHome: number;
   scoreAway: number;
   events: MatchEvent[];
+  /** Turnuva maçında beraberlik durumunda penaltı skoru. */
+  penaltiesHome?: number;
+  penaltiesAway?: number;
+  /** Maçı kazanan ve bir üst tura yükselen takımın participantId'si. */
+  winnerId?: string;
 }
 
 export interface StandingRow {
@@ -167,3 +174,35 @@ export interface LeagueState {
   /** Tüm maçlar oynandıysa şampiyonun participantId'si. */
   championId: string | null;
 }
+
+/* ==========================================================================
+ *  TURNUVA AĞACI SİSTEMİ (Kişi 2)
+ * ======================================================================== */
+
+export type TournamentSize = 4 | 8;
+export type TournamentRoundName = 'quarter' | 'semi' | 'final';
+
+export interface TournamentMatch {
+  matchId: string;
+  round: TournamentRoundName;
+  roundIndex: number;
+  homeId: string | null;
+  awayId: string | null;
+  homePlaceholder?: string;
+  awayPlaceholder?: string;
+  result?: MatchResult;
+}
+
+export interface TournamentRound {
+  name: TournamentRoundName;
+  title: string;
+  matches: TournamentMatch[];
+}
+
+export interface TournamentState {
+  size: TournamentSize;
+  rounds: TournamentRound[];
+  currentMatchId: string | null;
+  championId: string | null;
+}
+
