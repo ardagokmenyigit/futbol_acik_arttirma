@@ -115,6 +115,7 @@ export function DraftPage({ room }: Props) {
             }}
           />
           <button onClick={() => setAmount(floor)}>min {floor}M</button>
+          <button onClick={() => setAmount(Math.min(floor + 1, you.budget))}>+1</button>
           <button onClick={() => setAmount(Math.min(floor + 5, you.budget))}>+5</button>
           <button
             className="primary"
@@ -143,6 +144,23 @@ export function DraftPage({ room }: Props) {
             </span>
           ))}
         </div>
+      </div>
+
+      <div className="panel">
+        <label>Rakipler</label>
+        {room.participants
+          .filter((p) => p.id !== you.id)
+          .map((p) => (
+            <div key={p.id} className="row" style={{ justifyContent: 'space-between' }}>
+              <span>
+                <span className={`dot ${p.connected ? 'on' : 'off'}`} />
+                {p.nickname}
+              </span>
+              <span className="muted">
+                {p.budget}M · {p.squad.length}/{room.config.squadSize}
+              </span>
+            </div>
+          ))}
       </div>
 
       <div className="panel">
