@@ -1,27 +1,1085 @@
 {
-  "_comment": "FAZ 0 PLACEHOLDER — Kişi 2 bu dosyayı 50-100 futbolcu ile dolduracak (CLAUDE.md §4). Şema: Footballer (packages/shared/src/types.ts).",
+  "_comment": "EA SPORTS FC 26 Veri Tabanından derlenmiş en iyi 108 elit futbolcu (16 GK, 34 DEF, 34 MID, 24 FWD). Taban fiyat kaldırılmıştır (tam açık artırma).",
   "players": [
     {
-      "id": "demo-1",
-      "name": "Örnek Kaleci",
+      "id": "fc26-gk-001",
+      "name": "Alisson",
       "position": "GK",
-      "attack": 20,
-      "defense": 78,
-      "pace": 55,
-      "stamina": 70,
-      "overall": 74,
-      "basePrice": 8
+      "attack": 29,
+      "defense": 88,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 89
     },
     {
-      "id": "demo-2",
-      "name": "Örnek Forvet",
+      "id": "fc26-gk-002",
+      "name": "G. Donnarumma",
+      "position": "GK",
+      "attack": 29,
+      "defense": 90,
+      "pace": 65,
+      "stamina": 41,
+      "overall": 89
+    },
+    {
+      "id": "fc26-gk-003",
+      "name": "T. Courtois",
+      "position": "GK",
+      "attack": 29,
+      "defense": 88,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 89
+    },
+    {
+      "id": "fc26-gk-004",
+      "name": "J. Oblak",
+      "position": "GK",
+      "attack": 29,
+      "defense": 86,
+      "pace": 65,
+      "stamina": 42,
+      "overall": 88
+    },
+    {
+      "id": "fc26-gk-005",
+      "name": "M. Maignan",
+      "position": "GK",
+      "attack": 29,
+      "defense": 86,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 87
+    },
+    {
+      "id": "fc26-gk-006",
+      "name": "David Raya",
+      "position": "GK",
+      "attack": 29,
+      "defense": 87,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 87
+    },
+    {
+      "id": "fc26-gk-007",
+      "name": "Y. Sommer",
+      "position": "GK",
+      "attack": 29,
+      "defense": 86,
+      "pace": 65,
+      "stamina": 45,
+      "overall": 87
+    },
+    {
+      "id": "fc26-gk-008",
+      "name": "M. ter Stegen",
+      "position": "GK",
+      "attack": 29,
+      "defense": 85,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 86
+    },
+    {
+      "id": "fc26-gk-009",
+      "name": "G. Kobel",
+      "position": "GK",
+      "attack": 29,
+      "defense": 87,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 86
+    },
+    {
+      "id": "fc26-gk-010",
+      "name": "Ederson",
+      "position": "GK",
+      "attack": 29,
+      "defense": 83,
+      "pace": 65,
+      "stamina": 44,
+      "overall": 85
+    },
+    {
+      "id": "fc26-gk-011",
+      "name": "E. Martínez",
+      "position": "GK",
+      "attack": 29,
+      "defense": 84,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 85
+    },
+    {
+      "id": "fc26-gk-012",
+      "name": "Unai Simón",
+      "position": "GK",
+      "attack": 29,
+      "defense": 85,
+      "pace": 65,
+      "stamina": 44,
+      "overall": 85
+    },
+    {
+      "id": "fc26-gk-013",
+      "name": "P. Gulácsi",
+      "position": "GK",
+      "attack": 29,
+      "defense": 84,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 85
+    },
+    {
+      "id": "fc26-gk-014",
+      "name": "De Gea",
+      "position": "GK",
+      "attack": 29,
+      "defense": 86,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 85
+    },
+    {
+      "id": "fc26-gk-015",
+      "name": "J. Pickford",
+      "position": "GK",
+      "attack": 29,
+      "defense": 86,
+      "pace": 65,
+      "stamina": 40,
+      "overall": 84
+    },
+    {
+      "id": "fc26-gk-016",
+      "name": "M. Neuer",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "pace": 65,
+      "stamina": 43,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-017",
+      "name": "V. van Dijk",
+      "position": "DEF",
+      "attack": 47,
+      "defense": 90,
+      "pace": 73,
+      "stamina": 75,
+      "overall": 90
+    },
+    {
+      "id": "fc26-def-018",
+      "name": "A. Hakimi",
+      "position": "DEF",
+      "attack": 57,
+      "defense": 82,
+      "pace": 92,
+      "stamina": 95,
+      "overall": 89
+    },
+    {
+      "id": "fc26-def-019",
+      "name": "Gabriel",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 88,
+      "pace": 64,
+      "stamina": 71,
+      "overall": 88
+    },
+    {
+      "id": "fc26-def-020",
+      "name": "Marquinhos",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 89,
+      "pace": 78,
+      "stamina": 79,
+      "overall": 87
+    },
+    {
+      "id": "fc26-def-021",
+      "name": "J. Koundé",
+      "position": "DEF",
+      "attack": 45,
+      "defense": 86,
+      "pace": 84,
+      "stamina": 87,
+      "overall": 87
+    },
+    {
+      "id": "fc26-def-022",
+      "name": "A. Bastoni",
+      "position": "DEF",
+      "attack": 45,
+      "defense": 88,
+      "pace": 74,
+      "stamina": 81,
+      "overall": 87
+    },
+    {
+      "id": "fc26-def-023",
+      "name": "W. Saliba",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 87,
+      "pace": 77,
+      "stamina": 72,
+      "overall": 87
+    },
+    {
+      "id": "fc26-def-024",
+      "name": "J. Tah",
+      "position": "DEF",
+      "attack": 37,
+      "defense": 87,
+      "pace": 63,
+      "stamina": 76,
+      "overall": 87
+    },
+    {
+      "id": "fc26-def-025",
+      "name": "T. Alexander-Arnold",
+      "position": "DEF",
+      "attack": 58,
+      "defense": 80,
+      "pace": 76,
+      "stamina": 89,
+      "overall": 86
+    },
+    {
+      "id": "fc26-def-026",
+      "name": "Nuno Mendes",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 80,
+      "pace": 95,
+      "stamina": 83,
+      "overall": 86
+    },
+    {
+      "id": "fc26-def-027",
+      "name": "A. Rüdiger",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 84,
+      "pace": 79,
+      "stamina": 70,
+      "overall": 86
+    },
+    {
+      "id": "fc26-def-028",
+      "name": "Rúben Dias",
+      "position": "DEF",
+      "attack": 41,
+      "defense": 86,
+      "pace": 59,
+      "stamina": 71,
+      "overall": 86
+    },
+    {
+      "id": "fc26-def-029",
+      "name": "W. Pacho",
+      "position": "DEF",
+      "attack": 36,
+      "defense": 86,
+      "pace": 80,
+      "stamina": 78,
+      "overall": 86
+    },
+    {
+      "id": "fc26-def-030",
+      "name": "I. Konaté",
+      "position": "DEF",
+      "attack": 37,
+      "defense": 86,
+      "pace": 77,
+      "stamina": 75,
+      "overall": 86
+    },
+    {
+      "id": "fc26-def-031",
+      "name": "F. Dimarco",
+      "position": "DEF",
+      "attack": 57,
+      "defense": 79,
+      "pace": 80,
+      "stamina": 84,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-032",
+      "name": "Carvajal",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 81,
+      "pace": 80,
+      "stamina": 84,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-033",
+      "name": "N. Schlotterbeck",
+      "position": "DEF",
+      "attack": 49,
+      "defense": 85,
+      "pace": 74,
+      "stamina": 74,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-034",
+      "name": "Iñigo Martínez",
+      "position": "DEF",
+      "attack": 47,
+      "defense": 85,
+      "pace": 71,
+      "stamina": 69,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-035",
+      "name": "D. Upamecano",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 84,
+      "pace": 77,
+      "stamina": 73,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-036",
+      "name": "Bremer",
+      "position": "DEF",
+      "attack": 39,
+      "defense": 86,
+      "pace": 82,
+      "stamina": 65,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-037",
+      "name": "T. Hernández",
+      "position": "DEF",
+      "attack": 54,
+      "defense": 79,
+      "pace": 90,
+      "stamina": 87,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-038",
+      "name": "Marcos Llorente",
+      "position": "DEF",
+      "attack": 55,
+      "defense": 78,
+      "pace": 89,
+      "stamina": 92,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-039",
+      "name": "João Cancelo",
+      "position": "DEF",
+      "attack": 56,
+      "defense": 78,
+      "pace": 83,
+      "stamina": 88,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-040",
+      "name": "Marc Cucurella",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 82,
+      "pace": 75,
+      "stamina": 89,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-041",
+      "name": "A. Davies",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 74,
+      "pace": 94,
+      "stamina": 79,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-042",
+      "name": "J. Gvardiol",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 84,
+      "pace": 78,
+      "stamina": 81,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-043",
+      "name": "B. Pavard",
+      "position": "DEF",
+      "attack": 51,
+      "defense": 86,
+      "pace": 75,
+      "stamina": 80,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-044",
+      "name": "D. Dumfries",
+      "position": "DEF",
+      "attack": 51,
+      "defense": 79,
+      "pace": 84,
+      "stamina": 88,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-045",
+      "name": "Éder Militão",
+      "position": "DEF",
+      "attack": 44,
+      "defense": 85,
+      "pace": 82,
+      "stamina": 85,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-046",
+      "name": "Vivian",
+      "position": "DEF",
+      "attack": 41,
+      "defense": 84,
+      "pace": 79,
+      "stamina": 77,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-047",
+      "name": "F. Acerbi",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 87,
+      "pace": 57,
+      "stamina": 73,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-048",
+      "name": "S. de Vrij",
+      "position": "DEF",
+      "attack": 41,
+      "defense": 86,
+      "pace": 62,
+      "stamina": 70,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-049",
+      "name": "W. Orban",
+      "position": "DEF",
+      "attack": 35,
+      "defense": 86,
+      "pace": 57,
+      "stamina": 74,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-050",
+      "name": "G. Di Lorenzo",
+      "position": "DEF",
+      "attack": 51,
+      "defense": 79,
+      "pace": 84,
+      "stamina": 90,
+      "overall": 83
+    },
+    {
+      "id": "fc26-mid-051",
+      "name": "M. Salah",
+      "position": "MID",
+      "attack": 87,
+      "defense": 58,
+      "pace": 89,
+      "stamina": 88,
+      "overall": 91
+    },
+    {
+      "id": "fc26-mid-052",
+      "name": "J. Bellingham",
+      "position": "MID",
+      "attack": 85,
+      "defense": 83,
+      "pace": 80,
+      "stamina": 94,
+      "overall": 90
+    },
+    {
+      "id": "fc26-mid-053",
+      "name": "Rodri",
+      "position": "MID",
+      "attack": 83,
+      "defense": 88,
+      "pace": 65,
+      "stamina": 91,
+      "overall": 90
+    },
+    {
+      "id": "fc26-mid-054",
+      "name": "F. Valverde",
+      "position": "MID",
+      "attack": 84,
+      "defense": 86,
+      "pace": 88,
+      "stamina": 93,
+      "overall": 89
+    },
+    {
+      "id": "fc26-mid-055",
+      "name": "J. Kimmich",
+      "position": "MID",
+      "attack": 82,
+      "defense": 86,
+      "pace": 72,
+      "stamina": 92,
+      "overall": 89
+    },
+    {
+      "id": "fc26-mid-056",
+      "name": "Vitinha",
+      "position": "MID",
+      "attack": 83,
+      "defense": 79,
+      "pace": 72,
+      "stamina": 87,
+      "overall": 89
+    },
+    {
+      "id": "fc26-mid-057",
+      "name": "Raphinha",
+      "position": "MID",
+      "attack": 85,
+      "defense": 64,
+      "pace": 91,
+      "stamina": 91,
+      "overall": 89
+    },
+    {
+      "id": "fc26-mid-058",
+      "name": "Pedri",
+      "position": "MID",
+      "attack": 79,
+      "defense": 82,
+      "pace": 77,
+      "stamina": 90,
+      "overall": 89
+    },
+    {
+      "id": "fc26-mid-059",
+      "name": "F. Wirtz",
+      "position": "MID",
+      "attack": 85,
+      "defense": 64,
+      "pace": 80,
+      "stamina": 87,
+      "overall": 89
+    },
+    {
+      "id": "fc26-mid-060",
+      "name": "Lamine Yamal",
+      "position": "MID",
+      "attack": 84,
+      "defense": 38,
+      "pace": 85,
+      "stamina": 73,
+      "overall": 89
+    },
+    {
+      "id": "fc26-mid-061",
+      "name": "J. Musiala",
+      "position": "MID",
+      "attack": 81,
+      "defense": 68,
+      "pace": 80,
+      "stamina": 73,
+      "overall": 88
+    },
+    {
+      "id": "fc26-mid-062",
+      "name": "N. Barella",
+      "position": "MID",
+      "attack": 81,
+      "defense": 83,
+      "pace": 80,
+      "stamina": 89,
+      "overall": 87
+    },
+    {
+      "id": "fc26-mid-063",
+      "name": "A. Mac Allister",
+      "position": "MID",
+      "attack": 84,
+      "defense": 81,
+      "pace": 66,
+      "stamina": 87,
+      "overall": 87
+    },
+    {
+      "id": "fc26-mid-064",
+      "name": "Bruno Fernandes",
+      "position": "MID",
+      "attack": 86,
+      "defense": 74,
+      "pace": 67,
+      "stamina": 95,
+      "overall": 87
+    },
+    {
+      "id": "fc26-mid-065",
+      "name": "D. Rice",
+      "position": "MID",
+      "attack": 79,
+      "defense": 86,
+      "pace": 72,
+      "stamina": 92,
+      "overall": 87
+    },
+    {
+      "id": "fc26-mid-066",
+      "name": "F. de Jong",
+      "position": "MID",
+      "attack": 78,
+      "defense": 81,
+      "pace": 82,
+      "stamina": 87,
+      "overall": 87
+    },
+    {
+      "id": "fc26-mid-067",
+      "name": "K. De Bruyne",
+      "position": "MID",
+      "attack": 88,
+      "defense": 65,
+      "pace": 66,
+      "stamina": 66,
+      "overall": 87
+    },
+    {
+      "id": "fc26-mid-068",
+      "name": "M. Ødegaard",
+      "position": "MID",
+      "attack": 84,
+      "defense": 73,
+      "pace": 68,
+      "stamina": 88,
+      "overall": 87
+    },
+    {
+      "id": "fc26-mid-069",
+      "name": "M. Caicedo",
+      "position": "MID",
+      "attack": 71,
+      "defense": 86,
+      "pace": 71,
+      "stamina": 90,
+      "overall": 87
+    },
+    {
+      "id": "fc26-mid-070",
+      "name": "C. Palmer",
+      "position": "MID",
+      "attack": 85,
+      "defense": 60,
+      "pace": 75,
+      "stamina": 83,
+      "overall": 87
+    },
+    {
+      "id": "fc26-mid-071",
+      "name": "H. Çalhanoğlu",
+      "position": "MID",
+      "attack": 84,
+      "defense": 81,
+      "pace": 71,
+      "stamina": 81,
+      "overall": 86
+    },
+    {
+      "id": "fc26-mid-072",
+      "name": "S. Tonali",
+      "position": "MID",
+      "attack": 78,
+      "defense": 82,
+      "pace": 79,
+      "stamina": 83,
+      "overall": 86
+    },
+    {
+      "id": "fc26-mid-073",
+      "name": "T. Reijnders",
+      "position": "MID",
+      "attack": 81,
+      "defense": 82,
+      "pace": 79,
+      "stamina": 92,
+      "overall": 86
+    },
+    {
+      "id": "fc26-mid-074",
+      "name": "Bruno Guimarães",
+      "position": "MID",
+      "attack": 80,
+      "defense": 82,
+      "pace": 66,
+      "stamina": 90,
+      "overall": 86
+    },
+    {
+      "id": "fc26-mid-075",
+      "name": "P. Dybala",
+      "position": "MID",
+      "attack": 85,
+      "defense": 52,
+      "pace": 80,
+      "stamina": 76,
+      "overall": 86
+    },
+    {
+      "id": "fc26-mid-076",
+      "name": "M. Olise",
+      "position": "MID",
+      "attack": 82,
+      "defense": 61,
+      "pace": 78,
+      "stamina": 85,
+      "overall": 86
+    },
+    {
+      "id": "fc26-mid-077",
+      "name": "Nico Williams",
+      "position": "MID",
+      "attack": 78,
+      "defense": 50,
+      "pace": 93,
+      "stamina": 81,
+      "overall": 86
+    },
+    {
+      "id": "fc26-mid-078",
+      "name": "João Neves",
+      "position": "MID",
+      "attack": 76,
+      "defense": 85,
+      "pace": 74,
+      "stamina": 92,
+      "overall": 85
+    },
+    {
+      "id": "fc26-mid-079",
+      "name": "R. Gravenberch",
+      "position": "MID",
+      "attack": 79,
+      "defense": 82,
+      "pace": 76,
+      "stamina": 85,
+      "overall": 85
+    },
+    {
+      "id": "fc26-mid-080",
+      "name": "S. McTominay",
+      "position": "MID",
+      "attack": 80,
+      "defense": 84,
+      "pace": 76,
+      "stamina": 92,
+      "overall": 85
+    },
+    {
+      "id": "fc26-mid-081",
+      "name": "Y. Tielemans",
+      "position": "MID",
+      "attack": 82,
+      "defense": 79,
+      "pace": 54,
+      "stamina": 87,
+      "overall": 85
+    },
+    {
+      "id": "fc26-mid-082",
+      "name": "Fabián Ruiz",
+      "position": "MID",
+      "attack": 79,
+      "defense": 78,
+      "pace": 61,
+      "stamina": 84,
+      "overall": 85
+    },
+    {
+      "id": "fc26-mid-083",
+      "name": "G. Xhaka",
+      "position": "MID",
+      "attack": 80,
+      "defense": 80,
+      "pace": 47,
+      "stamina": 84,
+      "overall": 85
+    },
+    {
+      "id": "fc26-mid-084",
+      "name": "N. Kanté",
+      "position": "MID",
+      "attack": 69,
+      "defense": 86,
+      "pace": 77,
+      "stamina": 89,
+      "overall": 85
+    },
+    {
+      "id": "fc26-fwd-085",
+      "name": "K. Mbappé",
+      "position": "FWD",
+      "attack": 88,
+      "defense": 15,
+      "pace": 97,
+      "stamina": 83,
+      "overall": 91
+    },
+    {
+      "id": "fc26-fwd-086",
+      "name": "O. Dembélé",
+      "position": "FWD",
+      "attack": 87,
+      "defense": 20,
+      "pace": 91,
+      "stamina": 76,
+      "overall": 90
+    },
+    {
+      "id": "fc26-fwd-087",
+      "name": "E. Haaland",
+      "position": "FWD",
+      "attack": 86,
+      "defense": 18,
+      "pace": 86,
+      "stamina": 76,
+      "overall": 90
+    },
+    {
+      "id": "fc26-fwd-088",
+      "name": "H. Kane",
+      "position": "FWD",
+      "attack": 90,
+      "defense": 19,
+      "pace": 64,
+      "stamina": 76,
+      "overall": 89
+    },
+    {
+      "id": "fc26-fwd-089",
+      "name": "Vini Jr.",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 15,
+      "pace": 95,
+      "stamina": 84,
+      "overall": 89
+    },
+    {
+      "id": "fc26-fwd-090",
+      "name": "B. Saka",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 24,
+      "pace": 84,
+      "stamina": 86,
+      "overall": 88
+    },
+    {
+      "id": "fc26-fwd-091",
+      "name": "L. Martínez",
       "position": "FWD",
       "attack": 85,
-      "defense": 30,
-      "pace": 88,
+      "defense": 20,
+      "pace": 81,
+      "stamina": 86,
+      "overall": 88
+    },
+    {
+      "id": "fc26-fwd-092",
+      "name": "R. Lewandowski",
+      "position": "FWD",
+      "attack": 87,
+      "defense": 18,
+      "pace": 74,
       "stamina": 76,
-      "overall": 82,
-      "basePrice": 15
+      "overall": 88
+    },
+    {
+      "id": "fc26-fwd-093",
+      "name": "A. Isak",
+      "position": "FWD",
+      "attack": 85,
+      "defense": 16,
+      "pace": 83,
+      "stamina": 82,
+      "overall": 88
+    },
+    {
+      "id": "fc26-fwd-094",
+      "name": "J. Alvarez",
+      "position": "FWD",
+      "attack": 86,
+      "defense": 23,
+      "pace": 85,
+      "stamina": 85,
+      "overall": 87
+    },
+    {
+      "id": "fc26-fwd-095",
+      "name": "K. Kvaratskhelia",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 23,
+      "pace": 86,
+      "stamina": 83,
+      "overall": 87
+    },
+    {
+      "id": "fc26-fwd-096",
+      "name": "S. Guirassy",
+      "position": "FWD",
+      "attack": 85,
+      "defense": 18,
+      "pace": 72,
+      "stamina": 84,
+      "overall": 87
+    },
+    {
+      "id": "fc26-fwd-097",
+      "name": "V. Gyökeres",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 15,
+      "pace": 90,
+      "stamina": 93,
+      "overall": 87
+    },
+    {
+      "id": "fc26-fwd-098",
+      "name": "V. Osimhen",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 17,
+      "pace": 92,
+      "stamina": 81,
+      "overall": 87
+    },
+    {
+      "id": "fc26-fwd-099",
+      "name": "L. Messi",
+      "position": "FWD",
+      "attack": 85,
+      "defense": 15,
+      "pace": 78,
+      "stamina": 70,
+      "overall": 86
+    },
+    {
+      "id": "fc26-fwd-100",
+      "name": "A. Griezmann",
+      "position": "FWD",
+      "attack": 86,
+      "defense": 24,
+      "pace": 77,
+      "stamina": 77,
+      "overall": 85
+    },
+    {
+      "id": "fc26-fwd-101",
+      "name": "B. Mbeumo",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 20,
+      "pace": 88,
+      "stamina": 85,
+      "overall": 85
+    },
+    {
+      "id": "fc26-fwd-102",
+      "name": "D. Doué",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 22,
+      "pace": 83,
+      "stamina": 80,
+      "overall": 85
+    },
+    {
+      "id": "fc26-fwd-103",
+      "name": "M. Thuram",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 20,
+      "pace": 86,
+      "stamina": 83,
+      "overall": 85
+    },
+    {
+      "id": "fc26-fwd-104",
+      "name": "H. Son",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 17,
+      "pace": 84,
+      "stamina": 87,
+      "overall": 85
+    },
+    {
+      "id": "fc26-fwd-105",
+      "name": "P. Foden",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 23,
+      "pace": 81,
+      "stamina": 83,
+      "overall": 85
+    },
+    {
+      "id": "fc26-fwd-106",
+      "name": "Cristiano Ronaldo",
+      "position": "FWD",
+      "attack": 85,
+      "defense": 15,
+      "pace": 76,
+      "stamina": 77,
+      "overall": 85
+    },
+    {
+      "id": "fc26-fwd-107",
+      "name": "K. Benzema",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 15,
+      "pace": 75,
+      "stamina": 78,
+      "overall": 85
+    },
+    {
+      "id": "fc26-fwd-108",
+      "name": "Rodrygo",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 15,
+      "pace": 88,
+      "stamina": 81,
+      "overall": 85
     }
   ]
 }
