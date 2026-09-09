@@ -22,10 +22,26 @@ const ALLOWED_ORIGINS = (process.env.CLIENT_ORIGIN ?? 'http://localhost:5173')
 /** '*' verildiyse tüm origin'lere izin ver (yalnız hızlı deneme için). */
 const ALLOW_ANY = ALLOWED_ORIGINS.includes('*');
 
+/**
+ * Yerel geliştirme origin'i mi? (localhost / 127.0.0.1 / ::1, port fark etmez)
+ * Vite 5173 doluysa 5174'e kayar, kimi zaman 127.0.0.1 yazılır — bunların
+ * hepsi geliştiricinin kendi makinesi, hepsine izin veriyoruz. Böylece iki
+ * tarayıcı penceresiyle yerel çok oyunculu test sorunsuz çalışır.
+ */
+function isLocalhostOrigin(origin: string): boolean {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  } catch {
+    return false;
+  }
+}
+
 function isAllowedOrigin(origin: string | undefined): boolean {
   // origin yoksa (curl, health check, aynı-origin istek) serbest bırak.
   if (!origin) return true;
   if (ALLOW_ANY) return true;
+  if (isLocalhostOrigin(origin)) return true;
   return ALLOWED_ORIGINS.includes(origin);
 }
 
