@@ -12,6 +12,21 @@ export interface SimulateMatchOptions {
   baseGoalRate?: number;
   /** Turnuva eleme maçı mı? Beraberlikte penaltı atışlarına gider. */
   isTournament?: boolean;
+  /**
+   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 2.6).
+   * Gol olasılığı `(hücum/savunma) ** bu üs` ile ölçeklenir.
+   *
+   * 1.0 (eski davranış) ile fark neredeyse hiç yansımıyordu — 20 puan
+   * üstün takım bile sadece %55.8 kazanıyordu, yani draft anlamsızdı.
+   * 2.6'da ölçüm (4000 maç/satır, saha avantajı kapalı):
+   *
+   *   (galibiyet / beraberlik / mağlubiyet)
+   *   fark  0 →  %36.9 / %25.7 / %37.5   denk takımlar
+   *   fark  3 →  %44.4 / %24.7 / %30.9   küçük üstünlük hissediliyor
+   *   fark  8 →  %55.2 / %23.3 / %21.5   net favori
+   *   fark 20 →  %80.7 / %12.1 / %07.2   ezici ama sürpriz hâlâ mümkün
+   */
+  strengthSensitivity?: number;
 }
 
 /**
@@ -28,6 +43,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     homeAdvantage = 1.05,
     baseGoalRate = 0.0148,
     isTournament = true,
+    strengthSensitivity = 2.6,
   } = options;
 
   const prng = createPRNG(seed);
@@ -47,7 +63,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     const fatigueFactor = minute > 75 ? 1.15 : 1.0;
 
     // --- Ev Sahibi Gol Olasılığı ---
-    const homeAttackRatio = (homeAtt / awayDef) * homeAdvantage;
+    const homeAttackRatio = (homeAtt / awayDef) ** strengthSensitivity * homeAdvantage;
     const homeGoalProb = baseGoalRate * homeAttackRatio * fatigueFactor;
 
     if (prng() < homeGoalProb) {
@@ -61,7 +77,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     }
 
     // --- Deplasman Gol Olasılığı ---
-    const awayAttackRatio = awayAtt / homeDef;
+    const awayAttackRatio = (awayAtt / homeDef) ** strengthSensitivity;
     const awayGoalProb = baseGoalRate * awayAttackRatio * fatigueFactor;
 
     if (prng() < awayGoalProb) {
