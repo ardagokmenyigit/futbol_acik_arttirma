@@ -8,31 +8,65 @@ export interface SimulateMatchOptions {
   seed?: number;
   /** Ev sahibi saha avantajı çarpanı (varsayılan: 1.05) */
   homeAdvantage?: number;
-  /** Dakika başına taban gol olasılığı (varsayılan: 0.0148) */
-  baseGoalRate?: number;
-  /** Turnuva eleme maçı mı? Beraberlikte penaltı atışlarına gider. */
-  isTournament?: boolean;
+  /** Dakika başına pozisyon (fırsat) üretme oranı. */
+  chanceRate?: number;
+  /** Bir pozisyonun gole dönme taban oranı. */
+  baseConversion?: number;
   /**
-   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 2.6).
-   * Gol olasılığı `(hücum/savunma) ** bu üs` ile ölçeklenir.
+   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 1.6).
+   * Hem pozisyon payına hem de gole çevirme oranına uygulanır.
    *
-   * 1.0 (eski davranış) ile fark neredeyse hiç yansımıyordu — 20 puan
-   * üstün takım bile sadece %55.8 kazanıyordu, yani draft anlamsızdı.
-   * 2.6'da ölçüm (4000 maç/satır, saha avantajı kapalı):
+   * Ölçüm (6000 maç/satır, saha avantajı kapalı, galibiyet/beraberlik/mağlubiyet):
    *
-   *   (galibiyet / beraberlik / mağlubiyet)
-   *   fark  0 →  %36.9 / %25.7 / %37.5   denk takımlar
-   *   fark  3 →  %44.4 / %24.7 / %30.9   küçük üstünlük hissediliyor
-   *   fark  8 →  %55.2 / %23.3 / %21.5   net favori
-   *   fark 20 →  %80.7 / %12.1 / %07.2   ezici ama sürpriz hâlâ mümkün
+   *   güç farkı  0 →  %36.6 / %27.4 / %36.0   ort 2.69 gol
+   *   güç farkı  3 →  %42.8 / %27.0 / %30.2   ort 2.75 gol
+   *   güç farkı  8 →  %55.3 / %24.3 / %20.5   ort 2.82 gol
+   *   güç farkı 20 →  %80.5 / %13.6 / %05.9   ort 3.41 gol
+   *
+   * Tekdüzelik kontrolü: 6000 maçta 47-56 farklı skor çıkıyor, en sık
+   * skor bile yalnızca %12-13. Maçların ~%11'i geri dönüşle bitiyor.
    */
   strengthSensitivity?: number;
+  /** Turnuva eleme maçı mı? Beraberlikte penaltı atışlarına gider. */
+  isTournament?: boolean;
 }
 
+/* ------------------------------ ayarlar ------------------------------ */
+
+/** Maç günü formu — aynı takım her maç aynı oynamasın diye (±%12). */
+const FORM_SPREAD = 0.24;
+const FORM_MIN = 1 - FORM_SPREAD / 2;
+
+/** Geride kalan takım öne çıkar: hücumu artar, arkası açılır. */
+const CHASING_ATTACK = 1.12;
+const CHASING_DEFENSE = 0.93;
+
+/** 2+ farkla önde olan takım oyunu yönetir. */
+const PROTECTING_ATTACK = 0.94;
+const PROTECTING_DEFENSE = 1.06;
+
+/** Son 20 dakikada tempo artar (yorgunluk + risk alma). */
+const LATE_TEMPO = 1.18;
+
 /**
- * İki takım arasındaki futbol maçını 90 dakika boyunca dakika dakika simüle eder.
- * Saf (pure) fonksiyondur: Aynı girdiler ve aynı seed ile her zaman aynı sonucu üretir.
- * Turnuva maçlarında eşitlik bozulmazsa deterministik seri penaltı atışları uygulanır.
+ * İki takım arasındaki futbol maçını dakika dakika simüle eder.
+ *
+ * Motorun mantığı (eski "her dakika bağımsız yazı-tura" yaklaşımının
+ * aksine gerçek maç dinamiklerini taşır):
+ *
+ *  1. MAÇ GÜNÜ FORMU — her takım maça ±%12 bir formla çıkar. Aynı iki
+ *     takım farklı maçlarda farklı senaryolar üretir.
+ *  2. POZİSYON ÜRETİMİ — her dakika bir pozisyon doğabilir. Pozisyonun
+ *     kime ait olduğu, takımın hücumunun rakip savunmasına oranıyla
+ *     belirlenir (güçlü takım daha çok pozisyon bulur).
+ *  3. POZİSYON KALİTESİ — her pozisyon eşit değildir; gole dönme oranı
+ *     yine hücum/savunma oranına bağlıdır (güçlü takım daha net fırsat).
+ *  4. MAÇ DURUMU — geride kalan takım öne çıkar (hücum +%12, savunma
+ *     −%7); 2+ farkla önde olan oyunu yönetir. Geri dönüşler buradan
+ *     doğar, skorlar tekdüze olmaz.
+ *  5. TEMPO — son 20 dakikada pozisyon üretimi artar.
+ *
+ * Saf (pure) ve deterministiktir: aynı girdi + aynı seed → aynı sonuç.
  */
 export function simulateMatch(options: SimulateMatchOptions): MatchResult {
   const {
@@ -41,9 +75,10 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     awayTeam,
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.05,
-    baseGoalRate = 0.0148,
+    chanceRate = 0.3,
+    baseConversion = 0.088,
+    strengthSensitivity = 1.6,
     isTournament = true,
-    strengthSensitivity = 2.6,
   } = options;
 
   const prng = createPRNG(seed);
@@ -52,41 +87,73 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
   let scoreHome = 0;
   let scoreAway = 0;
 
-  // Hücum ve savunma oranları (sıfıra bölünmeyi önlemek için min 10)
-  const homeAtt = Math.max(10, homeTeam.attack);
-  const homeDef = Math.max(10, homeTeam.defense);
-  const awayAtt = Math.max(10, awayTeam.attack);
-  const awayDef = Math.max(10, awayTeam.defense);
+  // Sıfıra bölünmeyi önlemek için taban değerler
+  const baseHomeAtt = Math.max(10, homeTeam.attack);
+  const baseHomeDef = Math.max(10, homeTeam.defense);
+  const baseAwayAtt = Math.max(10, awayTeam.attack);
+  const baseAwayDef = Math.max(10, awayTeam.defense);
 
-  // 1'den 90'a kadar her dakika simülasyonu
+  // 1. MAÇ GÜNÜ FORMU
+  const homeForm = FORM_MIN + prng() * FORM_SPREAD;
+  const awayForm = FORM_MIN + prng() * FORM_SPREAD;
+
   for (let minute = 1; minute <= 90; minute++) {
-    const fatigueFactor = minute > 75 ? 1.15 : 1.0;
+    const diff = scoreHome - scoreAway;
 
-    // --- Ev Sahibi Gol Olasılığı ---
-    const homeAttackRatio = (homeAtt / awayDef) ** strengthSensitivity * homeAdvantage;
-    const homeGoalProb = baseGoalRate * homeAttackRatio * fatigueFactor;
+    // 4. MAÇ DURUMU — geride kalan basar, önde olan yönetir
+    let homeAttMod = 1;
+    let homeDefMod = 1;
+    let awayAttMod = 1;
+    let awayDefMod = 1;
 
-    if (prng() < homeGoalProb) {
-      scoreHome++;
-      events.push({
-        minute,
-        teamId: homeTeam.participantId,
-        type: 'goal',
-      });
-      continue;
+    if (diff < 0) {
+      homeAttMod = CHASING_ATTACK;
+      homeDefMod = CHASING_DEFENSE;
+    } else if (diff >= 2) {
+      homeAttMod = PROTECTING_ATTACK;
+      homeDefMod = PROTECTING_DEFENSE;
+    }
+    if (diff > 0) {
+      awayAttMod = CHASING_ATTACK;
+      awayDefMod = CHASING_DEFENSE;
+    } else if (diff <= -2) {
+      awayAttMod = PROTECTING_ATTACK;
+      awayDefMod = PROTECTING_DEFENSE;
     }
 
-    // --- Deplasman Gol Olasılığı ---
-    const awayAttackRatio = (awayAtt / homeDef) ** strengthSensitivity;
-    const awayGoalProb = baseGoalRate * awayAttackRatio * fatigueFactor;
+    const homeAtt = baseHomeAtt * homeForm * homeAdvantage * homeAttMod;
+    const homeDef = baseHomeDef * homeForm * homeDefMod;
+    const awayAtt = baseAwayAtt * awayForm * awayAttMod;
+    const awayDef = baseAwayDef * awayForm * awayDefMod;
 
-    if (prng() < awayGoalProb) {
-      scoreAway++;
-      events.push({
-        minute,
-        teamId: awayTeam.participantId,
-        type: 'goal',
-      });
+    // Tehdit oranları: benim hücumum rakibin savunmasına karşı
+    const homeThreat = homeAtt / awayDef;
+    const awayThreat = awayAtt / homeDef;
+
+    // 5. TEMPO
+    const tempo = minute > 70 ? LATE_TEMPO : 1;
+
+    // 2. POZİSYON ÜRETİMİ
+    if (prng() >= chanceRate * tempo) continue;
+
+    // Pozisyon kime ait? Tehdit oranlarına göre paylaştır.
+    const hw = homeThreat ** strengthSensitivity;
+    const aw = awayThreat ** strengthSensitivity;
+    const homeShare = hw / (hw + aw);
+    const isHomeChance = prng() < homeShare;
+
+    // 3. POZİSYON KALİTESİ — gole dönme oranı da güce bağlı
+    const threat = isHomeChance ? homeThreat : awayThreat;
+    const conversion = Math.min(0.55, baseConversion * threat ** strengthSensitivity);
+
+    if (prng() < conversion) {
+      if (isHomeChance) {
+        scoreHome++;
+        events.push({ minute, teamId: homeTeam.participantId, type: 'goal' });
+      } else {
+        scoreAway++;
+        events.push({ minute, teamId: awayTeam.participantId, type: 'goal' });
+      }
     }
   }
 
@@ -99,23 +166,22 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
   } else if (scoreAway > scoreHome) {
     winnerId = awayTeam.participantId;
   } else if (isTournament) {
-    // Seri penaltı atışları
+    // Seri penaltı atışları — savunma gücü kalecilik kalitesini yansıtır,
+    // hafif bir avantaj sağlar ama belirleyici değildir (penaltı kumardır).
+    const homeSkill = 0.74 + (baseHomeDef - baseAwayDef) * 0.0015;
+    const awaySkill = 0.74 + (baseAwayDef - baseHomeDef) * 0.0015;
+
     let penH = 0;
     let penA = 0;
-
-    // İlk 5'er penaltı
     for (let p = 0; p < 5; p++) {
-      if (prng() < 0.76) penH++;
-      if (prng() < 0.76) penA++;
+      if (prng() < homeSkill) penH++;
+      if (prng() < awaySkill) penA++;
     }
-
-    // Eşitlik sürerse altın penaltı (ani ölüm)
     while (penH === penA) {
-      const hGoal = prng() < 0.75;
-      const aGoal = prng() < 0.75;
+      const hGoal = prng() < homeSkill;
+      const aGoal = prng() < awaySkill;
       if (hGoal) penH++;
       if (aGoal) penA++;
-      // Biri atar diğeri kaçırırsa döngü sonlanır
       if (penH !== penA) break;
     }
 
