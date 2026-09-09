@@ -1,4 +1,5 @@
 import type { RoomState } from '@fal/shared';
+import { beginDraft, cancelAuction, dropBidderIfLeading } from '../auction/index.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { RoomError, roomStore } from './roomStore.js';
 
@@ -76,7 +77,7 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       const room = roomStore.startDraft(roomId, playerId);
       ack({ ok: true, data: { roomState: room } });
       broadcastRoomState(io, room);
-      // NOT: açık artırma round döngüsü auction/ görevinde başlatılacak.
+      beginDraft(io, room.roomId);
     } catch (err) {
       ack({ ok: false, error: errorMessage(err) });
     }
@@ -102,7 +103,11 @@ function handleLeave(io: TypedServer, socket: TypedSocket): void {
   socket.data.roomId = undefined;
   socket.data.playerId = undefined;
   if (room) {
+    dropBidderIfLeading(io, room.roomId, playerId);
     io.to(room.roomId).emit('room:playerLeft', { playerId });
     broadcastRoomState(io, room);
+  } else {
+    // Oda kapandı — devam eden açık artırma timer'larını temizle.
+    cancelAuction(roomId);
   }
 }

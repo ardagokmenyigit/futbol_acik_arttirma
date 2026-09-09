@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { RoomState } from '@fal/shared';
+import type { AuctionState, RoomState } from '@fal/shared';
 import { useSocket } from './hooks/useSocket.js';
 import { rejoinRoom } from './lib/roomClient.js';
 import { clearSession, loadSession } from './lib/session.js';
@@ -23,14 +23,35 @@ export function App() {
     function onRoomError({ message }: { message: string }) {
       useRoomStore.getState().setError(message);
     }
+    function onAuctionStarted(auction: AuctionState) {
+      const durationMs = Math.max(0, auction.endsAt - Date.now());
+      useRoomStore.getState().roundStarted(durationMs);
+    }
+    function onAuctionTick({ remainingMs }: { remainingMs: number }) {
+      useRoomStore.getState().setRemainingMs(remainingMs);
+    }
+    function onAuctionWon(payload: {
+      round: number;
+      footballerName: string;
+      winnerNickname: string | null;
+      amount: number;
+    }) {
+      useRoomStore.getState().setLastWon(payload);
+    }
 
     store.setConnected(connected);
     socket.on('room:state', onRoomState);
     socket.on('room:error', onRoomError);
+    socket.on('auction:started', onAuctionStarted);
+    socket.on('auction:tick', onAuctionTick);
+    socket.on('auction:won', onAuctionWon);
 
     return () => {
       socket.off('room:state', onRoomState);
       socket.off('room:error', onRoomError);
+      socket.off('auction:started', onAuctionStarted);
+      socket.off('auction:tick', onAuctionTick);
+      socket.off('auction:won', onAuctionWon);
     };
   }, [socket, connected]);
 
