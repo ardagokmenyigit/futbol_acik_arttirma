@@ -11,6 +11,8 @@ import type {
   Participant,
   RoomConfig,
   RoomState,
+  TournamentSize,
+  TournamentState,
 } from './types.js';
 
 /* ---------- İstemci -> Sunucu ---------- */
@@ -32,6 +34,11 @@ export interface ClientToServerEvents {
   ) => void;
   'room:leave': () => void;
   'room:setReady': (payload: { ready: boolean }) => void;
+  /** Sadece host: oyun formatını seç (null = lig, 4|8 = turnuva ağacı). */
+  'room:setFormat': (
+    payload: { tournamentSize: TournamentSize | null },
+    ack: (res: AckResult<{ roomState: RoomState }>) => void,
+  ) => void;
   'room:start': (ack: (res: AckResult<{ roomState: RoomState }>) => void) => void;
 
   'auction:bid': (
@@ -64,6 +71,13 @@ export interface ServerToClientEvents {
   'league:fixtures': (league: LeagueState) => void;
   'league:matchResult': (payload: { result: MatchResult; league: LeagueState }) => void;
   'league:finished': (payload: { league: LeagueState }) => void;
+
+  /** Turnuva ağacı kurulduğunda (eşleşmeler belli, henüz maç oynanmadı). */
+  'tournament:bracket': (tournament: TournamentState) => void;
+  /** Bir turnuva maçı oynandığında — kazanan bir üst tura işlenmiş hâliyle. */
+  'tournament:matchResult': (payload: { result: MatchResult; tournament: TournamentState }) => void;
+  /** Final oynandı, şampiyon belli. */
+  'tournament:finished': (payload: { tournament: TournamentState }) => void;
 }
 
 /** Ack (callback) dönüş tipi — her istekte başarı/hata net olsun. */

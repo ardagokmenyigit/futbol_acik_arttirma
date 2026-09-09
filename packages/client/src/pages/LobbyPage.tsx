@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { RoomState } from '@fal/shared';
-import { leaveRoom, setReady, startGame } from '../lib/roomClient.js';
+import type { RoomState, TournamentSize } from '@fal/shared';
+import { leaveRoom, setFormat, setReady, startGame } from '../lib/roomClient.js';
 import { clearSession } from '../lib/session.js';
 import { selectYou, useRoomStore } from '../store.js';
 
@@ -20,9 +20,22 @@ export function LobbyPage({ room }: Props) {
   // Sunucu gibi: sadece bağlı oyunculara bak (kopuk oyuncu "hazır" olamaz).
   const connectedPlayers = room.participants.filter((p) => p.connected);
   const readyCount = connectedPlayers.filter((p) => p.isReady).length;
-  const enoughPlayers = connectedPlayers.length >= room.config.minPlayers;
+  const format = room.config.tournamentSize;
+  // Turnuva formatında eksik takımlar botlarla dolar — tek kişi de başlatabilir.
+  const minNeeded = format ? 1 : room.config.minPlayers;
+  const enoughPlayers = connectedPlayers.length >= minNeeded;
   const allReady = connectedPlayers.length > 0 && readyCount === connectedPlayers.length;
   const canStart = isHost && enoughPlayers && allReady;
+  const botCount = format ? Math.max(0, format - room.participants.length) : 0;
+
+  async function chooseFormat(size: TournamentSize | null) {
+    setStartError(null);
+    try {
+      await setFormat(size);
+    } catch (err) {
+      setStartError(err instanceof Error ? err.message : 'Format değiştirilemedi');
+    }
+  }
 
   function copyCode() {
     void navigator.clipboard?.writeText(room.code).then(() => {
@@ -87,7 +100,36 @@ export function LobbyPage({ room }: Props) {
         </button>
       </div>
 
-      <div className="section-label">Katılımcılar</div>
+      <div className="section-label">Oyun formatı</div>
+      <div className="format-row">
+        {(
+          [
+            { key: 'lig', size: null, title: 'Lig', sub: 'Herkes herkesle' },
+            { key: 't4', size: 4, title: '4 Takım', sub: 'Yarı final' },
+            { key: 't8', size: 8, title: '8 Takım', sub: 'Çeyrek final' },
+          ] as const
+        ).map((opt) => (
+          <button
+            key={opt.key}
+            className={`format-btn${format === opt.size ? ' active' : ''}`}
+            disabled={!isHost}
+            onClick={() => void chooseFormat(opt.size)}
+          >
+            <span className="ft">{opt.title}</span>
+            <span className="fs">{opt.sub}</span>
+          </button>
+        ))}
+      </div>
+      {botCount > 0 && (
+        <p className="footnote" style={{ marginTop: 8 }}>
+          Eksik {botCount} takım yapay zekâ botlarıyla tamamlanacak — botlar açık artırmaya da
+          katılır.
+        </p>
+      )}
+
+      <div className="section-label" style={{ marginTop: 22 }}>
+        Katılımcılar
+      </div>
       <div className="roster-list">
         {room.participants.map((p) => (
           <div className="roster-row" key={p.id}>
@@ -97,6 +139,7 @@ export function LobbyPage({ room }: Props) {
               {p.id === you.id && <span className="sub">(sen)</span>}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
+              {p.isBot && <span className="tag bot">bot</span>}
               {p.isHost && <span className="tag host">host</span>}
               <span className={`tag ${p.isReady ? 'ready' : 'waiting'}`}>
                 {p.isReady ? 'hazır' : 'bekliyor'}
@@ -123,11 +166,11 @@ export function LobbyPage({ room }: Props) {
       {isHost && !canStart && (
         <p className="footnote">
           {!enoughPlayers
-            ? `Başlatmak için en az ${room.config.minPlayers} bağlı oyuncu gerekli.`
+            ? `Başlatmak için en az ${minNeeded} bağlı oyuncu gerekli.`
             : 'Bağlı oyuncuların tamamı hazır olmadan oyun başlatılamaz.'}
         </p>
       )}
-      {!isHost && <p className="footnote">Oyunu host başlatır.</p>}
+      {!isHost && <p className="footnote">Formatı ve başlatmayı host belirler.</p>}
       {startError && <p className="error">{startError}</p>}
     </div>
   );

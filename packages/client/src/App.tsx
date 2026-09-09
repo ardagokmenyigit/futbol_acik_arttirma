@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import type { AuctionState, LeagueState, MatchResult, RoomState } from '@fal/shared';
+import type {
+  AuctionState,
+  LeagueState,
+  MatchResult,
+  RoomState,
+  TournamentState,
+} from '@fal/shared';
 import { useSocket } from './hooks/useSocket.js';
 import { rejoinRoom } from './lib/roomClient.js';
 import { clearSession, loadSession } from './lib/session.js';
@@ -7,6 +13,7 @@ import { DraftPage } from './pages/DraftPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { LobbyPage } from './pages/LobbyPage.js';
 import { ResultsPage } from './pages/ResultsPage.js';
+import { TournamentPage } from './pages/TournamentPage.js';
 import { SimulationPage } from './pages/SimulationPage.js';
 import { useRoomStore } from './store.js';
 
@@ -15,6 +22,7 @@ export function App() {
   const roomState = useRoomStore((s) => s.roomState);
   const error = useRoomStore((s) => s.error);
   const youId = useRoomStore((s) => s.youId);
+  const tournament = useRoomStore((s) => s.tournament);
   const [forceSimulationPreview, setForceSimulationPreview] = useState(false);
 
   // Sunucudan gelen tam durum güncellemeleri (client sadece render eder).
@@ -30,6 +38,9 @@ export function App() {
       // finished halinde lig durumu room:state ile de gelir (reconnect).
       if (next.league) {
         useRoomStore.getState().setLeague(next.league);
+      }
+      if (next.tournament) {
+        useRoomStore.getState().setTournament(next.tournament);
       }
     }
     function onRoomError({ message }: { message: string }) {
@@ -59,6 +70,15 @@ export function App() {
     function onLeagueFinished({ league }: { league: LeagueState }) {
       useRoomStore.getState().setLeague(league);
     }
+    function onTournamentBracket(tournament: TournamentState) {
+      useRoomStore.getState().setTournament(tournament);
+    }
+    function onTournamentMatch({ tournament }: { tournament: TournamentState }) {
+      useRoomStore.getState().setTournament(tournament);
+    }
+    function onTournamentFinished({ tournament }: { tournament: TournamentState }) {
+      useRoomStore.getState().setTournament(tournament);
+    }
 
     store.setConnected(connected);
     socket.on('room:state', onRoomState);
@@ -69,6 +89,9 @@ export function App() {
     socket.on('league:fixtures', onLeagueFixtures);
     socket.on('league:matchResult', onLeagueMatchResult);
     socket.on('league:finished', onLeagueFinished);
+    socket.on('tournament:bracket', onTournamentBracket);
+    socket.on('tournament:matchResult', onTournamentMatch);
+    socket.on('tournament:finished', onTournamentFinished);
 
     return () => {
       socket.off('room:state', onRoomState);
@@ -79,6 +102,9 @@ export function App() {
       socket.off('league:fixtures', onLeagueFixtures);
       socket.off('league:matchResult', onLeagueMatchResult);
       socket.off('league:finished', onLeagueFinished);
+      socket.off('tournament:bracket', onTournamentBracket);
+      socket.off('tournament:matchResult', onTournamentMatch);
+      socket.off('tournament:finished', onTournamentFinished);
     };
   }, [socket, connected]);
 
@@ -133,9 +159,25 @@ export function App() {
             {!roomState && <HomePage />}
             {roomState?.phase === 'lobby' && <LobbyPage room={roomState} />}
             {roomState?.phase === 'draft' && <DraftPage room={roomState} />}
-            {roomState && (roomState.phase === 'simulation' || roomState.phase === 'finished') && (
-              <ResultsPage room={roomState} />
-            )}
+            {roomState &&
+              (roomState.phase === 'simulation' || roomState.phase === 'finished') &&
+              (roomState.config.tournamentSize ? (
+                tournament ? (
+                  <TournamentPage room={roomState} tournament={tournament} />
+                ) : (
+                  <div className="panel gold">
+                    <div className="round-label" style={{ color: 'var(--chalk-faint)' }}>
+                      Draft tamamlandı
+                    </div>
+                    <h1 style={{ fontSize: 30, marginBottom: 12 }}>Turnuva hazırlanıyor</h1>
+                    <p className="footnote" style={{ marginTop: 0 }}>
+                      Eşleşmeler kuruluyor, maçlar birazdan başlıyor…
+                    </p>
+                  </div>
+                )
+              ) : (
+                <ResultsPage room={roomState} />
+              ))}
           </>
         )}
 
