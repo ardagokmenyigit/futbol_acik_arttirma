@@ -47,74 +47,88 @@ export function LobbyPage({ room }: Props) {
   }
 
   return (
-    <div className="stack">
-      <div>
-        <h1>Lobi</h1>
-        <p className="subtitle">
-          {connectedPlayers.length}/{room.config.maxPlayers} bağlı oyuncu · {readyCount} hazır
-        </p>
+    <div className="panel cobalt">
+      <h1 className="headline" style={{ fontSize: 30 }}>
+        Lobi
+      </h1>
+      <p className="lede" style={{ marginBottom: 22 }}>
+        {connectedPlayers.length}/{room.config.maxPlayers} oyuncu bağlandı, {readyCount} tanesi
+        hazır.
+      </p>
+
+      <label className="field-label">Oda kodu</label>
+      <div className="code-panel">
+        <span className="code-text">{room.code}</span>
+        <button className="icon-btn" aria-label="Kodu kopyala" onClick={copyCode}>
+          {copied ? (
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="9" y="9" width="12" height="12" rx="1.5" />
+              <path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" />
+            </svg>
+          )}
+        </button>
       </div>
 
-      <div className="panel">
-        <label>Oda kodu — arkadaşlarınla paylaş</label>
-        <div className="row">
-          <span className="code-badge">{room.code}</span>
-          <button onClick={copyCode}>{copied ? 'Kopyalandı' : 'Kopyala'}</button>
-        </div>
-      </div>
-
-      <div className="panel">
-        <label>Katılımcılar</label>
+      <div className="section-label">Katılımcılar</div>
+      <div className="roster-list">
         {room.participants.map((p) => (
-          <div className={`participant${p.isHost ? ' is-host' : ''}`} key={p.id}>
-            <span className="name">
-              <span className={`dot ${p.connected ? 'on' : 'off'}`} />
+          <div className="roster-row" key={p.id}>
+            <div className="roster-name">
+              <span className={`dot ${p.connected ? '' : 'off'}`} />
               {p.nickname}
-              {p.id === you.id && (
-                <span className="muted" style={{ fontWeight: 400, marginLeft: 5 }}>
-                  (sen)
-                </span>
-              )}
-            </span>
-            <span className="row" style={{ gap: 6 }}>
+              {p.id === you.id && <span className="sub">(sen)</span>}
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
               {p.isHost && <span className="tag host">host</span>}
-              <span className={`tag ${p.isReady ? 'ready' : ''}`}>
+              <span className={`tag ${p.isReady ? 'ready' : 'waiting'}`}>
                 {p.isReady ? 'hazır' : 'bekliyor'}
               </span>
-            </span>
+            </div>
           </div>
         ))}
       </div>
 
-      <div className="panel stack">
-        <div className="row">
-          <button className={you.isReady ? '' : 'primary'} onClick={() => setReady(!you.isReady)}>
-            {you.isReady ? 'Hazır değilim' : 'Hazırım'}
+      <div className="btn-row">
+        <button className="btn-outline" onClick={handleLeave}>
+          Odadan çık
+        </button>
+        <button className="btn-outline" onClick={() => setReady(!you.isReady)}>
+          {you.isReady ? 'Hazır değilim' : 'Hazırım'}
+        </button>
+        {isHost && (
+          <button className="btn-primary" disabled={!canStart} onClick={() => void handleStart()}>
+            Başlat
           </button>
-
-          {isHost && (
-            <button className="primary" disabled={!canStart} onClick={() => void handleStart()}>
-              Oyunu başlat
-            </button>
-          )}
-
-          <button onClick={handleLeave}>Odadan çık</button>
-        </div>
-
-        {isHost && !canStart && (
-          <p className="muted" style={{ fontSize: '0.85rem' }}>
-            {!enoughPlayers
-              ? `Başlatmak için en az ${room.config.minPlayers} bağlı oyuncu gerekli.`
-              : 'Bağlı oyuncuların hepsi "Hazırım" demeden başlatılamaz.'}
-          </p>
         )}
-        {!isHost && (
-          <p className="muted" style={{ fontSize: '0.85rem' }}>
-            Oyunu host başlatır.
-          </p>
-        )}
-        {startError && <p className="error">{startError}</p>}
       </div>
+
+      {isHost && !canStart && (
+        <p className="footnote">
+          {!enoughPlayers
+            ? `Başlatmak için en az ${room.config.minPlayers} bağlı oyuncu gerekli.`
+            : 'Bağlı oyuncuların tamamı hazır olmadan oyun başlatılamaz.'}
+        </p>
+      )}
+      {!isHost && <p className="footnote">Oyunu host başlatır.</p>}
+      {startError && <p className="error">{startError}</p>}
     </div>
   );
 }
