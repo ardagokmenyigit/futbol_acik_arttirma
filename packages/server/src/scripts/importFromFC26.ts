@@ -74,11 +74,9 @@ export function importFC26Data() {
   const idxLongName = col('long_name');
   const idxPositions = col('player_positions');
   const idxOverall = col('overall');
-  const idxPace = col('pace');
   const idxShooting = col('shooting');
   const idxPassing = col('passing');
   const idxDefending = col('defending');
-  const idxStamina = col('power_stamina');
   const idxGkReflexes = col('goalkeeping_reflexes');
   const idxGkDiving = col('goalkeeping_diving');
 
@@ -87,8 +85,6 @@ export function importFC26Data() {
     position: Position;
     attack: number;
     defense: number;
-    pace: number;
-    stamina: number;
     overall: number;
   }[] = [];
 
@@ -108,11 +104,9 @@ export function importFC26Data() {
     const longName = cols[idxLongName] ?? '';
     const name = shortName.length > 0 ? shortName : longName;
 
-    const pace = parseInt(cols[idxPace] ?? '65', 10) || 65;
     const shooting = parseInt(cols[idxShooting] ?? '55', 10) || 55;
     const passing = parseInt(cols[idxPassing] ?? '55', 10) || 55;
     const defending = parseInt(cols[idxDefending] ?? '55', 10) || 55;
-    const stamina = parseInt(cols[idxStamina] ?? '75', 10) || 75;
     const gkReflexes = parseInt(cols[idxGkReflexes] ?? '80', 10) || 80;
     const gkDiving = parseInt(cols[idxGkDiving] ?? '80', 10) || 80;
 
@@ -127,7 +121,7 @@ export function importFC26Data() {
       defense = defending;
     } else if (position === 'MID') {
       attack = Math.round(shooting * 0.5 + passing * 0.5);
-      defense = Math.round(defending * 0.7 + stamina * 0.3);
+      defense = defending;
     } else {
       // FWD
       attack = Math.round(shooting * 0.75 + passing * 0.25);
@@ -139,8 +133,6 @@ export function importFC26Data() {
       position,
       attack: Math.max(15, Math.min(99, attack)),
       defense: Math.max(15, Math.min(99, defense)),
-      pace: Math.max(30, Math.min(99, pace)),
-      stamina: Math.max(40, Math.min(99, stamina)),
       overall
     });
   }

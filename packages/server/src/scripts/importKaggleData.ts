@@ -77,12 +77,10 @@ export function importKaggleData() {
   const idxKnownAs = colIndex('Known As');
   const idxOverall = colIndex('Overall');
   const idxBestPos = colIndex('Best Position');
-  const idxPace = colIndex('Pace Total');
   const idxShooting = colIndex('Shooting Total');
   const idxPassing = colIndex('Passing Total');
   const _idxDribbling = colIndex('Dribbling Total');
   const idxDefending = colIndex('Defending Total');
-  const idxStamina = colIndex('Stamina');
   const idxGkReflex = colIndex('Goalkeeper Reflexes');
   const idxGkDiv = colIndex('Goalkeeper Diving');
 
@@ -91,8 +89,6 @@ export function importKaggleData() {
     position: Position;
     attack: number;
     defense: number;
-    pace: number;
-    stamina: number;
     overall: number;
     basePrice: number;
   }[] = [];
@@ -113,8 +109,6 @@ export function importKaggleData() {
     const fullName = cols[idxName] ?? '';
     const name = knownAs.length > 0 && knownAs !== '-' ? knownAs : fullName;
 
-    const pace = parseInt(cols[idxPace] ?? '60', 10) || 60;
-    const stamina = parseInt(cols[idxStamina] ?? '70', 10) || 70;
     const shooting = parseInt(cols[idxShooting] ?? '50', 10) || 50;
     const passing = parseInt(cols[idxPassing] ?? '50', 10) || 50;
     const defending = parseInt(cols[idxDefending] ?? '50', 10) || 50;
@@ -132,7 +126,7 @@ export function importKaggleData() {
       defense = defending;
     } else if (position === 'MID') {
       attack = Math.round(shooting * 0.5 + passing * 0.5);
-      defense = Math.round(defending * 0.7 + stamina * 0.3);
+      defense = defending;
     } else {
       // FWD
       attack = Math.round(shooting * 0.7 + passing * 0.3);
@@ -146,8 +140,6 @@ export function importKaggleData() {
       position,
       attack: Math.max(15, Math.min(99, attack)),
       defense: Math.max(15, Math.min(99, defense)),
-      pace: Math.max(30, Math.min(99, pace)),
-      stamina: Math.max(40, Math.min(99, stamina)),
       overall,
       basePrice
     });

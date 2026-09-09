@@ -12,8 +12,8 @@ interface RawPlayer {
   position: Position;
   attack: number;
   defense: number;
-  pace: number;
-  stamina: number;
+  pace?: number;
+  stamina?: number;
   overall: number;
   basePrice: number;
 }

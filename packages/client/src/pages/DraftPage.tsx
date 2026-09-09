@@ -125,8 +125,6 @@ export function DraftPage({ room }: Props) {
             <StatBar label="GEN" value={f.overall} />
             <StatBar label="HÜC" value={f.attack} />
             <StatBar label="DEF" value={f.defense} />
-            <StatBar label="HIZ" value={f.pace} />
-            <StatBar label="KND" value={f.stamina} />
           </div>
 
           <div className="hi-bid">

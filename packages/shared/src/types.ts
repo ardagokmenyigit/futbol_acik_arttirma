@@ -27,8 +27,6 @@ export interface Footballer {
   attack: number;
   /** Defans katkısı. */
   defense: number;
-  pace: number;
-  stamina: number;
   /** Genel değer — kart üzerinde gösterilir. */
   overall: number;
   /** Açık artırma başlangıç fiyatı ("M" cinsinden). */

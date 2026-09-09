@@ -59,8 +59,6 @@ function parseFootballer(entry: unknown, index: number): Footballer {
     position,
     attack: num('attack'),
     defense: num('defense'),
-    pace: num('pace'),
-    stamina: num('stamina'),
     overall: num('overall'),
     basePrice: num('basePrice'),
   };

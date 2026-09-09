@@ -7,8 +7,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 88,
-      "pace": 65,
-      "stamina": 40,
       "overall": 89,
       "basePrice": 20
     },
@@ -18,8 +16,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 90,
-      "pace": 65,
-      "stamina": 41,
       "overall": 89,
       "basePrice": 20
     },
@@ -29,8 +25,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 88,
-      "pace": 65,
-      "stamina": 40,
       "overall": 89,
       "basePrice": 20
     },
@@ -40,8 +34,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "pace": 65,
-      "stamina": 42,
       "overall": 88,
       "basePrice": 20
     },
@@ -51,8 +43,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "pace": 65,
-      "stamina": 40,
       "overall": 87,
       "basePrice": 15
     },
@@ -62,8 +52,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 87,
-      "pace": 65,
-      "stamina": 40,
       "overall": 87,
       "basePrice": 15
     },
@@ -73,8 +61,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "pace": 65,
-      "stamina": 45,
       "overall": 87,
       "basePrice": 15
     },
@@ -84,8 +70,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 85,
-      "pace": 65,
-      "stamina": 40,
       "overall": 86,
       "basePrice": 15
     },
@@ -95,8 +79,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 87,
-      "pace": 65,
-      "stamina": 40,
       "overall": 86,
       "basePrice": 15
     },
@@ -106,8 +88,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 83,
-      "pace": 65,
-      "stamina": 44,
       "overall": 85,
       "basePrice": 15
     },
@@ -117,8 +97,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 84,
-      "pace": 65,
-      "stamina": 40,
       "overall": 85,
       "basePrice": 15
     },
@@ -128,8 +106,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 85,
-      "pace": 65,
-      "stamina": 44,
       "overall": 85,
       "basePrice": 15
     },
@@ -139,8 +115,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 84,
-      "pace": 65,
-      "stamina": 40,
       "overall": 85,
       "basePrice": 15
     },
@@ -150,8 +124,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "pace": 65,
-      "stamina": 40,
       "overall": 85,
       "basePrice": 15
     },
@@ -161,8 +133,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "pace": 65,
-      "stamina": 40,
       "overall": 84,
       "basePrice": 12
     },
@@ -172,8 +142,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 81,
-      "pace": 65,
-      "stamina": 43,
       "overall": 84,
       "basePrice": 12
     },
@@ -183,8 +151,6 @@
       "position": "DEF",
       "attack": 47,
       "defense": 90,
-      "pace": 73,
-      "stamina": 75,
       "overall": 90,
       "basePrice": 20
     },
@@ -194,8 +160,6 @@
       "position": "DEF",
       "attack": 57,
       "defense": 82,
-      "pace": 92,
-      "stamina": 95,
       "overall": 89,
       "basePrice": 20
     },
@@ -205,8 +169,6 @@
       "position": "DEF",
       "attack": 40,
       "defense": 88,
-      "pace": 64,
-      "stamina": 71,
       "overall": 88,
       "basePrice": 20
     },
@@ -216,8 +178,6 @@
       "position": "DEF",
       "attack": 48,
       "defense": 89,
-      "pace": 78,
-      "stamina": 79,
       "overall": 87,
       "basePrice": 15
     },
@@ -227,8 +187,6 @@
       "position": "DEF",
       "attack": 45,
       "defense": 86,
-      "pace": 84,
-      "stamina": 87,
       "overall": 87,
       "basePrice": 15
     },
@@ -238,8 +196,6 @@
       "position": "DEF",
       "attack": 45,
       "defense": 88,
-      "pace": 74,
-      "stamina": 81,
       "overall": 87,
       "basePrice": 15
     },
@@ -249,8 +205,6 @@
       "position": "DEF",
       "attack": 40,
       "defense": 87,
-      "pace": 77,
-      "stamina": 72,
       "overall": 87,
       "basePrice": 15
     },
@@ -260,8 +214,6 @@
       "position": "DEF",
       "attack": 37,
       "defense": 87,
-      "pace": 63,
-      "stamina": 76,
       "overall": 87,
       "basePrice": 15
     },
@@ -271,8 +223,6 @@
       "position": "DEF",
       "attack": 58,
       "defense": 80,
-      "pace": 76,
-      "stamina": 89,
       "overall": 86,
       "basePrice": 15
     },
@@ -282,8 +232,6 @@
       "position": "DEF",
       "attack": 50,
       "defense": 80,
-      "pace": 95,
-      "stamina": 83,
       "overall": 86,
       "basePrice": 15
     },
@@ -293,8 +241,6 @@
       "position": "DEF",
       "attack": 46,
       "defense": 84,
-      "pace": 79,
-      "stamina": 70,
       "overall": 86,
       "basePrice": 15
     },
@@ -304,8 +250,6 @@
       "position": "DEF",
       "attack": 41,
       "defense": 86,
-      "pace": 59,
-      "stamina": 71,
       "overall": 86,
       "basePrice": 15
     },
@@ -315,8 +259,6 @@
       "position": "DEF",
       "attack": 36,
       "defense": 86,
-      "pace": 80,
-      "stamina": 78,
       "overall": 86,
       "basePrice": 15
     },
@@ -326,8 +268,6 @@
       "position": "DEF",
       "attack": 37,
       "defense": 86,
-      "pace": 77,
-      "stamina": 75,
       "overall": 86,
       "basePrice": 15
     },
@@ -337,8 +277,6 @@
       "position": "DEF",
       "attack": 57,
       "defense": 79,
-      "pace": 80,
-      "stamina": 84,
       "overall": 85,
       "basePrice": 15
     },
@@ -348,8 +286,6 @@
       "position": "DEF",
       "attack": 50,
       "defense": 81,
-      "pace": 80,
-      "stamina": 84,
       "overall": 85,
       "basePrice": 15
     },
@@ -359,8 +295,6 @@
       "position": "DEF",
       "attack": 49,
       "defense": 85,
-      "pace": 74,
-      "stamina": 74,
       "overall": 85,
       "basePrice": 15
     },
@@ -370,8 +304,6 @@
       "position": "DEF",
       "attack": 47,
       "defense": 85,
-      "pace": 71,
-      "stamina": 69,
       "overall": 85,
       "basePrice": 15
     },
@@ -381,8 +313,6 @@
       "position": "DEF",
       "attack": 40,
       "defense": 84,
-      "pace": 77,
-      "stamina": 73,
       "overall": 85,
       "basePrice": 15
     },
@@ -392,8 +322,6 @@
       "position": "DEF",
       "attack": 39,
       "defense": 86,
-      "pace": 82,
-      "stamina": 65,
       "overall": 85,
       "basePrice": 15
     },
@@ -403,8 +331,6 @@
       "position": "DEF",
       "attack": 54,
       "defense": 79,
-      "pace": 90,
-      "stamina": 87,
       "overall": 84,
       "basePrice": 12
     },
@@ -414,8 +340,6 @@
       "position": "DEF",
       "attack": 55,
       "defense": 78,
-      "pace": 89,
-      "stamina": 92,
       "overall": 84,
       "basePrice": 12
     },
@@ -425,8 +349,6 @@
       "position": "DEF",
       "attack": 56,
       "defense": 78,
-      "pace": 83,
-      "stamina": 88,
       "overall": 84,
       "basePrice": 12
     },
@@ -436,8 +358,6 @@
       "position": "DEF",
       "attack": 52,
       "defense": 82,
-      "pace": 75,
-      "stamina": 89,
       "overall": 84,
       "basePrice": 12
     },
@@ -447,8 +367,6 @@
       "position": "DEF",
       "attack": 52,
       "defense": 74,
-      "pace": 94,
-      "stamina": 79,
       "overall": 84,
       "basePrice": 12
     },
@@ -458,8 +376,6 @@
       "position": "DEF",
       "attack": 52,
       "defense": 84,
-      "pace": 78,
-      "stamina": 81,
       "overall": 84,
       "basePrice": 12
     },
@@ -469,8 +385,6 @@
       "position": "DEF",
       "attack": 51,
       "defense": 86,
-      "pace": 75,
-      "stamina": 80,
       "overall": 84,
       "basePrice": 12
     },
@@ -480,8 +394,6 @@
       "position": "DEF",
       "attack": 51,
       "defense": 79,
-      "pace": 84,
-      "stamina": 88,
       "overall": 84,
       "basePrice": 12
     },
@@ -491,8 +403,6 @@
       "position": "DEF",
       "attack": 44,
       "defense": 85,
-      "pace": 82,
-      "stamina": 85,
       "overall": 84,
       "basePrice": 12
     },
@@ -502,8 +412,6 @@
       "position": "DEF",
       "attack": 41,
       "defense": 84,
-      "pace": 79,
-      "stamina": 77,
       "overall": 84,
       "basePrice": 12
     },
@@ -513,8 +421,6 @@
       "position": "DEF",
       "attack": 42,
       "defense": 87,
-      "pace": 57,
-      "stamina": 73,
       "overall": 84,
       "basePrice": 12
     },
@@ -524,8 +430,6 @@
       "position": "DEF",
       "attack": 41,
       "defense": 86,
-      "pace": 62,
-      "stamina": 70,
       "overall": 84,
       "basePrice": 12
     },
@@ -535,8 +439,6 @@
       "position": "DEF",
       "attack": 35,
       "defense": 86,
-      "pace": 57,
-      "stamina": 74,
       "overall": 84,
       "basePrice": 12
     },
@@ -546,8 +448,6 @@
       "position": "DEF",
       "attack": 51,
       "defense": 79,
-      "pace": 84,
-      "stamina": 90,
       "overall": 83,
       "basePrice": 12
     },
@@ -556,9 +456,7 @@
       "name": "M. Salah",
       "position": "MID",
       "attack": 87,
-      "defense": 58,
-      "pace": 89,
-      "stamina": 88,
+      "defense": 45,
       "overall": 91,
       "basePrice": 25
     },
@@ -567,9 +465,7 @@
       "name": "J. Bellingham",
       "position": "MID",
       "attack": 85,
-      "defense": 83,
-      "pace": 80,
-      "stamina": 94,
+      "defense": 78,
       "overall": 90,
       "basePrice": 20
     },
@@ -578,9 +474,7 @@
       "name": "Rodri",
       "position": "MID",
       "attack": 83,
-      "defense": 88,
-      "pace": 65,
-      "stamina": 91,
+      "defense": 86,
       "overall": 90,
       "basePrice": 20
     },
@@ -589,9 +483,7 @@
       "name": "F. Valverde",
       "position": "MID",
       "attack": 84,
-      "defense": 86,
-      "pace": 88,
-      "stamina": 93,
+      "defense": 83,
       "overall": 89,
       "basePrice": 20
     },
@@ -600,9 +492,7 @@
       "name": "J. Kimmich",
       "position": "MID",
       "attack": 82,
-      "defense": 86,
-      "pace": 72,
-      "stamina": 92,
+      "defense": 83,
       "overall": 89,
       "basePrice": 20
     },
@@ -611,9 +501,7 @@
       "name": "Vitinha",
       "position": "MID",
       "attack": 83,
-      "defense": 79,
-      "pace": 72,
-      "stamina": 87,
+      "defense": 75,
       "overall": 89,
       "basePrice": 20
     },
@@ -622,9 +510,7 @@
       "name": "Raphinha",
       "position": "MID",
       "attack": 85,
-      "defense": 64,
-      "pace": 91,
-      "stamina": 91,
+      "defense": 53,
       "overall": 89,
       "basePrice": 20
     },
@@ -633,9 +519,7 @@
       "name": "Pedri",
       "position": "MID",
       "attack": 79,
-      "defense": 82,
-      "pace": 77,
-      "stamina": 90,
+      "defense": 78,
       "overall": 89,
       "basePrice": 20
     },
@@ -644,9 +528,7 @@
       "name": "F. Wirtz",
       "position": "MID",
       "attack": 85,
-      "defense": 64,
-      "pace": 80,
-      "stamina": 87,
+      "defense": 54,
       "overall": 89,
       "basePrice": 20
     },
@@ -655,9 +537,7 @@
       "name": "Lamine Yamal",
       "position": "MID",
       "attack": 84,
-      "defense": 38,
-      "pace": 85,
-      "stamina": 73,
+      "defense": 23,
       "overall": 89,
       "basePrice": 20
     },
@@ -666,9 +546,7 @@
       "name": "J. Musiala",
       "position": "MID",
       "attack": 81,
-      "defense": 68,
-      "pace": 80,
-      "stamina": 73,
+      "defense": 66,
       "overall": 88,
       "basePrice": 20
     },
@@ -677,9 +555,7 @@
       "name": "N. Barella",
       "position": "MID",
       "attack": 81,
-      "defense": 83,
-      "pace": 80,
-      "stamina": 89,
+      "defense": 81,
       "overall": 87,
       "basePrice": 15
     },
@@ -688,9 +564,7 @@
       "name": "A. Mac Allister",
       "position": "MID",
       "attack": 84,
-      "defense": 81,
-      "pace": 66,
-      "stamina": 87,
+      "defense": 78,
       "overall": 87,
       "basePrice": 15
     },
@@ -699,9 +573,7 @@
       "name": "Bruno Fernandes",
       "position": "MID",
       "attack": 86,
-      "defense": 74,
-      "pace": 67,
-      "stamina": 95,
+      "defense": 65,
       "overall": 87,
       "basePrice": 15
     },
@@ -710,9 +582,7 @@
       "name": "D. Rice",
       "position": "MID",
       "attack": 79,
-      "defense": 86,
-      "pace": 72,
-      "stamina": 92,
+      "defense": 83,
       "overall": 87,
       "basePrice": 15
     },
@@ -721,9 +591,7 @@
       "name": "F. de Jong",
       "position": "MID",
       "attack": 78,
-      "defense": 81,
-      "pace": 82,
-      "stamina": 87,
+      "defense": 78,
       "overall": 87,
       "basePrice": 15
     },
@@ -733,8 +601,6 @@
       "position": "MID",
       "attack": 88,
       "defense": 65,
-      "pace": 66,
-      "stamina": 66,
       "overall": 87,
       "basePrice": 15
     },
@@ -743,9 +609,7 @@
       "name": "M. Ødegaard",
       "position": "MID",
       "attack": 84,
-      "defense": 73,
-      "pace": 68,
-      "stamina": 88,
+      "defense": 67,
       "overall": 87,
       "basePrice": 15
     },
@@ -754,9 +618,7 @@
       "name": "M. Caicedo",
       "position": "MID",
       "attack": 71,
-      "defense": 86,
-      "pace": 71,
-      "stamina": 90,
+      "defense": 84,
       "overall": 87,
       "basePrice": 15
     },
@@ -765,9 +627,7 @@
       "name": "C. Palmer",
       "position": "MID",
       "attack": 85,
-      "defense": 60,
-      "pace": 75,
-      "stamina": 83,
+      "defense": 50,
       "overall": 87,
       "basePrice": 15
     },
@@ -777,8 +637,6 @@
       "position": "MID",
       "attack": 84,
       "defense": 81,
-      "pace": 71,
-      "stamina": 81,
       "overall": 86,
       "basePrice": 15
     },
@@ -787,9 +645,7 @@
       "name": "S. Tonali",
       "position": "MID",
       "attack": 78,
-      "defense": 82,
-      "pace": 79,
-      "stamina": 83,
+      "defense": 81,
       "overall": 86,
       "basePrice": 15
     },
@@ -798,9 +654,7 @@
       "name": "T. Reijnders",
       "position": "MID",
       "attack": 81,
-      "defense": 82,
-      "pace": 79,
-      "stamina": 92,
+      "defense": 77,
       "overall": 86,
       "basePrice": 15
     },
@@ -809,9 +663,7 @@
       "name": "Bruno Guimarães",
       "position": "MID",
       "attack": 80,
-      "defense": 82,
-      "pace": 66,
-      "stamina": 90,
+      "defense": 79,
       "overall": 86,
       "basePrice": 15
     },
@@ -820,9 +672,7 @@
       "name": "P. Dybala",
       "position": "MID",
       "attack": 85,
-      "defense": 52,
-      "pace": 80,
-      "stamina": 76,
+      "defense": 41,
       "overall": 86,
       "basePrice": 15
     },
@@ -831,9 +681,7 @@
       "name": "M. Olise",
       "position": "MID",
       "attack": 82,
-      "defense": 61,
-      "pace": 78,
-      "stamina": 85,
+      "defense": 50,
       "overall": 86,
       "basePrice": 15
     },
@@ -842,9 +690,7 @@
       "name": "Nico Williams",
       "position": "MID",
       "attack": 78,
-      "defense": 50,
-      "pace": 93,
-      "stamina": 81,
+      "defense": 36,
       "overall": 86,
       "basePrice": 15
     },
@@ -853,9 +699,7 @@
       "name": "João Neves",
       "position": "MID",
       "attack": 76,
-      "defense": 85,
-      "pace": 74,
-      "stamina": 92,
+      "defense": 82,
       "overall": 85,
       "basePrice": 15
     },
@@ -864,9 +708,7 @@
       "name": "R. Gravenberch",
       "position": "MID",
       "attack": 79,
-      "defense": 82,
-      "pace": 76,
-      "stamina": 85,
+      "defense": 81,
       "overall": 85,
       "basePrice": 15
     },
@@ -875,9 +717,7 @@
       "name": "S. McTominay",
       "position": "MID",
       "attack": 80,
-      "defense": 84,
-      "pace": 76,
-      "stamina": 92,
+      "defense": 80,
       "overall": 85,
       "basePrice": 15
     },
@@ -886,9 +726,7 @@
       "name": "Y. Tielemans",
       "position": "MID",
       "attack": 82,
-      "defense": 79,
-      "pace": 54,
-      "stamina": 87,
+      "defense": 75,
       "overall": 85,
       "basePrice": 15
     },
@@ -897,9 +735,7 @@
       "name": "Fabián Ruiz",
       "position": "MID",
       "attack": 79,
-      "defense": 78,
-      "pace": 61,
-      "stamina": 84,
+      "defense": 75,
       "overall": 85,
       "basePrice": 15
     },
@@ -908,9 +744,7 @@
       "name": "G. Xhaka",
       "position": "MID",
       "attack": 80,
-      "defense": 80,
-      "pace": 47,
-      "stamina": 84,
+      "defense": 78,
       "overall": 85,
       "basePrice": 15
     },
@@ -919,9 +753,7 @@
       "name": "N. Kanté",
       "position": "MID",
       "attack": 69,
-      "defense": 86,
-      "pace": 77,
-      "stamina": 89,
+      "defense": 85,
       "overall": 85,
       "basePrice": 15
     },
@@ -931,8 +763,6 @@
       "position": "FWD",
       "attack": 88,
       "defense": 15,
-      "pace": 97,
-      "stamina": 83,
       "overall": 91,
       "basePrice": 25
     },
@@ -942,8 +772,6 @@
       "position": "FWD",
       "attack": 87,
       "defense": 20,
-      "pace": 91,
-      "stamina": 76,
       "overall": 90,
       "basePrice": 20
     },
@@ -953,8 +781,6 @@
       "position": "FWD",
       "attack": 86,
       "defense": 18,
-      "pace": 86,
-      "stamina": 76,
       "overall": 90,
       "basePrice": 20
     },
@@ -964,8 +790,6 @@
       "position": "FWD",
       "attack": 90,
       "defense": 19,
-      "pace": 64,
-      "stamina": 76,
       "overall": 89,
       "basePrice": 20
     },
@@ -975,8 +799,6 @@
       "position": "FWD",
       "attack": 83,
       "defense": 15,
-      "pace": 95,
-      "stamina": 84,
       "overall": 89,
       "basePrice": 20
     },
@@ -986,8 +808,6 @@
       "position": "FWD",
       "attack": 83,
       "defense": 24,
-      "pace": 84,
-      "stamina": 86,
       "overall": 88,
       "basePrice": 20
     },
@@ -997,8 +817,6 @@
       "position": "FWD",
       "attack": 85,
       "defense": 20,
-      "pace": 81,
-      "stamina": 86,
       "overall": 88,
       "basePrice": 20
     },
@@ -1008,8 +826,6 @@
       "position": "FWD",
       "attack": 87,
       "defense": 18,
-      "pace": 74,
-      "stamina": 76,
       "overall": 88,
       "basePrice": 20
     },
@@ -1019,8 +835,6 @@
       "position": "FWD",
       "attack": 85,
       "defense": 16,
-      "pace": 83,
-      "stamina": 82,
       "overall": 88,
       "basePrice": 20
     },
@@ -1030,8 +844,6 @@
       "position": "FWD",
       "attack": 86,
       "defense": 23,
-      "pace": 85,
-      "stamina": 85,
       "overall": 87,
       "basePrice": 15
     },
@@ -1041,8 +853,6 @@
       "position": "FWD",
       "attack": 81,
       "defense": 23,
-      "pace": 86,
-      "stamina": 83,
       "overall": 87,
       "basePrice": 15
     },
@@ -1052,8 +862,6 @@
       "position": "FWD",
       "attack": 85,
       "defense": 18,
-      "pace": 72,
-      "stamina": 84,
       "overall": 87,
       "basePrice": 15
     },
@@ -1063,8 +871,6 @@
       "position": "FWD",
       "attack": 83,
       "defense": 15,
-      "pace": 90,
-      "stamina": 93,
       "overall": 87,
       "basePrice": 15
     },
@@ -1074,8 +880,6 @@
       "position": "FWD",
       "attack": 79,
       "defense": 17,
-      "pace": 92,
-      "stamina": 81,
       "overall": 87,
       "basePrice": 15
     },
@@ -1085,8 +889,6 @@
       "position": "FWD",
       "attack": 85,
       "defense": 15,
-      "pace": 78,
-      "stamina": 70,
       "overall": 86,
       "basePrice": 15
     },
@@ -1096,8 +898,6 @@
       "position": "FWD",
       "attack": 86,
       "defense": 24,
-      "pace": 77,
-      "stamina": 77,
       "overall": 85,
       "basePrice": 15
     },
@@ -1107,8 +907,6 @@
       "position": "FWD",
       "attack": 83,
       "defense": 20,
-      "pace": 88,
-      "stamina": 85,
       "overall": 85,
       "basePrice": 15
     },
@@ -1118,8 +916,6 @@
       "position": "FWD",
       "attack": 79,
       "defense": 22,
-      "pace": 83,
-      "stamina": 80,
       "overall": 85,
       "basePrice": 15
     },
@@ -1129,8 +925,6 @@
       "position": "FWD",
       "attack": 81,
       "defense": 20,
-      "pace": 86,
-      "stamina": 83,
       "overall": 85,
       "basePrice": 15
     },
@@ -1140,8 +934,6 @@
       "position": "FWD",
       "attack": 83,
       "defense": 17,
-      "pace": 84,
-      "stamina": 87,
       "overall": 85,
       "basePrice": 15
     },
@@ -1151,8 +943,6 @@
       "position": "FWD",
       "attack": 81,
       "defense": 23,
-      "pace": 81,
-      "stamina": 83,
       "overall": 85,
       "basePrice": 15
     },
@@ -1162,8 +952,6 @@
       "position": "FWD",
       "attack": 85,
       "defense": 15,
-      "pace": 76,
-      "stamina": 77,
       "overall": 85,
       "basePrice": 15
     },
@@ -1173,8 +961,6 @@
       "position": "FWD",
       "attack": 83,
       "defense": 15,
-      "pace": 75,
-      "stamina": 78,
       "overall": 85,
       "basePrice": 15
     },
@@ -1184,8 +970,6 @@
       "position": "FWD",
       "attack": 80,
       "defense": 15,
-      "pace": 88,
-      "stamina": 81,
       "overall": 85,
       "basePrice": 15
     }

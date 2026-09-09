@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { AuctionState, RoomState } from '@fal/shared';
 import { useSocket } from './hooks/useSocket.js';
 import { rejoinRoom } from './lib/roomClient.js';
@@ -6,12 +6,15 @@ import { clearSession, loadSession } from './lib/session.js';
 import { DraftPage } from './pages/DraftPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { LobbyPage } from './pages/LobbyPage.js';
+import { SimulationPage } from './pages/SimulationPage.js';
 import { useRoomStore } from './store.js';
 
 export function App() {
   const { socket, connected } = useSocket();
   const roomState = useRoomStore((s) => s.roomState);
   const error = useRoomStore((s) => s.error);
+  const youId = useRoomStore((s) => s.youId);
+  const [forceSimulationPreview, setForceSimulationPreview] = useState(false);
 
   // Sunucudan gelen tam durum güncellemeleri (client sadece render eder).
   useEffect(() => {
@@ -74,24 +77,56 @@ export function App() {
 
   return (
     <div className="app">
-      <div className="conn" style={{ marginBottom: 12 }}>
-        <span className={`dot ${connected ? 'on' : 'off'}`} />
-        {connected ? 'sunucuya bağlı' : 'bağlanıyor…'}
+      <div
+        className="conn"
+        style={{
+          marginBottom: 12,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span className={`dot ${connected ? 'on' : 'off'}`} />
+          <span>{connected ? 'sunucuya bağlı' : 'bağlanıyor…'}</span>
+        </div>
+        <div>
+          <button
+            type="button"
+            onClick={() => setForceSimulationPreview((v) => !v)}
+            style={{
+              padding: '4px 10px',
+              fontSize: '0.8rem',
+              borderRadius: '6px',
+              border: '1px solid var(--border-color, #333)',
+              backgroundColor: forceSimulationPreview ? '#f59e0b' : '#222',
+              color: forceSimulationPreview ? '#000' : '#fff',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            {forceSimulationPreview ? '✕ Önizlemeyi Kapat' : '🏆 Turnuva Simülasyon Ekranı (Kişi 2)'}
+          </button>
+        </div>
       </div>
 
-      {!roomState && <HomePage />}
-      {roomState?.phase === 'lobby' && <LobbyPage room={roomState} />}
-      {roomState?.phase === 'draft' && <DraftPage room={roomState} />}
-      {roomState && (roomState.phase === 'simulation' || roomState.phase === 'finished') && (
-        <div className="stack">
-          <div>
-            <div className="kicker">Draft tamamlandı</div>
-            <h1>Simülasyon</h1>
-          </div>
-          <div className="panel">
-            <p className="muted">Maç simülasyonu ve sonuç ekranları Kişi 2 tarafından gelecek.</p>
-          </div>
-        </div>
+      {forceSimulationPreview ? (
+        <SimulationPage
+          initialParticipants={roomState?.participants}
+          myParticipantId={youId ?? roomState?.participants[0]?.id}
+        />
+      ) : (
+        <>
+          {!roomState && <HomePage />}
+          {roomState?.phase === 'lobby' && <LobbyPage room={roomState} />}
+          {roomState?.phase === 'draft' && <DraftPage room={roomState} />}
+          {roomState && (roomState.phase === 'simulation' || roomState.phase === 'finished') && (
+            <SimulationPage
+              initialParticipants={roomState.participants}
+              myParticipantId={youId ?? roomState.participants[0]?.id}
+            />
+          )}
+        </>
       )}
 
       {error && roomState && <p className="error">{error}</p>}

@@ -32,7 +32,7 @@ export function calculateTeamStats(players: Footballer[]): CalculatedStats {
   const topMids = mids.slice(0, 4);
   const topFwds = fwds.slice(0, 2);
 
-  const avgStat = (list: Footballer[], key: 'attack' | 'defense' | 'pace' | 'stamina') => {
+  const avgStat = (list: Footballer[], key: 'attack' | 'defense') => {
     if (list.length === 0) return 50;
     const sum = list.reduce((acc, p) => acc + p[key], 0);
     return sum / list.length;
@@ -48,16 +48,11 @@ export function calculateTeamStats(players: Footballer[]): CalculatedStats {
   const midAtt = avgStat(topMids, 'attack');
   const fwdAtt = avgStat(topFwds, 'attack');
 
-  const avgPace = avgStat([...topDefs, ...topMids, ...topFwds], 'pace');
-  const avgStamina = avgStat([...topDefs, ...topMids, ...topFwds], 'stamina');
+  // Hücum hesabı (Mevki ağırlıklı)
+  const attack = Math.round(fwdAtt * 0.45 + midAtt * 0.35 + defAtt * 0.15 + gkAtt * 0.05);
 
-  // Hücum hesabı (Ağırlıklı + Hız çarpanı)
-  const rawAttack = fwdAtt * 0.45 + midAtt * 0.35 + defAtt * 0.15 + gkAtt * 0.05;
-  const attack = Math.round(rawAttack * 0.9 + avgPace * 0.1);
-
-  // Savunma hesabı (Ağırlıklı + Kondisyon çarpanı)
-  const rawDefense = defDef * 0.45 + gkDef * 0.25 + midDef * 0.25 + fwdDef * 0.05;
-  const defense = Math.round(rawDefense * 0.9 + avgStamina * 0.1);
+  // Savunma hesabı (Mevki ağırlıklı)
+  const defense = Math.round(defDef * 0.45 + gkDef * 0.25 + midDef * 0.25 + fwdDef * 0.05);
 
   return {
     attack: Math.max(20, Math.min(99, attack)),
