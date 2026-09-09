@@ -648,6 +648,51 @@ button:disabled {
   background: var(--gold);
 }
 
+/* ---------- draft: my squad roster ---------- */
+.squad-player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 8px;
+}
+.squad-player-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--panel-raised);
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+}
+.squad-player-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.squad-player-name {
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--chalk);
+}
+.squad-player-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-cond);
+  font-size: 12.5px;
+  letter-spacing: 0.3px;
+}
+.squad-player-stats .stat-tag {
+  color: var(--chalk-dim);
+}
+.squad-player-stats .stat-tag.gen {
+  color: var(--gold-bright);
+  font-weight: 700;
+}
+.squad-player-stats .sep {
+  color: var(--hairline-strong);
+}
+
 /* generic key/value list row (rakipler, teklif geçmişi) */
 .kv-row {
   display: flex;

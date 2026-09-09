@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Position, RoomState } from '@fal/shared';
+import type { Footballer, Position, RoomState } from '@fal/shared';
 import { placeBid } from '../lib/auctionClient.js';
 import { selectYou, useRoomStore } from '../store.js';
 
@@ -13,6 +13,15 @@ export function DraftPage({ room }: Props) {
   const you = useRoomStore(selectYou);
   const remainingMs = useRoomStore((s) => s.remainingMs);
   const lastWon = useRoomStore((s) => s.lastWon);
+
+  const lastWonFootballer = useMemo(() => {
+    if (!lastWon) return null;
+    for (const p of room.participants) {
+      const found = p.squad.find((pl) => pl.name === lastWon.footballerName);
+      if (found) return found;
+    }
+    return null;
+  }, [lastWon, room.participants]);
 
   const auction = room.auction;
   const minInc = room.config.minBidIncrement;
@@ -39,7 +48,7 @@ export function DraftPage({ room }: Props) {
       <div className="panel crimson">
         <div className="round-label">Açık Artırma</div>
         <h1 style={{ fontSize: 30, marginBottom: 16 }}>Draft</h1>
-        {lastWon && <Ticker text={wonText(lastWon)} />}
+        {lastWon && <Ticker text={wonText(lastWon, lastWonFootballer)} />}
         <p className="footnote">Sıradaki futbolcu için hazırlanıyor…</p>
       </div>
     );
@@ -87,7 +96,7 @@ export function DraftPage({ room }: Props) {
           </div>
         </div>
 
-        {lastWon && <Ticker text={wonText(lastWon)} />}
+        {lastWon && <Ticker text={wonText(lastWon, lastWonFootballer)} />}
 
         <div className="player-card">
           <div className="player-top">
@@ -180,18 +189,68 @@ export function DraftPage({ room }: Props) {
       </div>
 
       <div className="panel">
+        <div className="section-label">
+          Kadrom ({you.squad.length}/{room.config.squadSize})
+        </div>
+        {you.squad.length === 0 ? (
+          <p className="footnote" style={{ margin: '6px 0 0' }}>
+            Henüz futbolcu almadın. Aldığın futbolcular özellikleri ile birlikte burada
+            listelenecek.
+          </p>
+        ) : (
+          <div className="squad-player-list">
+            {you.squad.map((pl) => (
+              <div key={pl.id} className="squad-player-item">
+                <div className="squad-player-info">
+                  <span className="position-chip" style={{ fontSize: 11, padding: '2px 7px' }}>
+                    {pl.position}
+                  </span>
+                  <span className="squad-player-name">{pl.name}</span>
+                </div>
+                <div className="squad-player-stats">
+                  <span className="stat-tag gen">GEN {pl.overall}</span>
+                  <span className="sep">|</span>
+                  <span className="stat-tag">HÜC {pl.attack}</span>
+                  <span className="sep">|</span>
+                  <span className="stat-tag">DEF {pl.defense}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="panel">
         <div className="section-label">Rakipler</div>
         {room.participants
           .filter((p) => p.id !== you.id)
           .map((p) => (
-            <div key={p.id} className="kv-row">
-              <span className="roster-name">
-                <span className={`dot ${p.connected ? '' : 'off'}`} />
-                {p.nickname}
-                {p.isBot && <span className="bm-bot">bot</span>}
-              </span>
+            <div
+              key={p.id}
+              className="kv-row"
+              style={{ alignItems: p.squad.length > 0 ? 'flex-start' : 'center' }}
+            >
+              <div>
+                <span className="roster-name">
+                  <span className={`dot ${p.connected ? '' : 'off'}`} />
+                  {p.nickname}
+                  {p.isBot && <span className="tag bot">bot</span>}
+                </span>
+                {p.squad.length > 0 && (
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--chalk-faint)',
+                      marginTop: 3,
+                      paddingLeft: 17,
+                    }}
+                  >
+                    {p.squad.map((s) => `${s.name} (${s.position} · GEN ${s.overall})`).join(', ')}
+                  </div>
+                )}
+              </div>
               <span className="mono">
-                {p.budget}M · {p.squad.length}/{room.config.squadSize}
+                {p.squad.length}/{room.config.squadSize} oyuncu
               </span>
             </div>
           ))}
@@ -259,11 +318,15 @@ function Ticker({ text }: { text: string }) {
   );
 }
 
-function wonText(w: {
-  footballerName: string;
-  winnerNickname: string | null;
-  amount: number;
-}): string {
+function wonText(
+  w: {
+    footballerName: string;
+    winnerNickname: string | null;
+    amount: number;
+  },
+  f?: Footballer | null,
+): string {
   if (!w.winnerNickname) return `${w.footballerName} satılmadı (teklif gelmedi).`;
-  return `${w.winnerNickname}, ${w.footballerName} oyuncusunu ${w.amount}M'ye aldı.`;
+  const stats = f ? ` (GEN ${f.overall}, HÜC ${f.attack}, DEF ${f.defense})` : '';
+  return `${w.winnerNickname}, ${w.footballerName}${stats} oyuncusunu ${w.amount}M'ye aldı.`;
 }
