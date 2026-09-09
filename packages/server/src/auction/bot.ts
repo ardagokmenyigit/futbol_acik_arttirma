@@ -31,8 +31,15 @@ import { positionCount } from './validateBid.js';
 
 const POSITIONS: Position[] = ['GK', 'DEF', 'MID', 'FWD'];
 
-/** Rezerv emniyet payı — ucuz futbolcuları rakip kapabilir. */
-const RESERVE_SAFETY = 1.2;
+/**
+ * Rezerv emniyet payı — ucuz futbolcuları rakip kapabilir diye kalan
+ * slotların minimum maliyetine eklenen pay.
+ *
+ * DİKKAT: bu değer botun tavanını doğrudan belirler
+ * (tavan = bütçe − rezerv). Fazla yüksek olursa bütün botlar aynı düşük
+ * tavana sıkışır, kişilikleri anlamsızlaşır ve açık artırma sönük geçer.
+ */
+const RESERVE_SAFETY = 1.12;
 
 /* --------------------------- deterministik gürültü --------------------------- */
 

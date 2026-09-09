@@ -14,16 +14,32 @@ const TICK_MS = 1000;
  */
 const ANTI_SNIPE_MS = 5000;
 
-/** Bir turda botların verebileceği toplam teklif sayısı (sonsuz savaş kilidi). */
-const MAX_BOT_BIDS_PER_ROUND = 14;
+/**
+ * Bir turda TEK BİR botun verebileceği teklif sayısı.
+ *
+ * Eskiden bu sayaç tüm botlar için ORTAKTI ve dolduğunda `scheduleBotBids`
+ * hemen dönüyordu — yani turun geri kalanında hiçbir bot bir daha teklif
+ * vermiyordu. Oyuncu sonradan teklif verdiğinde karşılık gelmiyor, açık
+ * artırma erken sönüyordu. Artık her botun kendi kotası var: bir bot
+ * kotasını doldursa bile diğerleri oyuncunun teklifine cevap verebilir.
+ *
+ * Zaten asıl durdurucu bu kota değil, botun değerleme tavanı: fiyat
+ * tavanı aştığında bot kendiliğinden çekilir.
+ */
+const MAX_BIDS_PER_BOT_PER_ROUND = 10;
+
+/** Patolojik döngülere karşı tur başına mutlak tavan (normalde bağlamaz). */
+const MAX_BOT_BIDS_PER_ROUND = 60;
 
 interface RoomTimers {
   tick: NodeJS.Timeout;
   end: NodeJS.Timeout;
   /** Bekleyen bot "düşünme" zamanlayıcıları — tur bitince temizlenir. */
   bots: NodeJS.Timeout[];
-  /** Bu turda botların verdiği teklif sayısı. */
+  /** Bu turda botların verdiği toplam teklif sayısı. */
   botBids: number;
+  /** Bot başına bu turdaki teklif sayısı. */
+  botBidCount: Map<string, number>;
 }
 const timers = new Map<string, RoomTimers>();
 
@@ -142,6 +158,8 @@ function scheduleBotBids(io: TypedServer, roomId: string, exceptId?: string): vo
   const remainingMs = room.auction.endsAt - Date.now();
   for (const p of room.participants) {
     if (!p.isBot || p.id === exceptId) continue;
+    // Kotasını dolduran bot bu turda susar; diğerleri cevap vermeye devam eder.
+    if ((t.botBidCount.get(p.id) ?? 0) >= MAX_BIDS_PER_BOT_PER_ROUND) continue;
     const delay = botBidDelayMs(remainingMs);
     // Tur zaten bitecekse boşuna planlama
     if (delay >= remainingMs) continue;
@@ -160,6 +178,9 @@ function runBotTurn(io: TypedServer, roomId: string, botId: string): void {
   const bot = room.participants.find((p) => p.id === botId);
   if (!bot?.isBot) return;
 
+  const own = t.botBidCount.get(botId) ?? 0;
+  if (own >= MAX_BIDS_PER_BOT_PER_ROUND) return;
+
   const amount = decideBotBid(
     bot,
     room.auction.footballer,
@@ -171,10 +192,12 @@ function runBotTurn(io: TypedServer, roomId: string, botId: string): void {
   if (amount === null) return;
 
   t.botBids += 1;
+  t.botBidCount.set(botId, own + 1);
   const res = applyBid(io, room, bot, amount);
   if (!res.ok) {
     // Yarış durumu (araya insan teklifi girdi) — sessizce geç.
     t.botBids -= 1;
+    t.botBidCount.set(botId, own);
   }
 }
 
@@ -284,7 +307,7 @@ function startNextRound(io: TypedServer, roomId: string): void {
 
   const tick = setInterval(() => emitTick(io, roomId), TICK_MS);
   const end = setTimeout(() => endRound(io, roomId), durationMs);
-  timers.set(roomId, { tick, end, bots: [], botBids: 0 });
+  timers.set(roomId, { tick, end, bots: [], botBids: 0, botBidCount: new Map() });
 
   // Botlar yeni futbolcuyu değerlendirsin.
   scheduleBotBids(io, roomId);
