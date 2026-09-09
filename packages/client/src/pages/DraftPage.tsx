@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { Footballer, Position, RoomState } from '@fal/shared';
+import { calculateTeamStats, type Footballer, type Position, type RoomState } from '@fal/shared';
 import { PositionBadge } from '../components/PositionBadge.js';
 import { placeBid } from '../lib/auctionClient.js';
 import { selectYou, useRoomStore } from '../store.js';
@@ -43,6 +43,7 @@ export function DraftPage({ room }: Props) {
   if (!you) return null;
 
   const squadCount = (pos: Position) => you.squad.filter((f) => f.position === pos).length;
+  const myTeamStats = useMemo(() => calculateTeamStats(you.squad), [you.squad]);
 
   if (!auction) {
     return (
@@ -195,8 +196,41 @@ export function DraftPage({ room }: Props) {
       </div>
 
       <div className="panel">
-        <div className="section-label">
-          Kadrom ({you.squad.length}/{room.config.squadSize})
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 8,
+            marginBottom: you.squad.length === 0 ? 0 : 4,
+          }}
+        >
+          <div className="section-label" style={{ margin: 0 }}>
+            Kadrom ({you.squad.length}/{room.config.squadSize})
+          </div>
+          {you.squad.length > 0 && (
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                fontSize: 12,
+                fontFamily: 'var(--font-cond)',
+                color: 'var(--chalk-dim)',
+                padding: '3px 8px',
+                background: 'var(--turf)',
+                borderRadius: 4,
+              }}
+            >
+              <span>
+                HÜC: <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.attack}</strong>
+              </span>
+              <span>·</span>
+              <span>
+                DEF: <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.defense}</strong>
+              </span>
+            </div>
+          )}
         </div>
         {you.squad.length === 0 ? (
           <p className="footnote" style={{ margin: '6px 0 0' }}>

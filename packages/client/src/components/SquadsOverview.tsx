@@ -1,4 +1,4 @@
-import type { Participant, Position, RoomState } from '@fal/shared';
+import { calculateTeamStats, type Participant, type Position, type RoomState } from '@fal/shared';
 import { PositionBadge } from './PositionBadge.js';
 import { useRoomStore } from '../store.js';
 
@@ -89,8 +89,7 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
   const count = squad.length;
 
   const genAvg = count > 0 ? Math.round(squad.reduce((s, x) => s + x.overall, 0) / count) : 0;
-  const attAvg = count > 0 ? Math.round(squad.reduce((s, x) => s + x.attack, 0) / count) : 0;
-  const defAvg = count > 0 ? Math.round(squad.reduce((s, x) => s + x.defense, 0) / count) : 0;
+  const teamStats = calculateTeamStats(squad);
 
   return (
     <div
@@ -147,11 +146,11 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
           </span>
           <span>·</span>
           <span>
-            HÜC: <strong style={{ color: 'var(--chalk)' }}>{attAvg}</strong>
+            HÜC: <strong style={{ color: 'var(--chalk)' }}>{teamStats.attack}</strong>
           </span>
           <span>·</span>
           <span>
-            DEF: <strong style={{ color: 'var(--chalk)' }}>{defAvg}</strong>
+            DEF: <strong style={{ color: 'var(--chalk)' }}>{teamStats.defense}</strong>
           </span>
         </div>
       )}
