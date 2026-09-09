@@ -737,3 +737,62 @@ button:disabled {
   color: var(--chalk-faint);
   margin-bottom: 18px;
 }
+
+/* ============================================================
+   Uyumluluk katmanı — Kişi 2'nin turnuva/simülasyon bileşenleri
+   (SimulationPage, TournamentBracket, LiveMatchTicker,
+   ChampionCelebration, MatchCard, StandingsTable) eski
+   token isimlerini kullanıyor. Burada editorial temaya
+   eşliyoruz ki tek bir tasarım dili kalsın.
+   ============================================================ */
+:root {
+  --bg-primary: var(--turf-deep);
+  --bg-secondary: var(--panel);
+  --bg-tertiary: var(--panel-raised);
+  --accent-green: var(--ready-bright);
+  --accent-green-glow: rgba(76, 138, 92, 0.28);
+  --accent-gold: var(--gold);
+  --accent-gold-glow: rgba(201, 151, 74, 0.28);
+  --text-primary: var(--chalk);
+  --text-secondary: var(--chalk-dim);
+  --text-muted: var(--chalk-faint);
+  --border-color: var(--hairline-strong);
+  --danger-color: #d98d93;
+  --font-family: var(--font-body);
+}
+
+.container {
+  width: 100%;
+}
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  padding: 20px;
+}
+
+.card h2,
+.card h3 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--chalk);
+}
+
+.tab-button {
+  padding: 10px 18px;
+  background: transparent;
+  color: var(--chalk-faint);
+  font-family: var(--font-cond);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+}
+.tab-button.active {
+  color: var(--gold-bright);
+  border-bottom-color: var(--gold);
+}
