@@ -1,4 +1,4 @@
-import type { Footballer, Team } from '@fal/shared';
+import type { Footballer, Position, Team } from '@fal/shared';
 
 export interface CalculatedStats {
   attack: number;
@@ -6,57 +6,67 @@ export interface CalculatedStats {
 }
 
 /**
- * Bir takımın kadrosundaki futbolculara göre takımın toplam hücum ve savunma gücünü hesaplar.
- * İdeal 11 mantığı:
- * - 1 En iyi Kaleci (GK)
- * - 4 En iyi Defans (DEF)
- * - 4 En iyi Orta Saha (MID)
- * - 2 En iyi Forvet (FWD)
+ * Pozisyon çarpanları — bir futbolcunun hangi reytinginin hangi ağırlıkla
+ * takım gücüne katıldığı.
  *
- * Hücum katkısı: Forvetler (%45) + Orta Sahalar (%35) + Defanslar (%15) + Kaleci (%5) + Takım Hızı bonusu
- * Savunma katkısı: Kaleci (%25) + Defanslar (%45) + Orta Sahalar (%25) + Forvetler (%5) + Kondisyon bonusu
+ *   Pozisyon | hücum reytingi | defans reytingi
+ *   ---------|----------------|----------------
+ *   FWD      |      1.0       |      0.2
+ *   MID      |      0.6       |      0.6
+ *   DEF      |      0.2       |      1.0
+ *   GK       |      0.1       |      1.1
+ *
+ * Yani forvetin hücum reytingi tam sayılır, defansı az; kaleci savunmaya
+ * en çok katkıyı yapar (1.1), hücuma neredeyse hiç (0.1); orta saha iki
+ * tarafa da dengeli (0.6 / 0.6) katkı verir.
+ */
+export const ATTACK_WEIGHT: Record<Position, number> = {
+  FWD: 1.0,
+  MID: 0.6,
+  DEF: 0.2,
+  GK: 0.1,
+};
+
+export const DEFENSE_WEIGHT: Record<Position, number> = {
+  FWD: 0.2,
+  MID: 0.6,
+  DEF: 1.0,
+  GK: 1.1,
+};
+
+/**
+ * Kadronun hücum ve savunma gücünü hesaplar.
+ *
+ * Her futbolcunun ilgili reytingi pozisyon çarpanıyla çarpılır, toplam
+ * çarpan ağırlığına bölünerek 0-100 ölçeğine normalize edilir. Böylece
+ * kadro büyüklüğü değişse de (config.squad) değerler karşılaştırılabilir
+ * kalır — 7 kişilik kadro ile 15 kişilik kadro aynı skalada olur.
  */
 export function calculateTeamStats(players: Footballer[]): CalculatedStats {
   if (!players || players.length === 0) {
     return { attack: 50, defense: 50 };
   }
 
-  const gks = players.filter((p) => p.position === 'GK').sort((a, b) => b.overall - a.overall);
-  const defs = players.filter((p) => p.position === 'DEF').sort((a, b) => b.overall - a.overall);
-  const mids = players.filter((p) => p.position === 'MID').sort((a, b) => b.overall - a.overall);
-  const fwds = players.filter((p) => p.position === 'FWD').sort((a, b) => b.overall - a.overall);
+  let attackSum = 0;
+  let attackWeight = 0;
+  let defenseSum = 0;
+  let defenseWeight = 0;
 
-  // En iyi 11 oyuncuyu seç
-  const topGk = gks.slice(0, 1);
-  const topDefs = defs.slice(0, 4);
-  const topMids = mids.slice(0, 4);
-  const topFwds = fwds.slice(0, 2);
+  for (const p of players) {
+    const aw = ATTACK_WEIGHT[p.position];
+    const dw = DEFENSE_WEIGHT[p.position];
+    attackSum += p.attack * aw;
+    attackWeight += aw;
+    defenseSum += p.defense * dw;
+    defenseWeight += dw;
+  }
 
-  const avgStat = (list: Footballer[], key: 'attack' | 'defense') => {
-    if (list.length === 0) return 50;
-    const sum = list.reduce((acc, p) => acc + p[key], 0);
-    return sum / list.length;
-  };
-
-  const gkDef = avgStat(topGk, 'defense');
-  const defDef = avgStat(topDefs, 'defense');
-  const midDef = avgStat(topMids, 'defense');
-  const fwdDef = avgStat(topFwds, 'defense');
-
-  const gkAtt = avgStat(topGk, 'attack');
-  const defAtt = avgStat(topDefs, 'attack');
-  const midAtt = avgStat(topMids, 'attack');
-  const fwdAtt = avgStat(topFwds, 'attack');
-
-  // Hücum hesabı (Mevki ağırlıklı)
-  const attack = Math.round(fwdAtt * 0.45 + midAtt * 0.35 + defAtt * 0.15 + gkAtt * 0.05);
-
-  // Savunma hesabı (Mevki ağırlıklı)
-  const defense = Math.round(defDef * 0.45 + gkDef * 0.25 + midDef * 0.25 + fwdDef * 0.05);
+  const attack = attackWeight > 0 ? attackSum / attackWeight : 50;
+  const defense = defenseWeight > 0 ? defenseSum / defenseWeight : 50;
 
   return {
-    attack: Math.max(20, Math.min(99, attack)),
-    defense: Math.max(20, Math.min(99, defense)),
+    attack: Math.max(20, Math.min(99, Math.round(attack))),
+    defense: Math.max(20, Math.min(99, Math.round(defense))),
   };
 }
 
