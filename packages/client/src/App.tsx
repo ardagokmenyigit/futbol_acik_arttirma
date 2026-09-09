@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import type { AuctionState, RoomState } from '@fal/shared';
+import type { AuctionState, LeagueState, MatchResult, RoomState } from '@fal/shared';
 import { useSocket } from './hooks/useSocket.js';
 import { rejoinRoom } from './lib/roomClient.js';
 import { clearSession, loadSession } from './lib/session.js';
 import { DraftPage } from './pages/DraftPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { LobbyPage } from './pages/LobbyPage.js';
+import { ResultsPage } from './pages/ResultsPage.js';
 import { useRoomStore } from './store.js';
 
 export function App() {
@@ -22,6 +23,10 @@ export function App() {
       // Tick'ler arasında / reconnect sonrası geri sayımı endsAt'ten türet.
       if (next.auction) {
         useRoomStore.getState().setRemainingMs(Math.max(0, next.auction.endsAt - Date.now()));
+      }
+      // finished halinde lig durumu room:state ile de gelir (reconnect).
+      if (next.league) {
+        useRoomStore.getState().setLeague(next.league);
       }
     }
     function onRoomError({ message }: { message: string }) {
@@ -42,6 +47,15 @@ export function App() {
     }) {
       useRoomStore.getState().setLastWon(payload);
     }
+    function onLeagueFixtures(league: LeagueState) {
+      useRoomStore.getState().setLeague(league);
+    }
+    function onLeagueMatchResult({ league }: { result: MatchResult; league: LeagueState }) {
+      useRoomStore.getState().setLeague(league);
+    }
+    function onLeagueFinished({ league }: { league: LeagueState }) {
+      useRoomStore.getState().setLeague(league);
+    }
 
     store.setConnected(connected);
     socket.on('room:state', onRoomState);
@@ -49,6 +63,9 @@ export function App() {
     socket.on('auction:started', onAuctionStarted);
     socket.on('auction:tick', onAuctionTick);
     socket.on('auction:won', onAuctionWon);
+    socket.on('league:fixtures', onLeagueFixtures);
+    socket.on('league:matchResult', onLeagueMatchResult);
+    socket.on('league:finished', onLeagueFinished);
 
     return () => {
       socket.off('room:state', onRoomState);
@@ -56,6 +73,9 @@ export function App() {
       socket.off('auction:started', onAuctionStarted);
       socket.off('auction:tick', onAuctionTick);
       socket.off('auction:won', onAuctionWon);
+      socket.off('league:fixtures', onLeagueFixtures);
+      socket.off('league:matchResult', onLeagueMatchResult);
+      socket.off('league:finished', onLeagueFinished);
     };
   }, [socket, connected]);
 
@@ -83,15 +103,7 @@ export function App() {
       {roomState?.phase === 'lobby' && <LobbyPage room={roomState} />}
       {roomState?.phase === 'draft' && <DraftPage room={roomState} />}
       {roomState && (roomState.phase === 'simulation' || roomState.phase === 'finished') && (
-        <div className="stack">
-          <div>
-            <div className="kicker">Draft tamamlandı</div>
-            <h1>Simülasyon</h1>
-          </div>
-          <div className="panel">
-            <p className="muted">Maç simülasyonu ve sonuç ekranları Kişi 2 tarafından gelecek.</p>
-          </div>
-        </div>
+        <ResultsPage room={roomState} />
       )}
 
       {error && roomState && <p className="error">{error}</p>}

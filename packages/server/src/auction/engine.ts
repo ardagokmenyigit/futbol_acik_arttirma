@@ -1,4 +1,5 @@
 import type { AckResult, Bid, Footballer, RoomState } from '@fal/shared';
+import { runLeague } from '../league/runLeague.js';
 import { roomStore } from '../rooms/roomStore.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { findFootballer, loadFootballers, shuffled } from './pool.js';
@@ -193,5 +194,6 @@ function finishDraft(io: TypedServer, room: RoomState): void {
   room.phase = 'simulation';
   io.to(room.roomId).emit('room:state', room);
   io.to(room.roomId).emit('auction:finished', room);
-  // Kişi 2: lig/simülasyon motoru buradan devralır (phase === 'simulation').
+  // Lig/simülasyon motorunu devral (phase === 'simulation').
+  runLeague(io, room.roomId);
 }
