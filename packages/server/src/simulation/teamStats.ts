@@ -61,20 +61,24 @@ export function calculateTeamStats(players: Footballer[]): CalculatedStats {
 
   return {
     attack: Math.max(20, Math.min(99, attack)),
-    defense: Math.max(20, Math.min(99, defense))
+    defense: Math.max(20, Math.min(99, defense)),
   };
 }
 
 /**
  * Katılımcı bilgilerinden Team nesnesi üretir.
  */
-export function buildTeam(participant: { id: string; nickname: string; squad: Footballer[] }): Team {
+export function buildTeam(participant: {
+  id: string;
+  nickname: string;
+  squad: Footballer[];
+}): Team {
   const { attack, defense } = calculateTeamStats(participant.squad);
   return {
     participantId: participant.id,
     nickname: participant.nickname,
     players: participant.squad,
     attack,
-    defense
+    defense,
   };
 }

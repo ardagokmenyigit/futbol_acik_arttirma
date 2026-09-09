@@ -6,7 +6,7 @@ const teamA: Team = {
   nickname: 'Galatasaray XI',
   players: [],
   attack: 82,
-  defense: 80
+  defense: 80,
 };
 
 const teamB: Team = {
@@ -14,22 +14,34 @@ const teamB: Team = {
   nickname: 'Fenerbahçe XI',
   players: [],
   attack: 81,
-  defense: 81
+  defense: 81,
 };
 
 console.log('=== MAÇ SİMÜLASYONU TEST VE BENCHMARK ===');
 
 // 1. Determinizm Doğrulaması
 console.log('\n[1] Determinizm Testi Yapılıyor...');
-const res1 = simulateMatch({ matchId: 'test-match-1', homeTeam: teamA, awayTeam: teamB, seed: 123456 });
-const res2 = simulateMatch({ matchId: 'test-match-1', homeTeam: teamA, awayTeam: teamB, seed: 123456 });
+const res1 = simulateMatch({
+  matchId: 'test-match-1',
+  homeTeam: teamA,
+  awayTeam: teamB,
+  seed: 123456,
+});
+const res2 = simulateMatch({
+  matchId: 'test-match-1',
+  homeTeam: teamA,
+  awayTeam: teamB,
+  seed: 123456,
+});
 
 if (
   res1.scoreHome === res2.scoreHome &&
   res1.scoreAway === res2.scoreAway &&
   JSON.stringify(res1.events) === JSON.stringify(res2.events)
 ) {
-  console.log(`✓ BAŞARILI: Aynı seed (${123456}) ile iki kez çalıştırıldığında birebir aynı sonuç alındı!`);
+  console.log(
+    `✓ BAŞARILI: Aynı seed (${123456}) ile iki kez çalıştırıldığında birebir aynı sonuç alındı!`,
+  );
   console.log(`  Skor: ${teamA.nickname} ${res1.scoreHome} - ${res1.scoreAway} ${teamB.nickname}`);
   console.log(`  Gol Olayları:`, res1.events);
 } else {
@@ -52,7 +64,7 @@ for (let i = 0; i < TOTAL_MATCHES; i++) {
     matchId: `benchmark-${i}`,
     homeTeam: teamA,
     awayTeam: teamB,
-    seed: i + 1
+    seed: i + 1,
   });
 
   totalGoals += res.scoreHome + res.scoreAway;

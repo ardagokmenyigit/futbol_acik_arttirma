@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 // Oyuncu verisini yükle
 const playersRaw = JSON.parse(
-  fs.readFileSync(path.resolve(__dirname, '../../data/players.json'), 'utf-8')
+  fs.readFileSync(path.resolve(__dirname, '../../data/players.json'), 'utf-8'),
 );
 const allPlayers: Footballer[] = playersRaw.players;
 
@@ -18,23 +18,23 @@ const teams = [
   {
     id: 'user-1',
     nickname: 'Kerem FK',
-    squad: allPlayers.slice(0, 15) // GK, DEF, MID ağırlıklı
+    squad: allPlayers.slice(0, 15), // GK, DEF, MID ağırlıklı
   },
   {
     id: 'user-2',
     nickname: 'Arda United',
-    squad: allPlayers.slice(15, 30)
+    squad: allPlayers.slice(15, 30),
   },
   {
     id: 'user-3',
     nickname: 'Boğaziçi FC',
-    squad: allPlayers.slice(30, 45)
+    squad: allPlayers.slice(30, 45),
   },
   {
     id: 'user-4',
     nickname: 'Anadolu Yıldızları',
-    squad: allPlayers.slice(45, 60)
-  }
+    squad: allPlayers.slice(45, 60),
+  },
 ];
 
 console.log('=== LİG VE FİKSTÜR SİMÜLASYON TESTİ ===\n');
@@ -59,9 +59,7 @@ leagueState.fixtures.forEach((f, i) => {
 
 console.log('\n[2] Sezon Sonu Puan Tablosu:');
 console.log('----------------------------------------------------------------------');
-console.log(
-  'Sıra | Takım             | O  | G  | B  | M  | AG | YG | AV  | Puan'
-);
+console.log('Sıra | Takım             | O  | G  | B  | M  | AG | YG | AV  | Puan');
 console.log('----------------------------------------------------------------------');
 
 leagueState.standings.forEach((row, idx) => {
@@ -73,7 +71,9 @@ leagueState.standings.forEach((row, idx) => {
   const m = String(row.lost).padStart(2);
   const ag = String(row.goalsFor).padStart(2);
   const yg = String(row.goalsAgainst).padStart(2);
-  const av = (row.goalDifference > 0 ? `+${row.goalDifference}` : `${row.goalDifference}`).padStart(3);
+  const av = (row.goalDifference > 0 ? `+${row.goalDifference}` : `${row.goalDifference}`).padStart(
+    3,
+  );
   const p = String(row.points).padStart(4);
 
   console.log(`${rank} | ${name} | ${o} | ${g} | ${b} | ${m} | ${ag} | ${yg} | ${av} | ${p}`);

@@ -1,11 +1,4 @@
-import type {
-  Fixture,
-  Footballer,
-  LeagueState,
-  MatchResult,
-  StandingRow,
-  Team
-} from '@fal/shared';
+import type { Fixture, Footballer, LeagueState, MatchResult, StandingRow, Team } from '@fal/shared';
 import { simulateMatch } from '../simulation/simulator.js';
 import { buildTeam } from '../simulation/teamStats.js';
 
@@ -37,7 +30,7 @@ export function generateFixtures(participants: { id: string }[]): Fixture[] {
       fixtures.push({
         matchId: `m-${matchIndex++}`,
         homeId: home.id,
-        awayId: away.id
+        awayId: away.id,
       });
     }
   }
@@ -49,7 +42,7 @@ export function generateFixtures(participants: { id: string }[]): Fixture[] {
  * Katılımcılar için başlangıç boş puan tablosunu oluşturur.
  */
 export function createInitialStandings(
-  participants: { id: string; nickname: string }[]
+  participants: { id: string; nickname: string }[],
 ): StandingRow[] {
   return participants.map((p) => ({
     participantId: p.id,
@@ -61,7 +54,7 @@ export function createInitialStandings(
     goalsFor: 0,
     goalsAgainst: 0,
     goalDifference: 0,
-    points: 0
+    points: 0,
   }));
 }
 
@@ -75,7 +68,7 @@ export function createInitialStandings(
  */
 export function updateStandings(
   currentStandings: StandingRow[],
-  result: MatchResult
+  result: MatchResult,
 ): StandingRow[] {
   const updated = currentStandings.map((row) => ({ ...row }));
 
@@ -129,7 +122,7 @@ export function updateStandings(
  */
 export function simulateFullLeague(
   participants: ParticipantTeamInfo[],
-  baseSeed = 42
+  baseSeed = 42,
 ): LeagueState {
   const fixtures = generateFixtures(participants);
   let standings = createInitialStandings(participants);
@@ -155,7 +148,7 @@ export function simulateFullLeague(
       matchId: fixture.matchId,
       homeTeam,
       awayTeam,
-      seed: matchSeed
+      seed: matchSeed,
     });
 
     results.push(matchResult);
@@ -168,6 +161,6 @@ export function simulateFullLeague(
     fixtures,
     results,
     standings,
-    championId
+    championId,
   };
 }
