@@ -1,4 +1,4 @@
-﻿import type { Footballer, MatchEvent, MatchResult, Team } from '@fal/shared';
+import type { Footballer, MatchEvent, MatchResult, Team } from '@fal/shared';
 import { createPRNG, stringToSeed } from './random.js';
 
 export interface SimulateMatchOptions {
