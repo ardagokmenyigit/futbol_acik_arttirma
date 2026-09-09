@@ -209,12 +209,31 @@ Bu dosyayı okuduktan sonra, hangi fazda olduğumuzu ve hangi kişinin
 tüm projeyi baştan yazmaya çalışma — yukarıdaki fazlara ve görev
 dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle.
 
-### Durum (Faz 0 — tamamlandı)
+### Durum
 
-- Monorepo iskeleti kuruldu: `packages/{shared,server,client}`, npm workspaces
+**Faz 0 — tamamlandı (PR #1)**
+
+- Monorepo iskeleti: `packages/{shared,server,client}`, npm workspaces
 - TypeScript + ESLint (flat config) + Prettier + CI (GitHub Actions)
-- `@fal/shared`: `types.ts`, `events.ts`, `config.ts` — **ilk taslak**, iki
-  geliştirici birlikte gözden geçirecek
-- Socket.io hello-world: client bağlanır → `hello` gönderir → server ack'ler,
-  `App.tsx` yanıtı gösterir
-- Sıradaki: Kişi 1 → `server/src/rooms/` (oda + lobi); Kişi 2 → `data/players.json`
+- `@fal/shared`: `types.ts`, `events.ts`, `config.ts`
+- Socket.io hello-world doğrulandı
+
+**Kişi 1 — tamamlandı (PR #2, #3, #4)**
+
+- `server/src/rooms/`: oda kodu, host, hazır, 2–6 kişi, `room:rejoin` (reconnect),
+  lobide host disconnect'te hostluk devri, `canStart` bağlı-oyuncu bazlı
+- `server/src/auction/`: round döngüsü, `auction:tick`, anti-snipe, teklif
+  validasyonu (taban/bütçe/pozisyon), kazanan → kadro, `finishDraft` →
+  `phase='simulation'` + `auction:finished`
+- İstemci: HomePage, LobbyPage, DraftPage (futbolcu kartı, geri sayım, teklif
+  input'u, bütçe/kadro, rakip ilerlemesi), Zustand store, reconnect
+- `data/players.json`: 22 **kurgusal** futbolcu (placeholder) — Kişi 2 değiştirecek
+- `shared/events.ts`: `auction:won`a `footballerName`/`winnerNickname`,
+  `auction:bid`e `highestBid: Bid | null` eklendi
+
+**Sıradaki — Kişi 2**
+
+- `data/players.json` gerçek veri seti · `server/src/simulation/` · `server/src/league/`
+- Devir noktası: `phase === 'simulation'` + `auction:finished(roomState)`;
+  kadrolar `participant.squad` içinde, bütçeler düşülmüş
+- Sonra: ortak uçtan uca entegrasyon + deploy (CLAUDE.md §4 son faz)
