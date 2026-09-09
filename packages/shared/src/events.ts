@@ -49,11 +49,14 @@ export interface ServerToClientEvents {
 
   'auction:started': (auction: AuctionState) => void;
   'auction:tick': (payload: { round: number; remainingMs: number }) => void;
-  'auction:bid': (payload: { highestBid: Bid; history: Bid[] }) => void;
+  'auction:bid': (payload: { highestBid: Bid | null; history: Bid[] }) => void;
   'auction:won': (payload: {
     round: number;
     footballerId: string;
+    footballerName: string;
+    /** Kimse teklif vermediyse null (futbolcu satılmadı). */
     winnerId: string | null;
+    winnerNickname: string | null;
     amount: number;
   }) => void;
   'auction:finished': (roomState: RoomState) => void;

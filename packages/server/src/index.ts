@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import cors from 'cors';
 import express from 'express';
 import { Server } from 'socket.io';
+import { registerAuctionHandlers } from './auction/index.js';
 import { registerRoomHandlers } from './rooms/index.js';
 import type { InterServerEvents, SocketData, TypedServer } from './socketTypes.js';
 import type { ClientToServerEvents, ServerToClientEvents } from '@fal/shared';
@@ -36,6 +37,7 @@ io.on('connection', (socket) => {
   });
 
   registerRoomHandlers(io, socket);
+  registerAuctionHandlers(io, socket);
 
   socket.on('disconnect', (reason) => {
     console.log(`[socket] disconnected: ${socket.id} (${reason})`);
