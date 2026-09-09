@@ -231,6 +231,22 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
 - `shared/events.ts`: `auction:won`a `footballerName`/`winnerNickname`,
   `auction:bid`e `highestBid: Bid | null` eklendi
 
+**Kadro / format / bot (Kişi 1)**
+
+- Kadro **7 oyuncu** (GK 1, DEF 2, MID 2, FWD 2), başlangıç bütçesi **140M**
+  - Havuz taban fiyatları 12–25M → en ucuz dolum ~96M, medyan ~105M.
+  - ⚠️ `startingBudget` en ucuz dolumun altına inerse kadrolar **asla dolmaz**
+    ve draft havuz bitene kadar sürer. (Eski 15 kişilik kadro + 100M bu yüzden
+    bozuktu — simülasyon fazına hiç geçilmiyordu.)
+- Oyun formatı `config.tournamentSize`: `null` = lig (round-robin),
+  `4 | 8` = eleme usulü turnuva ağacı. Host lobiden seçer (`room:setFormat`).
+- Turnuva formatında eksik takımlar **botlarla** tamamlanır (`isBot: true`).
+  Botlar açık artırmaya katılır: ihtiyaç + rezerv + değerleme üçlüsüne bakar
+  (`server/src/auction/bot.ts`), kadrosunu yarım bırakacak teklif vermez.
+- Draft güvenlikleri: tur tavanı (`squadSize × oyuncu × 2`) ve bitişte
+  `autoCompleteSquads()` — pasif/AFK oyuncu draft'ı sonsuza sürükleyemez,
+  simülasyona herkes tam kadro girer.
+
 **Sıradaki — Kişi 2**
 
 - `data/players.json` gerçek veri seti · `server/src/simulation/` · `server/src/league/`

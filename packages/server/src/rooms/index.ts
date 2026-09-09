@@ -1,6 +1,7 @@
 import type { RoomState } from '@fal/shared';
 import { beginDraft, cancelAuction, dropBidderIfLeading } from '../auction/index.js';
 import { cancelLeague } from '../league/index.js';
+import { cancelTournament } from '../tournament/runTournament.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { RoomError, roomStore } from './roomStore.js';
 
@@ -68,6 +69,21 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     }
   });
 
+  socket.on('room:setFormat', ({ tournamentSize }, ack) => {
+    const { roomId, playerId } = socket.data;
+    if (!roomId || !playerId) {
+      ack({ ok: false, error: 'Bir odada değilsin' });
+      return;
+    }
+    try {
+      const room = roomStore.setFormat(roomId, playerId, tournamentSize);
+      ack({ ok: true, data: { roomState: room } });
+      broadcastRoomState(io, room);
+    } catch (err) {
+      ack({ ok: false, error: errorMessage(err) });
+    }
+  });
+
   socket.on('room:start', (ack) => {
     const { roomId, playerId } = socket.data;
     if (!roomId || !playerId) {
@@ -111,5 +127,6 @@ function handleLeave(io: TypedServer, socket: TypedSocket): void {
     // Oda kapandı — devam eden açık artırma / lig timer'larını temizle.
     cancelAuction(roomId);
     cancelLeague(roomId);
+    cancelTournament(roomId);
   }
 }

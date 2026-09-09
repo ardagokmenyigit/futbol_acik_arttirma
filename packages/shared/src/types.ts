@@ -51,9 +51,14 @@ export interface RoomConfig {
   /** Odaya girebilecek min/max oyuncu. */
   minPlayers: number;
   maxPlayers: number;
+  /**
+   * Oyun formatı. null → lig (round-robin, herkes herkesle).
+   * 4 | 8 → eleme usulü turnuva ağacı; eksik takımlar botlarla tamamlanır.
+   */
+  tournamentSize: TournamentSize | null;
 }
 
-/** Bir insan katılımcı (oda üyesi). */
+/** Bir katılımcı (oda üyesi). İnsan ya da bot olabilir. */
 export interface Participant {
   /** Kalıcı oyuncu kimliği (reconnect için socket.id'den bağımsız). */
   id: string;
@@ -66,6 +71,11 @@ export interface Participant {
   budget: number;
   /** Kazanılan futbolcular. */
   squad: Footballer[];
+  /**
+   * Yapay zekâ takımı mı? Turnuva formatında eksik oyuncu sayısı
+   * botlarla tamamlanır; botlar açık artırmaya da katılır.
+   */
+  isBot?: boolean;
 }
 
 /** Açık artırmada verilen tek bir teklif. */

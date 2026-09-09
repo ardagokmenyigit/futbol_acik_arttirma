@@ -188,6 +188,7 @@ export function DraftPage({ room }: Props) {
               <span className="roster-name">
                 <span className={`dot ${p.connected ? '' : 'off'}`} />
                 {p.nickname}
+                {p.isBot && <span className="bm-bot">bot</span>}
               </span>
               <span className="mono">
                 {p.budget}M · {p.squad.length}/{room.config.squadSize}

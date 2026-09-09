@@ -1,4 +1,4 @@
-import type { AckResult, Participant, RoomConfig, RoomState } from '@fal/shared';
+import type { AckResult, Participant, RoomConfig, RoomState, TournamentSize } from '@fal/shared';
 import { socket } from '../socket.js';
 
 type EnterResult = { roomState: RoomState; you: Participant };
@@ -36,6 +36,15 @@ export function startGame(): Promise<{ roomState: RoomState }> {
 
 export function setReady(ready: boolean): void {
   socket.emit('room:setReady', { ready });
+}
+
+/** Sadece host: null = lig, 4 | 8 = turnuva ağacı (eksikler bota gider). */
+export function setFormat(
+  tournamentSize: TournamentSize | null,
+): Promise<{ roomState: RoomState }> {
+  return new Promise((resolve, reject) => {
+    socket.emit('room:setFormat', { tournamentSize }, unwrap(resolve, reject));
+  });
 }
 
 export function leaveRoom(): void {

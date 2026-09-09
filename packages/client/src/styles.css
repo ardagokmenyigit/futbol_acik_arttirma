@@ -344,6 +344,59 @@ button:disabled {
   border: 1px solid var(--hairline-strong);
   color: var(--chalk-faint);
 }
+.tag.bot {
+  border: 1px solid var(--cobalt);
+  color: #8fb6d2;
+}
+
+/* ---------- lobi: format seçici ---------- */
+.format-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.format-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--turf);
+  border: 1px solid var(--hairline-strong);
+  border-top: 2px solid var(--hairline-strong);
+  border-radius: 3px;
+  padding: 11px 8px 12px;
+  text-align: left;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.format-btn .ft {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--chalk-dim);
+}
+.format-btn .fs {
+  font-size: 11.5px;
+  color: var(--chalk-faint);
+}
+.format-btn.active {
+  background: var(--panel-raised);
+  border-top-color: var(--gold);
+}
+.format-btn.active .ft {
+  color: var(--gold-bright);
+}
+.format-btn:hover:not(:disabled):not(.active) {
+  border-color: var(--hairline-strong);
+  background: var(--panel-raised);
+}
+.format-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
 
 /* ---------- draft: live head ---------- */
 .live-head {
@@ -706,6 +759,82 @@ button:disabled {
   font-size: 14px;
   color: var(--chalk);
   text-align: center;
+}
+
+/* ---------- turnuva ağacı ---------- */
+.bracket {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bracket-match {
+  border: 1px solid var(--hairline);
+  border-left: 2px solid var(--hairline-strong);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bracket-match.live {
+  border-left-color: var(--crimson);
+  background: var(--crimson-dim);
+}
+.bracket-match.done {
+  border-left-color: var(--gold);
+}
+.bm-side {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--chalk-dim);
+}
+.bm-side + .bm-side {
+  border-top: 1px solid var(--hairline);
+}
+.bm-side.won {
+  color: var(--chalk);
+  background: rgba(201, 151, 74, 0.08);
+}
+.bm-side.won .bm-score {
+  color: var(--gold-bright);
+}
+.bm-side.you .bm-name {
+  font-weight: 700;
+}
+.bm-name {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.bm-bot {
+  font-family: var(--font-cond);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #8fb6d2;
+  border: 1px solid var(--cobalt);
+  border-radius: 2px;
+  padding: 1px 4px;
+}
+.bm-score {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--chalk-dim);
+}
+.bm-pen,
+.bm-live {
+  font-family: var(--font-cond);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--chalk-faint);
+  padding: 7px 12px;
+  border-top: 1px solid var(--hairline);
+}
+.bm-live {
+  color: #d98d93;
 }
 
 /* ---------- results: champion ---------- */
