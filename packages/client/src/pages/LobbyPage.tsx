@@ -55,24 +55,26 @@ export function LobbyPage({ room }: Props) {
         </p>
       </div>
 
-      <div className="panel stack">
-        <div>
-          <label>Oda kodu — arkadaşlarınla paylaş</label>
-          <div className="row">
-            <span className="code-badge">{room.code}</span>
-            <button onClick={copyCode}>{copied ? 'Kopyalandı ✓' : 'Kopyala'}</button>
-          </div>
+      <div className="panel">
+        <label>Oda kodu — arkadaşlarınla paylaş</label>
+        <div className="row">
+          <span className="code-badge">{room.code}</span>
+          <button onClick={copyCode}>{copied ? 'Kopyalandı' : 'Kopyala'}</button>
         </div>
       </div>
 
       <div className="panel">
         <label>Katılımcılar</label>
         {room.participants.map((p) => (
-          <div className="participant" key={p.id}>
-            <span>
+          <div className={`participant${p.isHost ? ' is-host' : ''}`} key={p.id}>
+            <span className="name">
               <span className={`dot ${p.connected ? 'on' : 'off'}`} />
               {p.nickname}
-              {p.id === you.id && <span className="muted"> (sen)</span>}
+              {p.id === you.id && (
+                <span className="muted" style={{ fontWeight: 400, marginLeft: 5 }}>
+                  (sen)
+                </span>
+              )}
             </span>
             <span className="row" style={{ gap: 6 }}>
               {p.isHost && <span className="tag host">host</span>}

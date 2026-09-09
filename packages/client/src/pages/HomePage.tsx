@@ -34,7 +34,11 @@ export function HomePage() {
   return (
     <div className="stack">
       <div>
-        <h1>⚽ Açık Artırma Ligi</h1>
+        <h1>
+          ⚽ Açık Artırma
+          <br />
+          Ligi
+        </h1>
         <p className="subtitle">Oda kur ya da bir oda koduyla katıl.</p>
       </div>
 
@@ -51,13 +55,11 @@ export function HomePage() {
           />
         </div>
 
-        <div className="row">
-          <button className="primary" disabled={!canSubmit} onClick={() => void handle('create')}>
-            Yeni oda kur
-          </button>
-        </div>
+        <button className="primary" disabled={!canSubmit} onClick={() => void handle('create')}>
+          Yeni oda kur
+        </button>
 
-        <hr style={{ border: 0, borderTop: '1px solid var(--border)' }} />
+        <div className="divider" />
 
         <div>
           <label htmlFor="code">Oda kodu</label>
@@ -68,7 +70,7 @@ export function HomePage() {
               value={code}
               maxLength={6}
               placeholder="ABC123"
-              style={{ textTransform: 'uppercase', maxWidth: 160 }}
+              style={{ textTransform: 'uppercase', maxWidth: 160, letterSpacing: '2px' }}
               onChange={(e) => setCode(e.target.value.toUpperCase())}
             />
             <button
@@ -80,7 +82,7 @@ export function HomePage() {
           </div>
         </div>
 
-        {!connected && <p className="conn">Sunucuya bağlanılıyor…</p>}
+        {!connected && <p className="muted">Sunucuya bağlanılıyor…</p>}
         {error && <p className="error">{error}</p>}
       </div>
     </div>
