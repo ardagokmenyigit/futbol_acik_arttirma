@@ -111,22 +111,16 @@ export function App() {
             <span className={`dot ${connected ? '' : 'off'}`} />
             {connected ? 'Sunucuya bağlı' : 'Bağlanıyor…'}
           </div>
-          <button
-            type="button"
-            onClick={() => setForceSimulationPreview((v) => !v)}
-            style={{
-              padding: '4px 10px',
-              fontSize: '0.8rem',
-              borderRadius: '6px',
-              border: '1px solid var(--border-color, #333)',
-              backgroundColor: forceSimulationPreview ? '#f59e0b' : 'rgba(255,255,255,0.08)',
-              color: forceSimulationPreview ? '#000' : '#fff',
-              cursor: 'pointer',
-              fontWeight: 600,
-            }}
-          >
-            {forceSimulationPreview ? '✕ Önizlemeyi Kapat' : '🏆 Turnuva Ağacı Simülasyonu'}
-          </button>
+          {import.meta.env.DEV && (
+            <button
+              type="button"
+              className="btn-outline"
+              style={{ padding: '6px 10px', fontSize: 12 }}
+              onClick={() => setForceSimulationPreview((v) => !v)}
+            >
+              {forceSimulationPreview ? '✕ Önizleme' : '🏆 Turnuva önizleme'}
+            </button>
+          )}
         </div>
 
         {forceSimulationPreview ? (
