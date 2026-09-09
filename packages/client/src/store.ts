@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Participant, RoomState } from '@fal/shared';
+import type { LeagueState, Participant, RoomState } from '@fal/shared';
 
 /** Son biten round'un özeti (Draft ekranındaki kısa bildirim için). */
 export interface WonInfo {
@@ -20,6 +20,9 @@ interface RoomStoreState {
   remainingMs: number;
   lastWon: WonInfo | null;
 
+  /** Lig durumu — league:* eventleriyle akışta güncellenir. */
+  league: LeagueState | null;
+
   setConnected: (connected: boolean) => void;
   enterRoom: (roomState: RoomState, youId: string) => void;
   updateRoom: (roomState: RoomState) => void;
@@ -29,6 +32,7 @@ interface RoomStoreState {
   setRemainingMs: (ms: number) => void;
   roundStarted: (remainingMs: number) => void;
   setLastWon: (won: WonInfo) => void;
+  setLeague: (league: LeagueState) => void;
 }
 
 export const useRoomStore = create<RoomStoreState>((set) => ({
@@ -38,16 +42,19 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   error: null,
   remainingMs: 0,
   lastWon: null,
+  league: null,
 
   setConnected: (connected) => set({ connected }),
   enterRoom: (roomState, youId) => set({ roomState, youId, error: null }),
   updateRoom: (roomState) => set({ roomState }),
-  exitRoom: () => set({ roomState: null, youId: null, remainingMs: 0, lastWon: null }),
+  exitRoom: () =>
+    set({ roomState: null, youId: null, remainingMs: 0, lastWon: null, league: null }),
   setError: (error) => set({ error }),
 
   setRemainingMs: (remainingMs) => set({ remainingMs }),
   roundStarted: (remainingMs) => set({ remainingMs, lastWon: null }),
   setLastWon: (lastWon) => set({ lastWon }),
+  setLeague: (league) => set({ league }),
 }));
 
 /** Store'dan türetilen "sen" katılımcısı. */

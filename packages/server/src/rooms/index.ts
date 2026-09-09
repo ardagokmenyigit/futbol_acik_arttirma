@@ -1,5 +1,6 @@
 import type { RoomState } from '@fal/shared';
 import { beginDraft, cancelAuction, dropBidderIfLeading } from '../auction/index.js';
+import { cancelLeague } from '../league/index.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { RoomError, roomStore } from './roomStore.js';
 
@@ -107,7 +108,8 @@ function handleLeave(io: TypedServer, socket: TypedSocket): void {
     io.to(room.roomId).emit('room:playerLeft', { playerId });
     broadcastRoomState(io, room);
   } else {
-    // Oda kapandı — devam eden açık artırma timer'larını temizle.
+    // Oda kapandı — devam eden açık artırma / lig timer'larını temizle.
     cancelAuction(roomId);
+    cancelLeague(roomId);
   }
 }
