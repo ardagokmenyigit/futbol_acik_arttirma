@@ -65,12 +65,38 @@ export function fillWithBotTeams(
 }
 
 /**
- * 4 veya 8 takımlı Turnuva Ağacı (Bracket) oluşturur.
+ * 2, 4 veya 8 takımlı Turnuva Ağacı (Bracket) oluşturur.
  */
 export function createTournament(
   teams: ParticipantTeamInfo[],
   size: TournamentSize = 4,
 ): TournamentState {
+  if (size === 2) {
+    const team1 = teams[0]?.id ?? null;
+    const team2 = teams[1]?.id ?? null;
+
+    const finalMatch: TournamentMatch = {
+      matchId: 'final-1',
+      round: 'final',
+      roundIndex: 0,
+      homeId: team1,
+      awayId: team2,
+      homePlaceholder: 'Takım 1',
+      awayPlaceholder: 'Takım 2',
+    };
+
+    const rounds: TournamentRound[] = [
+      { name: 'final', title: 'Büyük Final', matches: [finalMatch] },
+    ];
+
+    return {
+      size: 2,
+      rounds,
+      currentMatchId: finalMatch.matchId,
+      championId: null,
+    };
+  }
+
   if (size === 4) {
     const team1 = teams[0]?.id ?? null;
     const team2 = teams[1]?.id ?? null;

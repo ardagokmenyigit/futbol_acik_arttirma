@@ -11,13 +11,13 @@ al, kodlama konvansiyonlarına ve mimariye sadık kal.
 1-8 kişilik, gerçek zamanlı, tarayıcı tabanlı çok oyunculu bir web oyunu.
 Oyuncular sahte bir futbolcu piyasasında **açık artırmayla** kadro kurar,
 kadrolar tamamlanınca sistem **maçları simüle eder** ve bir **eleme
-turnuvası** (4 ya da 8 takım) sonunda kazananı belirler. Tek kişi de
+turnuvası** (2, 4 ya da 8 takım) sonunda kazananı belirler. Tek kişi de
 oynayabilir — eksik takımlar botlarla tamamlanır. (Lig formatı kaldırıldı.)
 
 ### 1.1 Oyun Akışı (Uçtan Uca)
 
 1. **Lobi**: Bir kullanıcı oda kurar (host), diğerleri oda koduyla katılır.
-   Host turnuva boyutunu (4 ya da 8 takım) seçer. Odaya o sayıya kadar insan
+   Host turnuva boyutunu (2, 4 ya da 8 takım) seçer. Odaya o sayıya kadar insan
    girebilir; 1 kişi bile yeter. Bağlı herkes "hazır" işaretleyince host
    başlatır, eksik takımlar botlarla dolar.
 2. **Draft (Açık Artırma) Fazı**: Tam yapı §3.1'de. Özet: draft havuzu
@@ -28,7 +28,7 @@ oynayabilir — eksik takımlar botlarla tamamlanır. (Lig formatı kaldırıld�
    Başlangıç bütçesi **150M** (kurgusal, "M"). Kural dışı pozisyon veya
    bütçe aşımı → teklif reddedilir. (`DEFAULT_ROOM_CONFIG`, ayarlanabilir.)
 4. **Simülasyon Fazı**: Tüm kadrolar tamamlanınca **eleme usulü turnuva**
-   (4 ya da 8 takım) kurulur; maçlar tur tur olay bazlı simüle edilir.
+   (2, 4 ya da 8 takım) kurulur; maçlar tur tur olay bazlı simüle edilir.
 5. **Sonuç**: Turnuva ağacı, maç skorları, gol dakikaları ve şampiyon
    gösterilir.
 
@@ -177,7 +177,7 @@ giden yolun "draft" kısmının tamamı — hem sunucu mantığı hem arayüz.
 
 1. Oda oluşturma/katılma sistemi (`packages/server/src/rooms/`)
    - Oda kodu üretme, host ataması, "hazır" durumu takibi
-   - Kapasite = turnuva boyutu (4 ya da 8); alt sınır yok, tek kişi de başlatır
+   - Kapasite = turnuva boyutu (2, 4 ya da 8); alt sınır yok, tek kişi de başlatır
 2. Açık artırma motoru (`packages/server/src/auction/`)
    - Round yönetimi, timer, teklif validasyonu (bölüm 3.1)
    - Futbolcu havuzundan rastgele çekme mantığı

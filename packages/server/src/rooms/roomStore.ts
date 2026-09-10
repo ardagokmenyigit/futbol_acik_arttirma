@@ -101,15 +101,15 @@ class RoomStore {
   }
 
   /**
-   * Host turnuva boyutunu seçer (4 ya da 8 takım). Eksik takımlar draft
+   * Host turnuva boyutunu seçer (2, 4 ya da 8 takım). Eksik takımlar draft
    * başlarken botlarla tamamlanır. Lig formatı kaldırıldı.
    */
   setFormat(roomId: string, requesterId: string, size: TournamentSize): RoomState {
     const room = this.requireRoom(roomId);
     if (room.hostId !== requesterId) throw new RoomError('Formatı sadece host seçebilir');
     if (room.phase !== 'lobby') throw new RoomError('Oyun başladıktan sonra format değişmez');
-    if (size !== 4 && size !== 8) {
-      throw new RoomError('Turnuva formatı 4 ya da 8 takım olabilir');
+    if (size !== 2 && size !== 4 && size !== 8) {
+      throw new RoomError('Turnuva formatı 2, 4 ya da 8 takım olabilir');
     }
     const humans = room.participants.length;
     if (humans > size) {
@@ -195,7 +195,7 @@ class RoomStore {
     const gate = this.canStart(room);
     if (!gate.ok) throw new RoomError(gate.reason);
 
-    // Eksik takımları botlarla tamamla (turnuva her zaman 4 ya da 8 takım).
+    // Eksik takımları botlarla tamamla (turnuva her zaman 2, 4 ya da 8 takım).
     // Botlar da açık artırmaya katılır, kendi bütçeleriyle kadro kurar.
     const size = room.config.tournamentSize;
     const missing = size - room.participants.length;

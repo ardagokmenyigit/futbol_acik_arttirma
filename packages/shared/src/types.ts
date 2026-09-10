@@ -65,14 +65,14 @@ export interface RoomConfig {
   minBidIncrement: number;
   /**
    * Odaya girebilecek en fazla insan oyuncu. Fiili kapasite `tournamentSize`
-   * ile sınırlıdır (4 ya da 8); tek kişi bile oyunu başlatabilir, eksik
+   * ile sınırlıdır (2, 4 ya da 8); tek kişi bile oyunu başlatabilir, eksik
    * takımlar botlarla tamamlanır.
    */
   maxPlayers: number;
   /**
-   * Oyun formatı: eleme usulü turnuva ağacı. 4 ya da 8 takım. Odadaki insan
+   * Oyun formatı: eleme usulü turnuva ağacı. 2, 4 ya da 8 takım. Odadaki insan
    * sayısı kadarı gerçek, kalanı bot (`isBot: true`) olur. Lig formatı
-   * kaldırıldı — bu alan artık her zaman 4 ya da 8'dir.
+   * kaldırıldı — bu alan artık 2, 4 ya da 8'dir.
    */
   tournamentSize: TournamentSize;
   /**
@@ -370,7 +370,7 @@ export interface LeagueState {
  *  TURNUVA AĞACI SİSTEMİ (Kişi 2)
  * ======================================================================== */
 
-export type TournamentSize = 4 | 8;
+export type TournamentSize = 2 | 4 | 8;
 export type TournamentRoundName = 'quarter' | 'semi' | 'final';
 
 export interface TournamentMatch {

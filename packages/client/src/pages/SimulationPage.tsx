@@ -48,6 +48,28 @@ function createClientTournament(
     });
   }
 
+  if (targetSize === 2) {
+    const finalMatch: TournamentMatch = {
+      matchId: 'final-1',
+      round: 'final',
+      roundIndex: 0,
+      homeId: all[0]?.id ?? null,
+      awayId: all[1]?.id ?? null,
+      homePlaceholder: 'Takım 1',
+      awayPlaceholder: 'Takım 2',
+    };
+
+    return {
+      tournament: {
+        size: 2,
+        rounds: [{ name: 'final', title: 'Büyük Final', matches: [finalMatch] }],
+        currentMatchId: 'final-1',
+        championId: null,
+      },
+      allParticipants: all,
+    };
+  }
+
   if (targetSize === 4) {
     const semiMatches: TournamentMatch[] = [
       {

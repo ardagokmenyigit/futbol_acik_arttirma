@@ -1,6 +1,29 @@
 import { fillWithBotTeams, simulateFullTournament } from '../tournament/tournamentEngine.js';
 
-console.log('=== TURNUVA SİSTEMİ TESTİ (4 ve 8 Takım) ===\n');
+console.log('=== TURNUVA SİSTEMİ TESTİ (2, 4 ve 8 Takım) ===\n');
+
+// 0. Test: 2 takımlı turnuva testi (1v1 Büyük Final)
+console.log('[0] 2 Takımlı Turnuva Testi (1 Gerçek Kullanıcı + 1 Bot -> Doğrudan Büyük Final):');
+const userTeams2 = [{ id: 'user-1', nickname: 'Kerem FK', squad: [] }];
+const filled2 = fillWithBotTeams(userTeams2, 2);
+console.log(
+  'Katılımcılar:',
+  filled2.map((t) => `${t.nickname} (${t.isBot ? 'Bot' : 'Gerçek'})`),
+);
+const t2 = simulateFullTournament(filled2, 2, 50);
+console.log(`\nOynanan Maç Sayısı: ${t2.results.length} (Büyük Final)`);
+t2.results.forEach((r, idx) => {
+  const home = filled2.find((t) => t.id === r.homeId)?.nickname ?? r.homeId;
+  const away = filled2.find((t) => t.id === r.awayId)?.nickname ?? r.awayId;
+  const pen = r.penaltiesHome !== undefined ? ` (Pen: ${r.penaltiesHome}-${r.penaltiesAway})` : '';
+  const winner = filled2.find((t) => t.id === r.winnerId)?.nickname;
+  console.log(
+    `  Maç ${idx + 1}: ${home} ${r.scoreHome} - ${r.scoreAway} ${away}${pen} -> Şampiyon: ${winner}`,
+  );
+});
+const champ2 = filled2.find((t) => t.id === t2.state.championId);
+console.log(`🏆 2 Takımlı Turnuva Şampiyonu: ${champ2?.nickname}\n`);
+console.log('---------------------------------------------------------');
 
 // 1. Test: Sadece 2 kullanıcı var, 4 takımlı turnuva istendi (2 bot tamamlanmalı)
 console.log('[1] 4 Takımlı Turnuva Testi (2 Gerçek Kullanıcı + 2 Bot):');

@@ -102,6 +102,7 @@ export function LobbyPage({ room }: Props) {
       <div className="format-row">
         {(
           [
+            { key: 't2', size: 2, title: '2 Takım', sub: 'Büyük Final' },
             { key: 't4', size: 4, title: '4 Takım', sub: 'Yarı final' },
             { key: 't8', size: 8, title: '8 Takım', sub: 'Çeyrek final' },
           ] as const
@@ -109,7 +110,7 @@ export function LobbyPage({ room }: Props) {
           <button
             key={opt.key}
             className={`format-btn${format === opt.size ? ' active' : ''}`}
-            disabled={!isHost}
+            disabled={!isHost || room.participants.length > opt.size}
             onClick={() => void chooseFormat(opt.size)}
           >
             <span className="ft">{opt.title}</span>
