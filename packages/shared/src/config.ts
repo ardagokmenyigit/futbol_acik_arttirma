@@ -38,7 +38,19 @@ export const DEFAULT_ROOM_CONFIG: RoomConfig = {
   minBidIncrement: 1,
   maxPlayers: 8,
   tournamentSize: 4,
+  hiddenBudgets: false,
 };
+
+/**
+ * Gizli bütçe modunda sunucu, başka katılımcıların `budget` alanını bu değerle
+ * gönderir. `isBudgetHidden()` ile kontrol edin — istemci "🔒 gizli" gösterir.
+ */
+export const HIDDEN_BUDGET = -1;
+
+/** Bu bütçe değeri sunucu tarafından gizlendi mi? */
+export function isBudgetHidden(budget: number): boolean {
+  return budget < 0;
+}
 
 /** Bot takımlara verilen isimler (turnuva formatında eksik kadro doldurma). */
 export const BOT_NICKNAMES = [

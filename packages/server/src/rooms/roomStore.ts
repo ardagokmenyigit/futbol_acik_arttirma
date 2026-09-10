@@ -257,6 +257,8 @@ function mergeConfig(override?: Partial<RoomConfig>): RoomConfig {
     ...override,
     squad,
     squadSize,
+    // Mod bayrağı: yalnız kesin boolean kabul et (istemciden geliyor).
+    hiddenBudgets: override?.hiddenBudgets === true,
   };
 }
 

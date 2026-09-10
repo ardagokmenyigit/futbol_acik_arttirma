@@ -1,8 +1,9 @@
 import type { AckResult, Bid, Footballer, Participant, RoomState } from '@fal/shared';
 import { roomStore } from '../rooms/roomStore.js';
+import { emitRoomState } from '../rooms/broadcast.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { runTournament } from '../tournament/runTournament.js';
-import { botBidDelayMs, botOpeningBid, decideBotBid } from './bot.js';
+import { botBidDelayMs, botOpeningBid, decideBotBid, type RivalView } from './bot.js';
 import { buildDraftPool, findFootballer } from './pool.js';
 import { buildTurnOrders, type TurnOrderPlan } from './turnOrder.js';
 import { bidFloor, positionCount, validateBid } from './validateBid.js';
@@ -191,7 +192,7 @@ function startNextRound(io: TypedServer, roomId: string): void {
   };
 
   io.to(roomId).emit('auction:started', room.auction);
-  io.to(roomId).emit('room:state', room);
+  emitRoomState(io, room);
 
   rt.timers.tick = setInterval(() => emitTick(io, roomId), TICK_MS);
   // Süre dolarsa sunucu onun adına asgari açılışı yapar (pas hakkı yok).
@@ -244,7 +245,7 @@ function applyOpening(
     auto,
   });
   io.to(roomId).emit('auction:bid', { highestBid: bid, history: room.auction.history });
-  io.to(roomId).emit('room:state', room);
+  emitRoomState(io, room);
 
   scheduleBotBids(io, roomId, opener.id);
   return { ok: true };
@@ -257,6 +258,17 @@ function autoOpen(io: TypedServer, roomId: string): void {
   applyOpening(io, roomId, room.config.minBidIncrement, true);
 }
 
+/**
+ * Botun gördüğü rakip bilgisi. Gizli bütçe modunda `null` — bot rakip
+ * bütçelerini bilmez. Açık modda her rakibin kalan bütçesi + kadrosu.
+ */
+function rivalsFor(room: RoomState, botId: string): RivalView[] | null {
+  if (room.config.hiddenBudgets) return null;
+  return room.participants
+    .filter((p) => p.id !== botId)
+    .map((p) => ({ budget: p.budget, squad: p.squad }));
+}
+
 function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
   const room = roomStore.getRoom(roomId);
   if (!room?.auction || room.auction.phase !== 'opening') return;
@@ -264,7 +276,13 @@ function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
   const bot = room.participants.find((p) => p.id === botId);
   if (!bot?.isBot) return;
 
-  const amount = botOpeningBid(bot, room.auction.footballer, room.config, remainingPool(room));
+  const amount = botOpeningBid(
+    bot,
+    room.auction.footballer,
+    room.config,
+    remainingPool(room),
+    rivalsFor(room, botId),
+  );
   applyOpening(io, roomId, amount, false);
 }
 
@@ -348,7 +366,7 @@ function applyBid(
   }
 
   io.to(room.roomId).emit('auction:bid', { highestBid: bid, history: room.auction.history });
-  io.to(room.roomId).emit('room:state', room);
+  emitRoomState(io, room);
 
   scheduleBotBids(io, room.roomId, bidder.id);
   return { ok: true, bid };
@@ -404,6 +422,7 @@ function runBotTurn(io: TypedServer, roomId: string, botId: string): void {
     remainingPool(room),
     room.auction.highestBid,
     bidFloor(room.auction, room.config),
+    rivalsFor(room, botId),
   );
   if (amount === null) return;
 
@@ -460,7 +479,7 @@ function endRound(io: TypedServer, roomId: string): void {
     winnerNickname: winner?.nickname ?? null,
     amount: winner ? amount : 0,
   });
-  io.to(roomId).emit('room:state', room);
+  emitRoomState(io, room);
 
   startNextRound(io, roomId);
 }
@@ -476,7 +495,7 @@ export function dropBidderIfLeading(io: TypedServer, roomId: string, playerId: s
   if (room.auction.highestBid?.playerId === playerId) {
     room.auction.highestBid = null;
     io.to(roomId).emit('auction:bid', { highestBid: null, history: room.auction.history });
-    io.to(roomId).emit('room:state', room);
+    emitRoomState(io, room);
   }
 }
 
@@ -505,7 +524,7 @@ function finishDraft(io: TypedServer, room: RoomState): void {
   room.auction = null;
   autoCompleteSquads(room);
   room.phase = 'simulation';
-  io.to(room.roomId).emit('room:state', room);
+  emitRoomState(io, room);
   io.to(room.roomId).emit('auction:finished', room);
 
   // Oyun her zaman eleme usulü turnuvayla biter (lig formatı kaldırıldı).

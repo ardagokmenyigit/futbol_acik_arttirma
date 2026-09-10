@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { calculateTeamStats, type Footballer, type Position, type RoomState } from '@fal/shared';
+import {
+  calculateTeamStats,
+  isBudgetHidden,
+  type Footballer,
+  type Position,
+  type RoomState,
+} from '@fal/shared';
 import { PositionBadge } from '../components/PositionBadge.js';
 import { placeBid } from '../lib/auctionClient.js';
 import { selectYou, useRoomStore } from '../store.js';
@@ -326,7 +332,14 @@ export function DraftPage({ room }: Props) {
       </div>
 
       <div className="panel">
-        <div className="section-label">Rakipler</div>
+        <div className="section-label">
+          Rakipler
+          {room.config.hiddenBudgets && (
+            <span className="tag" style={{ marginLeft: 8 }}>
+              🔒 gizli bütçe
+            </span>
+          )}
+        </div>
         {room.participants
           .filter((p) => p.id !== you.id)
           .map((p) => (
@@ -335,6 +348,12 @@ export function DraftPage({ room }: Props) {
                 <span className={`dot ${p.connected ? '' : 'off'}`} />
                 {p.nickname}
                 {p.isBot && <span className="tag bot">bot</span>}
+              </span>
+              <span className="amt">
+                {isBudgetHidden(p.budget) ? '🔒' : `${p.budget}M`}
+                <span className="lbl" style={{ marginLeft: 4 }}>
+                  kalan
+                </span>
               </span>
             </div>
           ))}

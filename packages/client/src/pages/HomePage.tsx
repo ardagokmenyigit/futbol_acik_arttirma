@@ -11,6 +11,7 @@ export function HomePage() {
 
   const [nickname, setNickname] = useState(() => localStorage.getItem(NICK_KEY) ?? '');
   const [code, setCode] = useState('');
+  const [hiddenBudgets, setHiddenBudgets] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,7 +22,10 @@ export function HomePage() {
     setBusy(true);
     try {
       localStorage.setItem(NICK_KEY, nickname.trim());
-      const res = action === 'create' ? await createRoom(nickname) : await joinRoom(code, nickname);
+      const res =
+        action === 'create'
+          ? await createRoom(nickname, { hiddenBudgets })
+          : await joinRoom(code, nickname);
       saveSession({ roomId: res.roomState.roomId, playerId: res.you.id });
       enterRoom(res.roomState, res.you.id);
     } catch (err) {
@@ -52,6 +56,31 @@ export function HomePage() {
           placeholder="örn. Kaptan Mert"
           onChange={(e) => setNickname(e.target.value)}
         />
+      </div>
+
+      <div className="field-block">
+        <span className="field-label">Bütçe modu</span>
+        <div className="format-row">
+          <button
+            type="button"
+            className={`format-btn${!hiddenBudgets ? ' active' : ''}`}
+            onClick={() => setHiddenBudgets(false)}
+          >
+            <span className="ft">Açık bütçe</span>
+            <span className="fs">Rakiplerin kalan parası görünür</span>
+          </button>
+          <button
+            type="button"
+            className={`format-btn${hiddenBudgets ? ' active' : ''}`}
+            onClick={() => setHiddenBudgets(true)}
+          >
+            <span className="ft">Gizli bütçe</span>
+            <span className="fs">Kimse rakip bütçesini göremez</span>
+          </button>
+        </div>
+        <p className="footnote" style={{ marginTop: 6 }}>
+          Gizli modda botlar da rakip bütçelerini görmez. Oda kurulduktan sonra değişmez.
+        </p>
       </div>
 
       <button className="btn-primary" disabled={!canSubmit} onClick={() => void handle('create')}>
