@@ -241,11 +241,19 @@ function maxRounds(room: RoomState): number {
 
 /**
  * Teklif gelmeyen turda futbolcuyu zorunlu olarak alacak katılımcı.
- * O pozisyona hâlâ ihtiyacı olanlar arasından seçilir; taban fiyatı
- * karşılayabilenler öncelikli, içlerinden en çok bütçesi kalan alır
- * (eşitlikte id ile deterministik). Hiçbiri karşılayamıyorsa (bir takım
- * parasını erken bitirmiş olabilir) bütçe koşulu düşer — endRound `min(bütçe,
- * basePrice)` kadar keser, bütçe negatife inmez. Kadro bütünlüğü teklif
+ *
+ * Seçim ölçüsü **ihtiyaç**, para değil: o pozisyona hâlâ ihtiyacı olanlar
+ * arasından kadrosu en geride kalan (en çok boş slotu olan) alır; eşitlikte
+ * bütçesi en az olan (gelecek turlarda rekabet şansı en düşük olan), sonra
+ * deterministik olsun diye id.
+ *
+ * Neden bütçeye göre DEĞİL: kimse teklif vermediyse hiç kimse o futbolcuyu
+ * istememiştir. Parası olanı seçmek, doğru karar verip (pas geçip) parasını
+ * koruyanı cezalandırır ve parasını erken bitireni bedava kadroyla ödüllendirir.
+ *
+ * Fiyat yine `min(bütçe, basePrice)` (bkz. endRound), 0 değil: aksi hâlde bir
+ * pozisyona ihtiyacı olan tek kişiysen hiç teklif vermeyip bedavaya kapmak en
+ * iyi strateji olurdu. Parası yetmeyen ~0'a alır — kadro bütünlüğü teklif
  * kuralından önce gelir (autoCompleteSquads ile aynı ilke).
  */
 function pickForcedWinner(room: RoomState, f: Footballer): Participant | undefined {
@@ -254,9 +262,9 @@ function pickForcedWinner(room: RoomState, f: Footballer): Participant | undefin
       p.squad.length < room.config.squadSize &&
       positionCount(p, f.position) < room.config.squad[f.position],
   );
-  const canAfford = eligible.filter((p) => p.budget >= f.basePrice);
-  const pool = canAfford.length > 0 ? canAfford : eligible;
-  return [...pool].sort((a, b) => b.budget - a.budget || a.id.localeCompare(b.id))[0];
+  return [...eligible].sort(
+    (a, b) => a.squad.length - b.squad.length || a.budget - b.budget || a.id.localeCompare(b.id),
+  )[0];
 }
 
 /**
