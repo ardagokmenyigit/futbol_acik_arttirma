@@ -126,11 +126,19 @@ export function DraftPage({ room }: Props) {
             <PositionBadge position={f.position} size="md" />
           </div>
           <div className="player-meta">
-            {isOpening
-              ? `Açılışı ${openerNick ?? '—'} yapacak (en az ${minInc}M)`
-              : auction.highestBid
-                ? 'Serbest teklif'
-                : '—'}
+            {auction.eligibleIds.length === 1 ? (
+              <span style={{ color: 'var(--accent-gold, #f59e0b)', fontWeight: 700 }}>
+                ⚡ Tek uygun alıcı:{' '}
+                {room.participants.find((p) => p.id === auction.eligibleIds[0])?.nickname ?? '—'}{' '}
+                (Otomatik Atanıyor...)
+              </span>
+            ) : isOpening ? (
+              `Açılışı ${openerNick ?? '—'} yapacak (en az ${minInc}M)`
+            ) : auction.highestBid ? (
+              'Serbest teklif'
+            ) : (
+              '—'
+            )}
           </div>
 
           <div className="turn-strip">
@@ -214,17 +222,27 @@ export function DraftPage({ room }: Props) {
           {isOpening ? 'Açılış teklifi ver' : 'Teklif ver'}
         </button>
 
-        {youOpen && (
-          <p className="footnote turn-alert">
-            Açılış sırası sende — vermezsen süre sonunda {minInc}M ile senin adına açılır.
+        {auction.eligibleIds.length === 1 ? (
+          <p className="footnote" style={{ color: 'var(--accent-gold, #f59e0b)', fontWeight: 600 }}>
+            {auction.eligibleIds[0] === you.id
+              ? `⚡ Diğer tüm oyuncuların ${f.position} kontenjanı dolu olduğu için bu futbolcu otomatik olarak senin kadrona aktarılıyor!`
+              : `⚡ Diğer tüm oyuncuların ${f.position} kontenjanı dolu. Oyuncu otomatik olarak ${room.participants.find((p) => p.id === auction.eligibleIds[0])?.nickname ?? 'rakibe'} atanıyor.`}
           </p>
+        ) : (
+          <>
+            {youOpen && (
+              <p className="footnote turn-alert">
+                Açılış sırası sende — vermezsen süre sonunda {minInc}M ile senin adına açılır.
+              </p>
+            )}
+            {isOpening && !youOpen && openerNick && (
+              <p className="footnote">Açılışı {openerNick} yapıyor…</p>
+            )}
+            {!eligible && <p className="footnote">{f.position} kadron dolu — teklif veremezsin.</p>}
+            {youAreLeading && <p className="footnote">En yüksek teklif sende.</p>}
+            {budgetShort && eligible && <p className="footnote">Bütçen bu teklif için yetmiyor.</p>}
+          </>
         )}
-        {isOpening && !youOpen && openerNick && (
-          <p className="footnote">Açılışı {openerNick} yapıyor…</p>
-        )}
-        {!eligible && <p className="footnote">{f.position} kadron dolu — teklif veremezsin.</p>}
-        {youAreLeading && <p className="footnote">En yüksek teklif sende.</p>}
-        {budgetShort && eligible && <p className="footnote">Bütçen bu teklif için yetmiyor.</p>}
         {bidError && <p className="error">{bidError}</p>}
 
         <div className="squad-grid">

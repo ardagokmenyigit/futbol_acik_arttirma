@@ -177,6 +177,43 @@ function startNextRound(io: TypedServer, roomId: string): void {
   const eligibleIds = room.participants.filter((p) => canTake(room, p, next!)).map((p) => p.id);
   const openerId = opener.id;
 
+  // TEK UYGUN ALICI KALDIYSA (diğer tüm oyuncuların bu mevkideki slotu doluysa):
+  // Boşa beklemeden oyuncuyu ekranda 2.8 saniye gösterip otomatik olarak o katılımcıya ata.
+  if (eligibleIds.length === 1) {
+    const singleEligible = room.participants.find((p) => p.id === eligibleIds[0])!;
+    const min = room.config.minBidIncrement;
+    const paidAmount = Math.min(min, Math.max(0, singleEligible.budget));
+    const autoBid: Bid = { playerId: singleEligible.id, amount: paidAmount, at: Date.now() };
+    const autoDurationMs = 2800;
+
+    room.auction = {
+      round: rt.turIndex + 1,
+      totalRounds: rt.plan.orders.length,
+      footballer: next,
+      turnOrder: order,
+      openerId: singleEligible.id,
+      phase: 'bidding',
+      eligibleIds,
+      highestBid: autoBid,
+      endsAt: Date.now() + autoDurationMs,
+      history: [autoBid],
+    };
+
+    io.to(roomId).emit('auction:started', room.auction);
+    io.to(roomId).emit('auction:opened', {
+      openerId: singleEligible.id,
+      amount: paidAmount,
+      endsAt: room.auction.endsAt,
+      auto: true,
+    });
+    io.to(roomId).emit('auction:bid', { highestBid: autoBid, history: room.auction.history });
+    emitRoomState(io, room);
+
+    rt.timers.tick = setInterval(() => emitTick(io, roomId), TICK_MS);
+    rt.timers.end = setTimeout(() => endRound(io, roomId), autoDurationMs);
+    return;
+  }
+
   const durationMs = room.config.turnDurationSec * 1000;
   room.auction = {
     round: rt.turIndex + 1,

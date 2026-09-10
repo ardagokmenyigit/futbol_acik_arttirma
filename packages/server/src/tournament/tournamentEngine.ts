@@ -295,8 +295,9 @@ export function advanceTournament(
 export function simulateFullTournament(
   teams: ParticipantTeamInfo[],
   size: TournamentSize = 4,
-  baseSeed = 2026,
+  baseSeed?: number,
 ): { state: TournamentState; results: MatchResult[] } {
+  const actualSeed = baseSeed ?? Date.now() + Math.floor(Math.random() * 1000000);
   let state = createTournament(teams, size);
   const results: MatchResult[] = [];
 
@@ -346,7 +347,7 @@ export function simulateFullTournament(
       matchId: matchToPlay.matchId,
       homeTeam,
       awayTeam,
-      seed: baseSeed + seedCount * 777,
+      seed: actualSeed + seedCount * 777 + Math.floor(Math.random() * 10000),
       isTournament: true,
     });
 

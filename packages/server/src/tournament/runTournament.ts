@@ -79,7 +79,8 @@ export function runTournament(io: TypedServer, roomId: string): void {
     return;
   }
 
-  const { results } = simulateFullTournament(teams, size);
+  const randomSeed = Math.floor(Math.random() * 1000000000);
+  const { results } = simulateFullTournament(teams, size, randomSeed);
 
   // Ağacı hemen (sonuçsuz) yayınla — oyuncular eşleşmeleri ve kadroları görsün.
   let live: TournamentState = createTournament(teams, size);
