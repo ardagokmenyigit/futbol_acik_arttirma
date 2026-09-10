@@ -137,7 +137,15 @@ araması devreye girer ve teorik optimuma iner.
 
 - Format her zaman **eleme usulü turnuva ağacı**: 4 takım (yarı final) ya da
   8 takım (çeyrek final). Draft bitince `finishDraft` → `runTournament`.
-- Maçlar tur tur "canlı" simüle edilir; beraberlikte penaltı.
+- Maçlar sunucuda önceden simüle edilir (`simulateFullTournament`), sonuçlar
+  tur tur yayınlanır; beraberlikte penaltı.
+- **CANLI MAÇ EKRANI** (`server/src/tournament/runTournament.ts` +
+  client `LiveMatchTicker`): bir maçın iki tarafından biri bile **insan**sa
+  sunucu önce `tournament:matchLive { matchId, result }` yayınlar, istemci
+  maçı dakika dakika oynatır (~14 sn, atlanabilir), sonra sunucu
+  `tournament:matchResult` ile ağaca işler ve sıradaki maça geçer. **Bot–bot**
+  maçlarda `matchLive` gönderilmez, sonuç anında düşer. Sunucu tempolu →
+  tüm oyuncular aynı anı görür, bracket her zaman otoriter.
 - **Lig formatı akıştan kaldırıldı** (kullanıcı isteği). `server/src/league/`,
   client `ResultsPage.tsx` ve shared `LeagueState` / `league:*` eventleri
   kod tabanında DURUYOR ama hiçbir yerden çağrılmıyor — ileride geri açmak

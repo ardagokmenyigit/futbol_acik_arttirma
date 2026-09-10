@@ -86,6 +86,13 @@ export interface ServerToClientEvents {
 
   /** Turnuva ağacı kurulduğunda (eşleşmeler belli, henüz maç oynanmadı). */
   'tournament:bracket': (tournament: TournamentState) => void;
+  /**
+   * İnsan oyuncu içeren bir maç CANLI oynanmak üzere. İstemci maçı dakika
+   * dakika oynatır (LiveMatchTicker); sonuç zaten hazırdır ama ağaca
+   * `tournament:matchResult` gelene kadar işlenmez. Bot–bot maçlarında bu
+   * event GÖNDERİLMEZ, doğrudan `tournament:matchResult` gelir.
+   */
+  'tournament:matchLive': (payload: { matchId: string; result: MatchResult }) => void;
   /** Bir turnuva maçı oynandığında — kazanan bir üst tura işlenmiş hâliyle. */
   'tournament:matchResult': (payload: { result: MatchResult; tournament: TournamentState }) => void;
   /** Final oynandı, şampiyon belli. */

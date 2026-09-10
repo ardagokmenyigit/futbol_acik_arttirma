@@ -5,8 +5,15 @@ interface LiveMatchTickerProps {
   homeName: string;
   awayName: string;
   result: MatchResult;
-  onComplete: (result: MatchResult) => void;
+  /** Yerel önizlemede kullanıcı "sonraki tura geç" der. Sunucu temposunda verilmez. */
+  onComplete?: (result: MatchResult) => void;
   speedMs?: number;
+  /**
+   * Sunucu maç akışını yönetiyor: "ağaca işle" butonu ve otomatik ilerleme
+   * gizlenir, animasyon bitince sadece "maç sonu" gösterilir; sıradaki maça
+   * geçişi sunucu `tournament:matchResult` ile tetikler.
+   */
+  serverPaced?: boolean;
 }
 
 export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
@@ -15,6 +22,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   result,
   onComplete,
   speedMs = 30,
+  serverPaced = false,
 }) => {
   const [minute, setMinute] = useState(1);
   const [liveHomeScore, setLiveHomeScore] = useState(0);
@@ -87,15 +95,15 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     return () => clearInterval(timer);
   }, [result.matchId, homeName, awayName, result, speedMs]);
 
-  // Otomatik tamamlama
+  // Otomatik tamamlama (yalnız yerel önizleme — sunucu temposunda değil).
   useEffect(() => {
-    if (isFinished) {
+    if (isFinished && !serverPaced) {
       const autoTimer = setTimeout(() => {
-        onCompleteRef.current(resultRef.current);
+        onCompleteRef.current?.(resultRef.current);
       }, 1500);
       return () => clearTimeout(autoTimer);
     }
-  }, [isFinished]);
+  }, [isFinished, serverPaced]);
 
   const progressPct = Math.min(100, Math.round((minute / 90) * 100));
 
@@ -277,11 +285,12 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         ))}
       </div>
 
-      {/* Devam Butonu */}
-      {isFinished && (
+      {/* Devam Butonu — yalnız yerel önizlemede. Sunucu temposunda sıradaki
+          maça geçişi sunucu tetikler. */}
+      {isFinished && !serverPaced && (
         <div style={{ textAlign: 'center', marginTop: 16 }}>
           <button
-            onClick={() => onCompleteRef.current(resultRef.current)}
+            onClick={() => onCompleteRef.current?.(resultRef.current)}
             style={{
               backgroundColor: 'var(--accent-green)',
               color: '#000',
@@ -292,6 +301,18 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           >
             Ağaca İşle ve Sonraki Tura Geç ✓
           </button>
+        </div>
+      )}
+      {isFinished && serverPaced && (
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: 16,
+            fontSize: '0.85rem',
+            color: 'var(--text-secondary)',
+          }}
+        >
+          Sonraki maç birazdan…
         </div>
       )}
     </div>
