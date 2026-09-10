@@ -8,15 +8,18 @@ al, kodlama konvansiyonlarına ve mimariye sadık kal.
 
 ## 1. Oyun Nedir?
 
-2-6 kişilik, gerçek zamanlı, tarayıcı tabanlı çok oyunculu bir web oyunu.
+1-8 kişilik, gerçek zamanlı, tarayıcı tabanlı çok oyunculu bir web oyunu.
 Oyuncular sahte bir futbolcu piyasasında **açık artırmayla** kadro kurar,
-kadrolar tamamlanınca sistem **maçları simüle eder** ve bir lig/turnuva
-sonunda kazananı belirler.
+kadrolar tamamlanınca sistem **maçları simüle eder** ve bir **eleme
+turnuvası** (4 ya da 8 takım) sonunda kazananı belirler. Tek kişi de
+oynayabilir — eksik takımlar botlarla tamamlanır. (Lig formatı kaldırıldı.)
 
 ### 1.1 Oyun Akışı (Uçtan Uca)
 
 1. **Lobi**: Bir kullanıcı oda kurar (host), diğerleri oda koduyla katılır.
-   2-6 kişi katılabilir. Herkes "hazır" işaretleyince host oyunu başlatır.
+   Host turnuva boyutunu (4 ya da 8 takım) seçer. Odaya o sayıya kadar insan
+   girebilir; 1 kişi bile yeter. Bağlı herkes "hazır" işaretleyince host
+   başlatır, eksik takımlar botlarla dolar.
 2. **Draft (Açık Artırma) Fazı**: Sunucu, önceden hazırlanmış futbolcu
    havuzundan sırayla rastgele bir futbolcu seçer ve tüm oyunculara aynı anda
    gösterir. Her round için 15-30 saniyelik bir teklif süresi vardır. Oyuncular
@@ -138,13 +141,15 @@ araması devreye girer ve teorik optimuma iner.
   dağılım davranışını üretmeli. Dengeyi ayarlamak için önce izole
   script ile yüzlerce simülasyon çalıştırıp gol ortalamalarını kontrol edin.
 
-### 3.3 Lig/Turnuva Yörüngesi
+### 3.3 Turnuva Yörüngesi
 
-- N takım için round-robin fikstür: her takım diğer her takımla bir kez
-  oynar (N=4 için 6 maç, vb.)
-- Maçlar sırayla simüle edilir, sonuçlar puan tablosuna işlenir.
-- Puan tablosu: Galibiyet 3, Beraberlik 1, Mağlubiyet 0. Averaj
-  (gol farkı) eşitlik durumunda sıralamayı belirler.
+- Format her zaman **eleme usulü turnuva ağacı**: 4 takım (yarı final) ya da
+  8 takım (çeyrek final). Draft bitince `finishDraft` → `runTournament`.
+- Maçlar tur tur "canlı" simüle edilir; beraberlikte penaltı.
+- **Lig formatı akıştan kaldırıldı** (kullanıcı isteği). `server/src/league/`,
+  client `ResultsPage.tsx` ve shared `LeagueState` / `league:*` eventleri
+  kod tabanında DURUYOR ama hiçbir yerden çağrılmıyor — ileride geri açmak
+  isteyen olursa diye. `config.tournamentSize` artık `null` olamaz.
 
 ---
 
@@ -172,7 +177,7 @@ giden yolun "draft" kısmının tamamı — hem sunucu mantığı hem arayüz.
 
 1. Oda oluşturma/katılma sistemi (`packages/server/src/rooms/`)
    - Oda kodu üretme, host ataması, "hazır" durumu takibi
-   - 2-6 kişi sınırı kontrolü
+   - Kapasite = turnuva boyutu (4 ya da 8); alt sınır yok, tek kişi de başlatır
 2. Açık artırma motoru (`packages/server/src/auction/`)
    - Round yönetimi, timer, teklif validasyonu (bölüm 3.1)
    - Futbolcu havuzundan rastgele çekme mantığı
@@ -245,8 +250,9 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
 
 **Kişi 1 — tamamlandı (PR #2, #3, #4)**
 
-- `server/src/rooms/`: oda kodu, host, hazır, 2–6 kişi, `room:rejoin` (reconnect),
-  lobide host disconnect'te hostluk devri, `canStart` bağlı-oyuncu bazlı
+- `server/src/rooms/`: oda kodu, host, hazır, kapasite = turnuva boyutu,
+  `room:rejoin` (reconnect), lobide host disconnect'te hostluk devri,
+  `canStart` bağlı-oyuncu bazlı (alt sınır 1)
 - `server/src/auction/`: round döngüsü, `auction:tick`, anti-snipe, teklif
   validasyonu (taban/bütçe/pozisyon), kazanan → kadro, `finishDraft` →
   `phase='simulation'` + `auction:finished`
@@ -261,8 +267,10 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
 - Kadro **7 oyuncu** (GK 1, DEF 2, MID 2, FWD 2), başlangıç bütçesi **220M**.
 - Açık artırma yapısının tamamı için bkz. §3.1 (tam denk havuz, 28 tur,
   zorunlu açılış + serbest teklif, taban fiyat yok, pas yok, sıra adaleti).
-- Oyun formatı `config.tournamentSize`: `null` = lig, `4 | 8` = turnuva ağacı.
-  Eksik takımlar **botlarla** tamamlanır (`isBot: true`).
+- Oyun formatı `config.tournamentSize`: her zaman `4` ya da `8` (eleme
+  turnuvası). **Lig formatı (`null`) kaldırıldı**, `minPlayers` kaldırıldı.
+  Oda kapasitesi = turnuva boyutu; tek kişi bile başlatır, eksik takımlar
+  **botlarla** tamamlanır (`isBot: true`).
 - Botlar (`server/src/auction/bot.ts`): ihtiyaç + rezerv + değerleme üçlüsü.
   `botOpeningBid` açılış (zorunlu, asla null), `decideBotBid` serbest evre
   (null = teklif vermez). Taban fiyat kalktığı için rezerv iki parçalı:

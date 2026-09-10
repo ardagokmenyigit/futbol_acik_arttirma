@@ -27,9 +27,8 @@ export const DEFAULT_ROOM_CONFIG: RoomConfig = {
   bidDurationSec: 15,
   turnDurationSec: 10,
   minBidIncrement: 1,
-  minPlayers: 2,
   maxPlayers: 8,
-  tournamentSize: null,
+  tournamentSize: 4,
 };
 
 /** Bot takımlara verilen isimler (turnuva formatında eksik kadro doldurma). */
