@@ -113,6 +113,55 @@ export function App() {
   return (
     <>
       <div className="pitch-mark" />
+      <a
+        href="/easter-target.jpg"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Sürpriz Hediye"
+        title="Sürpriz"
+        style={{
+          position: 'fixed',
+          top: '10px',
+          right: '12px',
+          zIndex: 999,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--gold)',
+          opacity: 0.6,
+          transition: 'opacity 0.2s ease, transform 0.2s ease, filter 0.2s ease',
+          cursor: 'pointer',
+          padding: '4px',
+          textDecoration: 'none',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '1';
+          e.currentTarget.style.transform = 'scale(1.2) rotate(-6deg)';
+          e.currentTarget.style.filter = 'drop-shadow(0 0 6px rgba(201, 151, 74, 0.6))';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '0.6';
+          e.currentTarget.style.transform = 'scale(1) rotate(0deg)';
+          e.currentTarget.style.filter = 'none';
+        }}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ display: 'block' }}
+        >
+          <rect x="3" y="8" width="18" height="4" rx="1" />
+          <path d="M12 8v13" />
+          <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
+          <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5" />
+        </svg>
+      </a>
       <div className="app">
         <div
           className="status-row"
