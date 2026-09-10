@@ -29,7 +29,8 @@ export function DraftPage({ room }: Props) {
 
   const floor = useMemo(() => {
     if (!auction) return 0;
-    return auction.highestBid ? auction.highestBid.amount + minInc : auction.footballer.basePrice;
+    // Taban fiyat yok: açılış minBidIncrement kadardır.
+    return auction.highestBid ? auction.highestBid.amount + minInc : minInc;
   }, [auction, minInc]);
 
   const [amount, setAmount] = useState(floor);
@@ -58,7 +59,11 @@ export function DraftPage({ room }: Props) {
 
   const f = auction.footballer;
   const secs = Math.max(0, Math.ceil(remainingMs / 1000));
-  const totalMs = Math.max(1, room.config.bidDurationSec * 1000);
+  const isOpening = auction.phase === 'opening';
+  const totalMs = Math.max(
+    1,
+    (isOpening ? room.config.turnDurationSec : room.config.bidDurationSec) * 1000,
+  );
   const progress = Math.max(0, Math.min(1, remainingMs / totalMs));
   const ringLead = secs <= 5 ? 'var(--crimson)' : 'var(--gold)';
   const deg = Math.round(progress * 360);
@@ -66,9 +71,15 @@ export function DraftPage({ room }: Props) {
   const leaderNick =
     room.participants.find((p) => p.id === auction.highestBid?.playerId)?.nickname ?? null;
   const youAreLeading = auction.highestBid?.playerId === you.id;
-  const posFull = squadCount(f.position) >= room.config.squad[f.position];
   const budgetShort = floor > you.budget;
-  const canBid = !youAreLeading && !posFull && !budgetShort && secs > 0;
+
+  const eligible = auction.eligibleIds.includes(you.id);
+  const youOpen = isOpening && auction.openerId === you.id;
+  const openerNick = room.participants.find((p) => p.id === auction.openerId)?.nickname ?? null;
+
+  const canBid = isOpening
+    ? youOpen && !budgetShort && secs > 0
+    : eligible && !youAreLeading && !budgetShort && secs > 0;
 
   async function submitBid() {
     setBidError(null);
@@ -84,7 +95,10 @@ export function DraftPage({ room }: Props) {
       <div className="panel crimson">
         <div className="live-head">
           <div>
-            <div className="round-label">Tur {auction.round}</div>
+            <div className="round-label">
+              Tur {auction.round}/{auction.totalRounds}
+              {isOpening ? ' · açılış teklifi' : ' · serbest teklif'}
+            </div>
             <h1>Açık Artırma</h1>
           </div>
           <div
@@ -105,7 +119,35 @@ export function DraftPage({ room }: Props) {
             <span className="player-name">{f.name}</span>
             <PositionBadge position={f.position} size="md" showLabel />
           </div>
-          <div className="player-meta">Başlangıç değeri {f.basePrice}M</div>
+          <div className="player-meta">
+            {isOpening
+              ? `Açılışı ${openerNick ?? '—'} yapacak (en az ${minInc}M)`
+              : auction.highestBid
+                ? 'Serbest teklif'
+                : '—'}
+          </div>
+
+          <div className="turn-strip">
+            {auction.turnOrder.map((id, i) => {
+              const p = room.participants.find((x) => x.id === id);
+              const isOpener = auction.openerId === id;
+              const out = !auction.eligibleIds.includes(id);
+              const leads = auction.highestBid?.playerId === id;
+              return (
+                <span
+                  key={id}
+                  className={`turn-chip${isOpener ? ' now' : ''}${out ? ' out' : ''}${leads ? ' leads' : ''}`}
+                  title={
+                    out ? 'kadrosu bu pozisyonda dolu' : isOpener ? 'açılışı yapıyor' : undefined
+                  }
+                >
+                  <span className="turn-no">{i + 1}</span>
+                  {p?.nickname ?? '—'}
+                  {id === you.id && <span className="turn-you">sen</span>}
+                </span>
+              );
+            })}
+          </div>
 
           <div className="stat-row">
             <StatItem label="GEN" value={f.overall} />
@@ -155,14 +197,20 @@ export function DraftPage({ room }: Props) {
           disabled={!canBid || amount < floor}
           onClick={() => void submitBid()}
         >
-          Teklif ver
+          {isOpening ? 'Açılış teklifi ver' : 'Teklif ver'}
         </button>
 
-        {youAreLeading && <p className="footnote">En yüksek teklif sende.</p>}
-        {posFull && (
-          <p className="footnote">{f.position} kadron dolu — bu futbolcuya teklif veremezsin.</p>
+        {youOpen && (
+          <p className="footnote turn-alert">
+            Açılış sırası sende — vermezsen süre sonunda {minInc}M ile senin adına açılır.
+          </p>
         )}
-        {budgetShort && !posFull && <p className="footnote">Bütçen bu tur için yetmiyor.</p>}
+        {isOpening && !youOpen && openerNick && (
+          <p className="footnote">Açılışı {openerNick} yapıyor…</p>
+        )}
+        {!eligible && <p className="footnote">{f.position} kadron dolu — teklif veremezsin.</p>}
+        {youAreLeading && <p className="footnote">En yüksek teklif sende.</p>}
+        {budgetShort && eligible && <p className="footnote">Bütçen bu teklif için yetmiyor.</p>}
         {bidError && <p className="error">{bidError}</p>}
 
         <div className="squad-grid">

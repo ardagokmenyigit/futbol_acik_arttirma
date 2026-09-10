@@ -7,11 +7,17 @@ export function positionCount(participant: Participant, position: Position): num
   return participant.squad.filter((f) => f.position === position).length;
 }
 
-/** Bir round'da verilebilecek en düşük geçerli teklif. */
+/**
+ * Verilebilecek en düşük geçerli teklif.
+ *
+ * TABAN FİYAT YOK: açık artırma 0'dan başlar, ilk teklif `minBidIncrement`
+ * kadardır. Futbolcunun `basePrice` alanı artık hiçbir yerde kullanılmaz —
+ * fiyatı tamamen rekabet belirler.
+ */
 export function bidFloor(auction: AuctionState, config: RoomConfig): number {
   return auction.highestBid
     ? auction.highestBid.amount + config.minBidIncrement
-    : auction.footballer.basePrice;
+    : config.minBidIncrement;
 }
 
 /**
@@ -31,6 +37,12 @@ export function validateBid(
   if (auction.highestBid?.playerId === bidder.id) {
     return { ok: false, error: 'En yüksek teklif zaten sende' };
   }
+  if (auction.phase !== 'bidding') {
+    return { ok: false, error: 'Açılış teklifi bekleniyor' };
+  }
+  if (!auction.eligibleIds.includes(bidder.id)) {
+    return { ok: false, error: 'Bu futbolcuya teklif veremezsin' };
+  }
 
   const floor = bidFloor(auction, config);
   if (amount < floor) {
@@ -43,6 +55,9 @@ export function validateBid(
   const position = auction.footballer.position;
   if (positionCount(bidder, position) >= config.squad[position]) {
     return { ok: false, error: `${position} kadron dolu` };
+  }
+  if (bidder.squad.length >= config.squadSize) {
+    return { ok: false, error: 'Kadron dolu' };
   }
   return { ok: true, amount };
 }

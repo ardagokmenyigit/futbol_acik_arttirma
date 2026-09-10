@@ -56,6 +56,17 @@ export interface ServerToClientEvents {
   'room:error': (payload: { message: string }) => void;
 
   'auction:started': (auction: AuctionState) => void;
+  /**
+   * Açılış teklifi verildi — artırma serbest teklif evresine geçti.
+   * İstemci geri sayımı buradaki `endsAt`'e göre yeniler.
+   */
+  'auction:opened': (payload: {
+    openerId: string;
+    amount: number;
+    endsAt: number;
+    /** Sunucu, süresi dolduğu için açılışı onun adına mı yaptı? */
+    auto: boolean;
+  }) => void;
   'auction:tick': (payload: { round: number; remainingMs: number }) => void;
   'auction:bid': (payload: { highestBid: Bid | null; history: Bid[] }) => void;
   'auction:won': (payload: {

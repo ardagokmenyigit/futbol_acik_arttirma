@@ -5,24 +5,27 @@ import type { RoomConfig } from './types.js';
  * Değerler dengeleme sırasında değişebilir (CLAUDE.md §3.2).
  */
 /**
- * Kadro 7 oyuncu (1-2-2-2). Havuzdaki taban fiyatlar 12-25M.
+ * Kadro 7 oyuncu (1-2-2-2). Draft `squadSize × katılımcı` TUR sürer
+ * (4 oyuncu → 28 tur), her tur bir futbolcunun açık artırmasıdır.
  *
- * BÜTÇE NEDEN 220M:
- * Kadronun zorunlu (en ucuz) maliyeti ~96M. Açık artırmanın canlı geçmesi
- * için bunun ÜSTÜNDE ciddi bir pay gerekir — teklif savaşı ancak o payla
- * yapılır. 140M denendiğinde artırma payı yalnız 44M kalıyordu (oyuncu
- * başına ~6M) ve bütün botlar aynı düşük tavana sıkışıp sönük teklif
- * veriyordu. 220M ile pay ~124M (oyuncu başına ~18M): yıldızlar için
- * gerçek rekabet oluşuyor.
+ * DRAFT HAVUZU TAM DENK: pozisyon başına tam olarak ihtiyaç kadar futbolcu
+ * seçilir (4 oyuncu → 4 kaleci, 8 defans, 8 orta saha, 8 forvet). Arz talebe
+ * denk olduğu için herkes tam kadroyla biter ve "beklersem ucuza kaparım"
+ * bedava olmaktan çıkar — beklerken iyiler tükenir.
  *
- * DİKKAT: startingBudget, kadronun en ucuz dolumundan (~96M) küçük olursa
- * kadrolar asla dolmaz ve draft havuz bitene kadar sürer.
+ * TABAN FİYAT YOK. Açık artırma `minBidIncrement` ile açılır; fiyatı tamamen
+ * rekabet belirler. Açılış teklifi ZORUNLUDUR, pas hakkı yoktur.
+ *
+ * SÜRELER: `turnDurationSec` açılış teklifi penceresi, `bidDurationSec`
+ * sonrasındaki serbest teklif evresi. Serbest evrede son saniye teklifi
+ * mümkün olduğu için anti-snipe geri geldi.
  */
 export const DEFAULT_ROOM_CONFIG: RoomConfig = {
   squad: { GK: 1, DEF: 2, MID: 2, FWD: 2 },
   squadSize: 7,
   startingBudget: 220,
-  bidDurationSec: 20,
+  bidDurationSec: 15,
+  turnDurationSec: 10,
   minBidIncrement: 1,
   minPlayers: 2,
   maxPlayers: 8,

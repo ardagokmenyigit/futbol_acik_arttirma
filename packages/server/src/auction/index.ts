@@ -3,6 +3,7 @@ import { handleBid } from './engine.js';
 
 export { beginDraft, cancelAuction, dropBidderIfLeading } from './engine.js';
 export { loadFootballers } from './pool.js';
+export { buildTurnOrders } from './turnOrder.js';
 
 /** Bir socket için `auction:*` handler'larını bağlar. */
 export function registerAuctionHandlers(io: TypedServer, socket: TypedSocket): void {
