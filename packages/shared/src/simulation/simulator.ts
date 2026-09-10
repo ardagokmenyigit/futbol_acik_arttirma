@@ -3,6 +3,7 @@ import type {
   MatchEvent,
   MatchResult,
   PenaltyShootoutAttempt,
+  Position,
   Team,
 } from '../types.js';
 import { createPRNG, stringToSeed } from './random.js';
@@ -86,6 +87,26 @@ const PROTECTING_DEFENSE = 1.06;
 
 /** Son 20 dakikada tempo artar (yorgunluk + risk alma). */
 const LATE_TEMPO = 1.18;
+
+/**
+ * Penaltı atma yeteneği. `attack` DEĞİL `overall` tabanlıdır: penaltı, akan
+ * oyundaki hücum gücünden çok oyuncunun genel kalitesi + soğukkanlılığıdır.
+ * Mevki yalnızca ayar payı verir.
+ *
+ * Eski model doğrudan `attack` kullanıyordu; kaleci (attack ~29) atışa
+ * kalkınca mantık bozuluyordu. `overall` havuzda 78–91 aralığında olduğu
+ * için ayrım artık kadro kalitesinden geliyor.
+ */
+const PENALTY_POSITION_BONUS: Record<Position, number> = {
+  FWD: 4,
+  MID: 1,
+  DEF: -3,
+  GK: -7,
+};
+
+function penaltySkill(p: Footballer): number {
+  return p.overall + PENALTY_POSITION_BONUS[p.position];
+}
 
 function pickScorer(team: Team, prng: () => number): Footballer | undefined {
   if (!team.players || team.players.length === 0) return undefined;
@@ -247,10 +268,16 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
   } else if (scoreAway > scoreHome) {
     winnerId = awayTeam.participantId;
   } else if (isTournament) {
-    // Seri penaltı atışları — oyuncular hücum gücüne göre büyükten küçüğe sıralanır.
-    const homeShooters = [...(homeTeam.players ?? [])].sort((a, b) => b.attack - a.attack);
-    const awayShooters = [...(awayTeam.players ?? [])].sort((a, b) => b.attack - a.attack);
+    // Seri penaltı atışları — en iyi penaltıcıdan başlayarak sıralanır.
+    const homeShooters = [...(homeTeam.players ?? [])].sort(
+      (a, b) => penaltySkill(b) - penaltySkill(a),
+    );
+    const awayShooters = [...(awayTeam.players ?? [])].sort(
+      (a, b) => penaltySkill(b) - penaltySkill(a),
+    );
 
+    // Kadro tükenince başa dönülür: 7 kişilik kadroda 8. atışı yine 1. atıcı
+    // kullanır (gerçek futbol kuralı — herkes bir kez atmadan kimse iki kez atmaz).
     const getShooter = (shooters: Footballer[], team: Team, kickIdx: number): Footballer => {
       if (shooters.length > 0) {
         return shooters[kickIdx % shooters.length]!;
@@ -270,9 +297,9 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     const homeGkDef = homeGk?.defense ?? baseHomeDef;
     const awayGkDef = awayGk?.defense ?? baseAwayDef;
 
-    const calcSuccessRate = (shooterAtt: number, oppGkDef: number) => {
-      const rate = 0.74 + (shooterAtt - 80) * 0.0025 - (oppGkDef - 80) * 0.002;
-      return Math.min(0.92, Math.max(0.52, rate));
+    const calcSuccessRate = (shooterSkill: number, oppGkDef: number) => {
+      const rate = 0.715 + (shooterSkill - 82) * 0.007 - (oppGkDef - 82) * 0.006;
+      return Math.min(0.93, Math.max(0.45, rate));
     };
 
     let penH = 0;
@@ -286,7 +313,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     for (let round = 1; round <= 5; round++) {
       // 1. Ev Sahibi atışı
       const hShooter = getShooter(homeShooters, homeTeam, homeKicks);
-      const hScored = prng() < calcSuccessRate(hShooter.attack, awayGkDef);
+      const hScored = prng() < calcSuccessRate(penaltySkill(hShooter), awayGkDef);
       if (hScored) penH++;
       homeKicks++;
       shootout.push({
@@ -308,7 +335,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
 
       // 2. Deplasman atışı
       const aShooter = getShooter(awayShooters, awayTeam, awayKicks);
-      const aScored = prng() < calcSuccessRate(aShooter.attack, homeGkDef);
+      const aScored = prng() < calcSuccessRate(penaltySkill(aShooter), homeGkDef);
       if (aScored) penA++;
       awayKicks++;
       shootout.push({
@@ -334,7 +361,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     while (penH === penA && suddenDeathRound <= 25) {
       // Ev sahibi
       const hShooter = getShooter(homeShooters, homeTeam, homeKicks);
-      const hScored = prng() < calcSuccessRate(hShooter.attack, awayGkDef);
+      const hScored = prng() < calcSuccessRate(penaltySkill(hShooter), awayGkDef);
       if (hScored) penH++;
       homeKicks++;
       shootout.push({
@@ -349,7 +376,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
 
       // Deplasman
       const aShooter = getShooter(awayShooters, awayTeam, awayKicks);
-      const aScored = prng() < calcSuccessRate(aShooter.attack, homeGkDef);
+      const aScored = prng() < calcSuccessRate(penaltySkill(aShooter), homeGkDef);
       if (aScored) penA++;
       awayKicks++;
       shootout.push({
