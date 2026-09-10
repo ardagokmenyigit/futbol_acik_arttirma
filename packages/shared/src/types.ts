@@ -29,8 +29,8 @@ export interface Footballer {
   defense: number;
   /** Genel değer — kart üzerinde gösterilir. */
   overall: number;
-  /** Açık artırma başlangıç fiyatı ("M" cinsinden). */
-  basePrice: number;
+  /** Açık artırma başlangıç fiyatı ("M" cinsinden, opsiyonel). */
+  basePrice?: number;
 }
 
 /**
