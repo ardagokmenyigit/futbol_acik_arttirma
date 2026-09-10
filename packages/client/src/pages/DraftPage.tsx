@@ -139,6 +139,7 @@ export function DraftPage({ room }: Props) {
               const isOpener = auction.openerId === id;
               const out = !auction.eligibleIds.includes(id);
               const leads = auction.highestBid?.playerId === id;
+              const budget = p ? (isBudgetHidden(p.budget) ? '🔒' : `${p.budget}M`) : null;
               return (
                 <span
                   key={id}
@@ -149,6 +150,7 @@ export function DraftPage({ room }: Props) {
                 >
                   <span className="turn-no">{i + 1}</span>
                   {p?.nickname ?? '—'}
+                  {budget && <span className="turn-budget">{budget}</span>}
                   {id === you.id && <span className="turn-you">sen</span>}
                 </span>
               );
@@ -349,11 +351,8 @@ export function DraftPage({ room }: Props) {
                 {p.nickname}
                 {p.isBot && <span className="tag bot">bot</span>}
               </span>
-              <span className="amt">
-                {isBudgetHidden(p.budget) ? '🔒' : `${p.budget}M`}
-                <span className="lbl" style={{ marginLeft: 4 }}>
-                  kalan
-                </span>
+              <span className="mono" style={{ color: 'var(--chalk-faint)' }}>
+                {p.squad.length}/{room.config.squadSize} kadro
               </span>
             </div>
           ))}

@@ -1232,6 +1232,16 @@ button:disabled {
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+.turn-chip .turn-budget {
+  margin-left: 1px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold-bright, #f0c46a);
+  opacity: 0.9;
+}
+.turn-chip.out .turn-budget {
+  color: var(--chalk-dim, #b9c2c9);
+}
 .turn-chip.now {
   border-color: var(--gold, #d8a13a);
   background: rgba(216, 161, 58, 0.16);
