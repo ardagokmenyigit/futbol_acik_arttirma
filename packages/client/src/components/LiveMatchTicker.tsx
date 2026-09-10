@@ -16,6 +16,43 @@ interface LiveMatchTickerProps {
   serverPaced?: boolean;
 }
 
+const AIMING_PHRASES = [
+  'Nefesler tutuldu... Topun arkasına geçti, vuruş geliyor!',
+  'Gerildi, gözler hakemde... Vuruş için odaklandı!',
+  'Topu beyaz noktaya koydu, stadyumda büyük sessizlik!',
+  'Derin bir nefes aldı... Hakem düdüğünü çaldı!',
+  'Kaleciyle göz göze geldi... Gerilim dorukta!',
+];
+
+const GOAL_PHRASES = [
+  'Topu doksana astı!',
+  'Kaleciyi ters köşeye yatırdı!',
+  'Panenka vuruşuyla kaleciyi çaresiz bıraktı!',
+  'İnanılmaz bir soğukkanlılık, top filelerle buluştu!',
+  'Kalecinin uzanamayacağı köşeye adeta çivi gibi çaktı!',
+  'Ağları adeta sarstı, kusursuz bir penaltı vuruşu!',
+  'Örümcek ağlarını temizledi, müthiş bir vuruş!',
+  'Kaleci köşeyi tahmin etti ama top o kadar sert ki filelerle buluştu!',
+];
+
+const MISS_PHRASES = [
+  'Dağa taşa vurdu, top auta gitti!',
+  'Direğe nişanladı, inanılmaz bir şanssızlık!',
+  'Kaleci devleşti, köşeden müthiş uzandı ve kurtardı!',
+  'Çok zayıf bir vuruş, kaleci zorlanmadan kontrol etti!',
+  'Kaleci köşeyi kusursuz tahmin etti ve penaltıyı çeldi!',
+  'Çerçeveyi bulamadı, top farklı şekilde dışarıda!',
+  'Direkten döndü! Büyük talihsizlik!',
+];
+
+function getPhrase(list: string[], seedKey: string | number): string {
+  const num =
+    typeof seedKey === 'number'
+      ? seedKey
+      : seedKey.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return list[Math.abs(num) % list.length]!;
+}
+
 export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   homeName,
   awayName,
@@ -175,12 +212,13 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       if (!attempt) return;
       const isHome = attempt.teamId === result.homeId;
       const teamName = isHome ? homeName : awayName;
+      const aimText = getPhrase(AIMING_PHRASES, attempt.playerName + index);
 
       // 1. Oyuncu topun başına geçiyor (Heyecan / Bekleme Aşaması)
       setCurrentKickIndex(index);
       setKickState('aiming');
       setTickerLogs((prev) => [
-        `🎯 ${attempt.round}. Penaltı: ${attempt.playerName} (${teamName}) topun başına geçti... Nefesler tutuldu!`,
+        `🎯 ${attempt.round}. Penaltı: ${attempt.playerName} (${teamName}) topun başına geçti... ${aimText}`,
         ...prev,
       ]);
 
@@ -195,13 +233,21 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         setCompletedAttempts((prev) => [...prev, attempt]);
 
         if (attempt.scored) {
+          const goalText = getPhrase(
+            GOAL_PHRASES,
+            attempt.playerName + index + (attempt.playerId ?? ''),
+          );
           setTickerLogs((prev) => [
-            `⚽ GOOOL! ${attempt.playerName} penaltıyı gole çevirdi! (${attempt.scoreHomeAfter} - ${attempt.scoreAwayAfter})`,
+            `⚽ GOOOL! ${attempt.playerName} (${teamName}) — ${goalText} (${attempt.scoreHomeAfter} - ${attempt.scoreAwayAfter})`,
             ...prev,
           ]);
         } else {
+          const missText = getPhrase(
+            MISS_PHRASES,
+            attempt.playerName + index + (attempt.playerId ?? ''),
+          );
           setTickerLogs((prev) => [
-            `❌ KAÇIRDI! ${attempt.playerName} penaltı vuruşundan yararlanamadı! (${attempt.scoreHomeAfter} - ${attempt.scoreAwayAfter})`,
+            `❌ KAÇIRDI! ${attempt.playerName} (${teamName}) — ${missText} (${attempt.scoreHomeAfter} - ${attempt.scoreAwayAfter})`,
             ...prev,
           ]);
         }
@@ -480,16 +526,28 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               <div className="penalty-status-message">
                 {kickState === 'aiming' ? (
                   <span className="penalty-aiming-text">
-                    <span className="pulse-indicator">●</span> Nefesler tutuldu... Topun arkasına
-                    geçti... Vuruş geliyor!
+                    <span className="pulse-indicator">●</span>{' '}
+                    {getPhrase(AIMING_PHRASES, currentAttempt.playerName + currentKickIndex)}
                   </span>
                 ) : currentAttempt.scored ? (
                   <span className="penalty-goal-text">
-                    ⚽ GOOOL! Harika bir vuruşla topu ağlara gönderdi!
+                    ⚽ GOOOL!{' '}
+                    {getPhrase(
+                      GOAL_PHRASES,
+                      currentAttempt.playerName +
+                        currentKickIndex +
+                        (currentAttempt.playerId ?? ''),
+                    )}
                   </span>
                 ) : (
                   <span className="penalty-miss-text">
-                    ❌ KAÇIRDI! Kaleci köşeyi bildi ve kurtardı!
+                    ❌ KAÇIRDI!{' '}
+                    {getPhrase(
+                      MISS_PHRASES,
+                      currentAttempt.playerName +
+                        currentKickIndex +
+                        (currentAttempt.playerId ?? ''),
+                    )}
                   </span>
                 )}
               </div>

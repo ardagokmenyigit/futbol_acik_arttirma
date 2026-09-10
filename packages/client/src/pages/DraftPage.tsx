@@ -193,10 +193,16 @@ export function DraftPage({ room }: Props) {
           <button className="step-btn" onClick={() => setAmount(floor)}>
             MIN
           </button>
-          <button className="step-btn" onClick={() => setAmount(Math.min(floor + 1, you.budget))}>
+          <button
+            className="step-btn"
+            onClick={() => setAmount((curr) => Math.min(Math.max(curr, floor) + 1, you.budget))}
+          >
             +1
           </button>
-          <button className="step-btn" onClick={() => setAmount(Math.min(floor + 5, you.budget))}>
+          <button
+            className="step-btn"
+            onClick={() => setAmount((curr) => Math.min(Math.max(curr, floor) + 5, you.budget))}
+          >
             +5
           </button>
         </div>
