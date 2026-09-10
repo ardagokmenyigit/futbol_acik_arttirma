@@ -98,9 +98,25 @@ export const MatchCard: FC<MatchCardProps> = ({
             fontWeight: 800,
             fontSize: '1.25rem',
             letterSpacing: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
-          {isFinished ? `${result?.scoreHome} - ${result?.scoreAway}` : 'VS'}
+          <span>{isFinished ? `${result?.scoreHome} - ${result?.scoreAway}` : 'VS'}</span>
+          {isFinished && result?.penaltiesHome !== undefined && (
+            <span
+              style={{
+                fontSize: '0.72rem',
+                color: 'var(--accent-gold)',
+                letterSpacing: 0,
+                fontWeight: 700,
+                marginTop: 2,
+              }}
+            >
+              (Pen: {result.penaltiesHome} - {result.penaltiesAway})
+            </span>
+          )}
         </div>
 
         <div style={{ textAlign: 'left' }}>

@@ -331,6 +331,24 @@ export interface Fixture {
   awayId: string;
 }
 
+/** Seri penaltı atışlarındaki tek bir penaltı denemesi. */
+export interface PenaltyShootoutAttempt {
+  /** Kaçıncı penaltı turu (1, 2, 3...) */
+  round: number;
+  /** Atışı kullanan takımın ID'si. */
+  teamId: string;
+  /** Atışı kullanan futbolcunun ID'si. */
+  playerId?: string;
+  /** Atışı kullanan futbolcunun adı. */
+  playerName: string;
+  /** Gol oldu mu? */
+  scored: boolean;
+  /** Bu atıştan sonraki ev sahibi penaltı skoru. */
+  scoreHomeAfter: number;
+  /** Bu atıştan sonraki deplasman penaltı skoru. */
+  scoreAwayAfter: number;
+}
+
 export interface MatchResult {
   matchId: string;
   homeId: string;
@@ -343,6 +361,8 @@ export interface MatchResult {
   penaltiesAway?: number;
   /** Maçı kazanan ve bir üst tura yükselen takımın participantId'si. */
   winnerId?: string;
+  /** Sıralı seri penaltı atışlarının detaylı dökümü. */
+  penaltyShootout?: PenaltyShootoutAttempt[];
 }
 
 export interface StandingRow {

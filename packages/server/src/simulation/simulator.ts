@@ -1,4 +1,10 @@
-import type { Footballer, MatchEvent, MatchResult, Team } from '@fal/shared';
+import type {
+  Footballer,
+  MatchEvent,
+  MatchResult,
+  PenaltyShootoutAttempt,
+  Team,
+} from '@fal/shared';
 import { createPRNG, stringToSeed } from './random.js';
 
 export interface SimulateMatchOptions {
@@ -201,34 +207,136 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
   let penaltiesHome: number | undefined;
   let penaltiesAway: number | undefined;
   let winnerId: string | undefined;
+  let penaltyShootout: PenaltyShootoutAttempt[] | undefined;
 
   if (scoreHome > scoreAway) {
     winnerId = homeTeam.participantId;
   } else if (scoreAway > scoreHome) {
     winnerId = awayTeam.participantId;
   } else if (isTournament) {
-    // Seri penaltı atışları — savunma gücü kalecilik kalitesini yansıtır,
-    // hafif bir avantaj sağlar ama belirleyici değildir (penaltı kumardır).
-    const homeSkill = 0.74 + (baseHomeDef - baseAwayDef) * 0.0015;
-    const awaySkill = 0.74 + (baseAwayDef - baseHomeDef) * 0.0015;
+    // Seri penaltı atışları — oyuncular hücum gücüne göre büyükten küçüğe sıralanır.
+    const homeShooters = [...(homeTeam.players ?? [])].sort((a, b) => b.attack - a.attack);
+    const awayShooters = [...(awayTeam.players ?? [])].sort((a, b) => b.attack - a.attack);
+
+    const getShooter = (shooters: Footballer[], team: Team, kickIdx: number): Footballer => {
+      if (shooters.length > 0) {
+        return shooters[kickIdx % shooters.length]!;
+      }
+      return {
+        id: `gen-${team.participantId}-${kickIdx}`,
+        name: `${team.nickname} Oyuncusu ${kickIdx + 1}`,
+        position: 'FWD',
+        attack: team.attack,
+        defense: team.defense,
+        overall: 80,
+      };
+    };
+
+    const homeGk = homeTeam.players?.find((p) => p.position === 'GK');
+    const awayGk = awayTeam.players?.find((p) => p.position === 'GK');
+    const homeGkDef = homeGk?.defense ?? baseHomeDef;
+    const awayGkDef = awayGk?.defense ?? baseAwayDef;
+
+    const calcSuccessRate = (shooterAtt: number, oppGkDef: number) => {
+      const rate = 0.74 + (shooterAtt - 80) * 0.0025 - (oppGkDef - 80) * 0.002;
+      return Math.min(0.92, Math.max(0.52, rate));
+    };
 
     let penH = 0;
     let penA = 0;
-    for (let p = 0; p < 5; p++) {
-      if (prng() < homeSkill) penH++;
-      if (prng() < awaySkill) penA++;
+    const shootout: PenaltyShootoutAttempt[] = [];
+
+    // İlk 5 atış (klasik seri)
+    let homeKicks = 0;
+    let awayKicks = 0;
+
+    for (let round = 1; round <= 5; round++) {
+      // 1. Ev Sahibi atışı
+      const hShooter = getShooter(homeShooters, homeTeam, homeKicks);
+      const hScored = prng() < calcSuccessRate(hShooter.attack, awayGkDef);
+      if (hScored) penH++;
+      homeKicks++;
+      shootout.push({
+        round,
+        teamId: homeTeam.participantId,
+        playerId: hShooter.id,
+        playerName: hShooter.name,
+        scored: hScored,
+        scoreHomeAfter: penH,
+        scoreAwayAfter: penA,
+      });
+
+      // Matematiksel kontrol (Ev sahibi attıktan sonra)
+      const aRemainingAfterHome = 5 - awayKicks;
+      const hRemainingAfterHome = 5 - homeKicks;
+      if (penH > penA + aRemainingAfterHome || penA > penH + hRemainingAfterHome) {
+        break;
+      }
+
+      // 2. Deplasman atışı
+      const aShooter = getShooter(awayShooters, awayTeam, awayKicks);
+      const aScored = prng() < calcSuccessRate(aShooter.attack, homeGkDef);
+      if (aScored) penA++;
+      awayKicks++;
+      shootout.push({
+        round,
+        teamId: awayTeam.participantId,
+        playerId: aShooter.id,
+        playerName: aShooter.name,
+        scored: aScored,
+        scoreHomeAfter: penH,
+        scoreAwayAfter: penA,
+      });
+
+      // Matematiksel kontrol (Deplasman attıktan sonra)
+      const aRemainingAfterAway = 5 - awayKicks;
+      const hRemainingAfterAway = 5 - homeKicks;
+      if (penH > penA + aRemainingAfterAway || penA > penH + hRemainingAfterAway) {
+        break;
+      }
     }
-    while (penH === penA) {
-      const hGoal = prng() < homeSkill;
-      const aGoal = prng() < awaySkill;
-      if (hGoal) penH++;
-      if (aGoal) penA++;
+
+    // 5 atış bittiğinde ve eşitlik varsa ani ölüm (sudden death)
+    let suddenDeathRound = 6;
+    while (penH === penA && suddenDeathRound <= 25) {
+      // Ev sahibi
+      const hShooter = getShooter(homeShooters, homeTeam, homeKicks);
+      const hScored = prng() < calcSuccessRate(hShooter.attack, awayGkDef);
+      if (hScored) penH++;
+      homeKicks++;
+      shootout.push({
+        round: suddenDeathRound,
+        teamId: homeTeam.participantId,
+        playerId: hShooter.id,
+        playerName: hShooter.name,
+        scored: hScored,
+        scoreHomeAfter: penH,
+        scoreAwayAfter: penA,
+      });
+
+      // Deplasman
+      const aShooter = getShooter(awayShooters, awayTeam, awayKicks);
+      const aScored = prng() < calcSuccessRate(aShooter.attack, homeGkDef);
+      if (aScored) penA++;
+      awayKicks++;
+      shootout.push({
+        round: suddenDeathRound,
+        teamId: awayTeam.participantId,
+        playerId: aShooter.id,
+        playerName: aShooter.name,
+        scored: aScored,
+        scoreHomeAfter: penH,
+        scoreAwayAfter: penA,
+      });
+
       if (penH !== penA) break;
+      suddenDeathRound++;
     }
 
     penaltiesHome = penH;
     penaltiesAway = penA;
     winnerId = penH > penA ? homeTeam.participantId : awayTeam.participantId;
+    penaltyShootout = shootout;
   }
 
   return {
@@ -241,5 +349,6 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     penaltiesHome,
     penaltiesAway,
     winnerId,
+    penaltyShootout,
   };
 }

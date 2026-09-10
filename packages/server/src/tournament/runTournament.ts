@@ -146,7 +146,9 @@ export function runTournament(io: TypedServer, roomId: string): void {
     if (human) {
       // `live.currentMatchId` bu maçı gösteriyor; istemci LiveMatchTicker açar.
       io.to(roomId).emit('tournament:matchLive', { matchId: result.matchId, result });
-      schedule(finalize, LIVE_MATCH_MS);
+      const penaltyCount = result.penaltyShootout?.length ?? 0;
+      const penaltyDelay = penaltyCount > 0 ? penaltyCount * 3000 + 3500 : 0;
+      schedule(finalize, LIVE_MATCH_MS + penaltyDelay);
     } else {
       finalize();
     }
