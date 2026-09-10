@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { AuctionState, RoomState, TournamentState } from '@fal/shared';
+import type { AuctionState, MatchResult, RoomState, TournamentState } from '@fal/shared';
 import { useSocket } from './hooks/useSocket.js';
 import { rejoinRoom } from './lib/roomClient.js';
 import { clearSession, loadSession } from './lib/session.js';
@@ -57,11 +57,18 @@ export function App() {
     function onTournamentBracket(tournament: TournamentState) {
       useRoomStore.getState().setTournament(tournament);
     }
+    // İnsan içeren maç canlı oynanmak üzere — LiveMatchTicker'ı aç.
+    function onTournamentMatchLive(payload: { matchId: string; result: MatchResult }) {
+      useRoomStore.getState().setLiveMatch(payload);
+    }
     function onTournamentMatch({ tournament }: { tournament: TournamentState }) {
       useRoomStore.getState().setTournament(tournament);
+      // Maç ağaca işlendi — canlı oynatmayı kapat (sonucu bracket'te görünür).
+      useRoomStore.getState().setLiveMatch(null);
     }
     function onTournamentFinished({ tournament }: { tournament: TournamentState }) {
       useRoomStore.getState().setTournament(tournament);
+      useRoomStore.getState().setLiveMatch(null);
     }
 
     store.setConnected(connected);
@@ -72,6 +79,7 @@ export function App() {
     socket.on('auction:tick', onAuctionTick);
     socket.on('auction:won', onAuctionWon);
     socket.on('tournament:bracket', onTournamentBracket);
+    socket.on('tournament:matchLive', onTournamentMatchLive);
     socket.on('tournament:matchResult', onTournamentMatch);
     socket.on('tournament:finished', onTournamentFinished);
 
@@ -83,6 +91,7 @@ export function App() {
       socket.off('auction:tick', onAuctionTick);
       socket.off('auction:won', onAuctionWon);
       socket.off('tournament:bracket', onTournamentBracket);
+      socket.off('tournament:matchLive', onTournamentMatchLive);
       socket.off('tournament:matchResult', onTournamentMatch);
       socket.off('tournament:finished', onTournamentFinished);
     };

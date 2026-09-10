@@ -5,6 +5,7 @@ import {
   type TournamentMatch,
   type TournamentState,
 } from '@fal/shared';
+import { LiveMatchTicker } from '../components/LiveMatchTicker.js';
 import { PositionBadge } from '../components/PositionBadge.js';
 import { SquadsOverview } from '../components/SquadsOverview.js';
 import { useSocket } from '../hooks/useSocket.js';
@@ -20,6 +21,7 @@ interface Props {
 export function TournamentPage({ room, tournament }: Props) {
   const exitRoom = useRoomStore((s) => s.exitRoom);
   const youId = useRoomStore((s) => s.youId);
+  const liveMatch = useRoomStore((s) => s.liveMatch);
   const { socket } = useSocket();
   const [showSquads, setShowSquads] = useState(true);
 
@@ -105,6 +107,17 @@ export function TournamentPage({ room, tournament }: Props) {
           </div>
           <h1 style={{ fontSize: 30 }}>Turnuva oynanıyor</h1>
         </div>
+      )}
+
+      {liveMatch && !champ && (
+        <LiveMatchTicker
+          key={liveMatch.matchId}
+          homeName={nameOf(liveMatch.result.homeId)}
+          awayName={nameOf(liveMatch.result.awayId)}
+          result={liveMatch.result}
+          speedMs={140}
+          serverPaced
+        />
       )}
 
       {played === 0 ? (

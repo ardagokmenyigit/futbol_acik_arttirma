@@ -1,5 +1,17 @@
 import { create } from 'zustand';
-import type { LeagueState, Participant, RoomState, TournamentState } from '@fal/shared';
+import type {
+  LeagueState,
+  MatchResult,
+  Participant,
+  RoomState,
+  TournamentState,
+} from '@fal/shared';
+
+/** Canlı oynatılan turnuva maçı (sunucu `tournament:matchLive` ile bildirir). */
+export interface LiveMatch {
+  matchId: string;
+  result: MatchResult;
+}
 
 /** Son biten round'un özeti (Draft ekranındaki kısa bildirim için). */
 export interface WonInfo {
@@ -24,6 +36,8 @@ interface RoomStoreState {
   league: LeagueState | null;
   /** Turnuva ağacı — tournament:* eventleriyle akışta güncellenir. */
   tournament: TournamentState | null;
+  /** Şu an canlı oynatılan maç (yoksa null). */
+  liveMatch: LiveMatch | null;
 
   setConnected: (connected: boolean) => void;
   enterRoom: (roomState: RoomState, youId: string) => void;
@@ -36,6 +50,7 @@ interface RoomStoreState {
   setLastWon: (won: WonInfo) => void;
   setLeague: (league: LeagueState) => void;
   setTournament: (tournament: TournamentState) => void;
+  setLiveMatch: (liveMatch: LiveMatch | null) => void;
 }
 
 export const useRoomStore = create<RoomStoreState>((set) => ({
@@ -47,6 +62,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   lastWon: null,
   league: null,
   tournament: null,
+  liveMatch: null,
 
   setConnected: (connected) => set({ connected }),
   enterRoom: (roomState, youId) => set({ roomState, youId, error: null }),
@@ -59,6 +75,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
       lastWon: null,
       league: null,
       tournament: null,
+      liveMatch: null,
     }),
   setError: (error) => set({ error }),
 
@@ -67,6 +84,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   setLastWon: (lastWon) => set({ lastWon }),
   setLeague: (league) => set({ league }),
   setTournament: (tournament) => set({ tournament }),
+  setLiveMatch: (liveMatch) => set({ liveMatch }),
 }));
 
 /** Store'dan türetilen "sen" katılımcısı. */
