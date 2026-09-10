@@ -20,25 +20,17 @@ oynayabilir — eksik takımlar botlarla tamamlanır. (Lig formatı kaldırıld�
    Host turnuva boyutunu (4 ya da 8 takım) seçer. Odaya o sayıya kadar insan
    girebilir; 1 kişi bile yeter. Bağlı herkes "hazır" işaretleyince host
    başlatır, eksik takımlar botlarla dolar.
-2. **Draft (Açık Artırma) Fazı**: Sunucu, önceden hazırlanmış futbolcu
-   havuzundan sırayla rastgele bir futbolcu seçer ve tüm oyunculara aynı anda
-   gösterir. Her round için 15-30 saniyelik bir teklif süresi vardır. Oyuncular
-   bütçelerinin izin verdiği ölçüde teklif verir. Süre bitiminde en yüksek
-   teklifi veren futbolcuyu alır, bütçesinden düşülür, kadrosuna eklenir.
-   Bu döngü, havuz bitene veya tüm oyuncuların kadroları dolana kadar sürer.
-3. **Kadro Kuralları**: Her takım şu dağılıma uymak zorundadır (örnek, ayarlanabilir):
-   - 2 Kaleci (GK)
-   - 5 Defans (DEF)
-   - 5 Orta Saha (MID)
-   - 3 Forvet (FWD)
-   - Toplam 15 oyuncu, başlangıç bütçesi örn. 100M (para birimi kurgusal, "M")
-     Bir oyuncu kural dışı bir pozisyonu doldurursa veya bütçeyi aşarsa teklif
-     reddedilir.
-4. **Simülasyon Fazı**: Tüm kadrolar tamamlandığında, sistem takımlar arası
-   round-robin (herkes herkesle bir kez oynar) fikstür oluşturur. Her maç,
-   dakika dakika olay bazlı simülasyonla otomatik oynanır (bkz. Bölüm 3).
-5. **Sonuç**: Puan tablosu (galibiyet=3, beraberlik=1, mağlubiyet=0 puan),
-   maç sonuçları ve gol dakikaları gösterilir. En çok puanı alan şampiyon olur.
+2. **Draft (Açık Artırma) Fazı**: Tam yapı §3.1'de. Özet: draft havuzu
+   pozisyon başına tam ihtiyaç kadar (4 oyuncu → 28 futbolcu), draft
+   `squadSize × katılımcı` tur sürer, her tur bir futbolcunun açık
+   artırmasıdır (zorunlu açılış + serbest teklif, taban fiyat yok, pas yok).
+3. **Kadro Kuralları**: Her takım **7 oyuncu** — 1 GK, 2 DEF, 2 MID, 2 FWD.
+   Başlangıç bütçesi **220M** (kurgusal, "M"). Kural dışı pozisyon veya
+   bütçe aşımı → teklif reddedilir. (`DEFAULT_ROOM_CONFIG`, ayarlanabilir.)
+4. **Simülasyon Fazı**: Tüm kadrolar tamamlanınca **eleme usulü turnuva**
+   (4 ya da 8 takım) kurulur; maçlar tur tur olay bazlı simüle edilir.
+5. **Sonuç**: Turnuva ağacı, maç skorları, gol dakikaları ve şampiyon
+   gösterilir.
 
 ---
 
@@ -258,7 +250,8 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
   `phase='simulation'` + `auction:finished`
 - İstemci: HomePage, LobbyPage, DraftPage (futbolcu kartı, geri sayım, teklif
   input'u, bütçe/kadro, rakip ilerlemesi), Zustand store, reconnect
-- `data/players.json`: 22 **kurgusal** futbolcu (placeholder) — Kişi 2 değiştirecek
+- `data/players.json`: Kişi 2'nin 504 futbolculuk veri seti (72 GK / 144 DEF /
+  144 MID / 144 FWD, `overall` 78–91, `basePrice` yok)
 - `shared/events.ts`: `auction:won`a `footballerName`/`winnerNickname`,
   `auction:bid`e `highestBid: Bid | null` eklendi
 
@@ -278,20 +271,25 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
 - Güvenlik ağı: bitişte `autoCompleteSquads()`. Havuz tam denk olduğu için
   normalde devreye girmez.
 
-⚠️ **BİLİNEN DENGE SORUNU — HAVUZA BAĞLI (ölçüldü, birçok kez).**
-Futbolcu havuzu çok dar (overall 83–91) olduğu için takım gücü farkları
-oluşmuyor: her takım ~76.5'e yığılıyor, turnuvada favori ~%30 şampiyon oluyor
-(şans %25). Denenen ve İŞE YARAMAYAN çözümler: havuzu ×2/×3/×4 gerdirme
-(iyiler sadece pahalanıyor, botlar yeniden eşitliyor), kıtlık (36 futbolcu),
-çekişmesiz alımın adil pay ödemesi. Yeni yapı "beklemek baskın strateji"
-açığını KAPATTI (kontrol %20.3 vs beklemek %19.8; eski pas'lı yapıda beklemek
-%21 ile baskındı) ama para harcamanın GETİRİSİ hâlâ yok — çünkü hangi
-futbolcuyu aldığın takım gücünü değiştirmiyor.
-Kişi 2'nin havuz çalışması bu yüzden kritik.
+⚠️ **DENGE — 504'lük havuzla ölçüm (5000 draft, 4 takım, 1-2-2-2).**
+Kişi 2'nin geniş veri setiyle durum İYİLEŞTİ ama çözülmedi:
+takım gücü ort. 74.2, sd 1.1, gerçekleşen aralık **68–78.5**; draft başına
+en iyi–en kötü takım farkı ort. **2.0**, p90 **4.0**. Eski 108'lik "elit"
+havuzda takımlar 76.5'te kümeleniyordu — artık hangi futbolcuyu kazandığın
+takım gücünü birkaç puan oynatıyor, yani paranın küçük de olsa bir getirisi
+var. Yeni açık artırma yapısı "beklemek baskın strateji" açığını da KAPATTI
+(kontrol %20.3 vs beklemek %19.8; eski pas'lı yapıda beklemek %21 ile
+baskındı). Daha büyük fark isteniyorsa havuzun üst ucunun (90+ overall)
+genişlemesi ya da bütçe/kadro asimetrisi gerekir.
 
-**Sıradaki — Kişi 2**
+**Açık uçlar**
 
-- `data/players.json` gerçek veri seti · `server/src/simulation/` · `server/src/league/`
+- Büyük yeniden yazımlardan (açılış-teklifli açık artırma + 504 havuz + solo)
+  sonra **tam draft→turnuva mutlu yolu gerçek timer'larla uçtan uca
+  koşulmadı**. `roomStore` seviyesinde solo + bot doldurma doğrulandı,
+  motor seviyesinde tam tur akışı doğrulanmadı.
+- `server/src/league/` + `client/pages/ResultsPage.tsx` artık ölü kod
+  (bilerek bırakıldı, bkz. §3.3).
 - Devir noktası: `phase === 'simulation'` + `auction:finished(roomState)`;
-  kadrolar `participant.squad` içinde, bütçeler düşülmüş
-- Sonra: ortak uçtan uca entegrasyon + deploy (CLAUDE.md §4 son faz)
+  kadrolar `participant.squad` içinde, bütçeler düşülmüş.
+- Sonra: ortak uçtan uca entegrasyon + deploy (CLAUDE.md §4 son faz).
