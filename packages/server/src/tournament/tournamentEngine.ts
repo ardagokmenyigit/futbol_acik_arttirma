@@ -6,6 +6,7 @@ import type {
   TournamentSize,
   TournamentState,
 } from '@fal/shared';
+import { stringToSeed } from '../simulation/random.js';
 import { simulateMatch } from '../simulation/simulator.js';
 import { buildTeam } from '../simulation/teamStats.js';
 
@@ -291,13 +292,25 @@ export function advanceTournament(
 
 /**
  * Turnuvadaki tüm maçları sırayla baştan sona otomatik simüle eder.
+ *
+ * DETERMİNİSTİK (CLAUDE.md §3.2). Seed katılımcı id'lerinden türetilir:
+ * id'ler `randomUUID()` olduğu için her oda kendi sonuçlarını alır, ama aynı
+ * oda + aynı kadrolar her zaman aynı turnuvayı üretir — hata ayıklanabilir,
+ * tekrar oynatılabilir. `baseSeed` verilirse o kullanılır (test/replay).
+ *
+ * Burada eskiden `Date.now() + Math.random()` ve maç başına ayrıca
+ * `Math.random() * 10000` vardı. Bu, `baseSeed` parametresini işlevsiz
+ * bırakıyor ve hiçbir sonucu tekrar üretilemez hale getiriyordu. Düzeltmeye
+ * çalıştığı asıl sorun — her odada aynı skorların çıkması — maç id'lerinin
+ * sabit olmasıydı (`semi-1`, `final-1`); o da simülatörün kendi varsayılan
+ * seed'i `matchId:homeId:awayId`e çevrilerek zaten çözülmüştü.
  */
 export function simulateFullTournament(
   teams: ParticipantTeamInfo[],
   size: TournamentSize = 4,
   baseSeed?: number,
 ): { state: TournamentState; results: MatchResult[] } {
-  const actualSeed = baseSeed ?? Date.now() + Math.floor(Math.random() * 1000000);
+  const actualSeed = baseSeed ?? stringToSeed(teams.map((t) => t.id).join('|'));
   let state = createTournament(teams, size);
   const results: MatchResult[] = [];
 
@@ -347,7 +360,7 @@ export function simulateFullTournament(
       matchId: matchToPlay.matchId,
       homeTeam,
       awayTeam,
-      seed: actualSeed + seedCount * 777 + Math.floor(Math.random() * 10000),
+      seed: actualSeed + seedCount * 777,
       isTournament: true,
     });
 
