@@ -50,6 +50,10 @@ export function App() {
       const durationMs = Math.max(0, auction.endsAt - Date.now());
       useRoomStore.getState().roundStarted(durationMs);
     }
+    // Açılış teklifi verildi — serbest teklif evresinin geri sayımına geç.
+    function onAuctionOpened({ endsAt }: { endsAt: number }) {
+      useRoomStore.getState().roundStarted(Math.max(0, endsAt - Date.now()));
+    }
     function onAuctionTick({ remainingMs }: { remainingMs: number }) {
       useRoomStore.getState().setRemainingMs(remainingMs);
     }
@@ -84,6 +88,7 @@ export function App() {
     socket.on('room:state', onRoomState);
     socket.on('room:error', onRoomError);
     socket.on('auction:started', onAuctionStarted);
+    socket.on('auction:opened', onAuctionOpened);
     socket.on('auction:tick', onAuctionTick);
     socket.on('auction:won', onAuctionWon);
     socket.on('league:fixtures', onLeagueFixtures);
@@ -97,6 +102,7 @@ export function App() {
       socket.off('room:state', onRoomState);
       socket.off('room:error', onRoomError);
       socket.off('auction:started', onAuctionStarted);
+      socket.off('auction:opened', onAuctionOpened);
       socket.off('auction:tick', onAuctionTick);
       socket.off('auction:won', onAuctionWon);
       socket.off('league:fixtures', onLeagueFixtures);

@@ -32,14 +32,14 @@ import { positionCount } from './validateBid.js';
 const POSITIONS: Position[] = ['GK', 'DEF', 'MID', 'FWD'];
 
 /**
- * Rezerv emniyet payı — ucuz futbolcuları rakip kapabilir diye kalan
- * slotların minimum maliyetine eklenen pay.
+ * Kalan slotlar için adil payın ne kadarının kenarda tutulacağı.
  *
- * DİKKAT: bu değer botun tavanını doğrudan belirler
- * (tavan = bütçe − rezerv). Fazla yüksek olursa bütün botlar aynı düşük
- * tavana sıkışır, kişilikleri anlamsızlaşır ve açık artırma sönük geçer.
+ * DİKKAT: bu değer botun tavanını doğrudan belirler (tavan = bütçe − rezerv).
+ * Fazla yüksek olursa bütün botlar aynı düşük tavana sıkışır, kişilikleri
+ * anlamsızlaşır ve açık artırma sönük geçer. Fazla düşük olursa botlar ilk
+ * yıldıza bütün parayı yatırıp kalan turlarda susar.
  */
-const RESERVE_SAFETY = 1.12;
+const RESERVE_SHARE = 0.55;
 
 /* --------------------------- deterministik gürültü --------------------------- */
 
@@ -82,7 +82,7 @@ export function botPersona(botId: string): BotPersona {
   };
 }
 
-/** Bot düşünme süresi — turun sonuna yakınsa daha çabuk davranır. */
+/** Bot düşünme süresi — bitişe yakınsa daha çabuk davranır. */
 export function botBidDelayMs(remainingMs: number): number {
   const base = 700 + Math.random() * 1800;
   if (remainingMs < 3000) return Math.min(base, 400 + Math.random() * 600);
@@ -115,33 +115,37 @@ function replacementFor(pool: Footballer[], pos: Position): Footballer | null {
 /* -------------------------------- rezerv -------------------------------- */
 
 /**
- * Kalan zorunlu slotları doldurmak için gereken minimum para.
+ * Kalan zorunlu slotlar için kenarda tutulacak para.
+ *
+ * TABAN FİYAT KALKTIĞI İÇİN bu artık iki parçadır:
+ *  1. SERT taban — her kalan slot için en az `minBidIncrement`. Bu olmadan
+ *     bot teklif veremez hâle gelir.
+ *  2. STRATEJİK pay — kalan slotların piyasada kaça gideceğine dair tahmin.
+ *     Tahmin, botun kendi adil payının bir oranıdır: hepsini tek oyuncuya
+ *     yatırıp kalan turlarda susmak istemez.
+ *
  * `excludeOne` verilen pozisyondan bir slotu (bu turda alacağını) düşer.
  */
 function reserveNeeded(
   bot: Participant,
   config: RoomConfig,
-  pool: Footballer[],
   excludePosition?: Position,
   excludeOne = false,
 ): number {
-  let total = 0;
+  let slots = 0;
   for (const pos of POSITIONS) {
     let need = config.squad[pos] - positionCount(bot, pos);
     if (excludeOne && pos === excludePosition) need -= 1;
-    if (need <= 0) continue;
-
-    const prices = pool
-      .filter((f) => f.position === pos)
-      .map((f) => f.basePrice ?? 1)
-      .sort((a, b) => a - b);
-
-    for (let i = 0; i < need; i++) {
-      // Havuz tükenmişse temkinli bir tahmin kullan.
-      total += prices[i] ?? 1;
-    }
+    if (need > 0) slots += need;
   }
-  return Math.ceil(total * RESERVE_SAFETY);
+  if (slots <= 0) return 0;
+
+  const hardFloor = slots * config.minBidIncrement;
+  // Kalan slot başına adil payın bir kısmını kenarda tut.
+  const slotsLeft = Math.max(1, config.squadSize - bot.squad.length);
+  const fairShare = bot.budget / slotsLeft;
+  const strategic = Math.floor(slots * fairShare * RESERVE_SHARE);
+  return Math.max(hardFloor, strategic);
 }
 
 /* ------------------------------ değerleme ------------------------------ */
@@ -166,10 +170,9 @@ export function botMaxBid(
   if (bot.squad.length >= config.squadSize) return 0;
 
   // 2. REZERV — bu alımdan sonra kalan slotlara para kalmalı
-  const reserve = reserveNeeded(bot, config, pool, pos, true);
+  const reserve = reserveNeeded(bot, config, pos, true);
   const affordable = bot.budget - reserve;
-  const minCost = footballer.basePrice ?? 1;
-  if (affordable < minCost) return 0;
+  if (affordable < config.minBidIncrement) return 0;
 
   const persona = botPersona(bot.id);
   const slotsLeft = config.squadSize - bot.squad.length;
@@ -197,10 +200,8 @@ export function botMaxBid(
   let valuation =
     fairShare * (0.5 + qualityWeight * qualityPct + fitWeight * fitScore) * persona.aggression;
 
-  // Taban fiyatın altına düşmesin
-  if (footballer.basePrice != null) {
-    valuation = Math.max(valuation, footballer.basePrice);
-  }
+  // En az bir artış adımı kadar olsun
+  valuation = Math.max(valuation, config.minBidIncrement);
 
   // KITLIK — havuzda o pozisyondan ihtiyacım kadar ya da az kaldıysa kaçırma
   const need = config.squad[pos] - positionCount(bot, pos);
@@ -233,7 +234,8 @@ export function botMaxBid(
 }
 
 /**
- * Botun bu tur vereceği teklif. Vermeyecekse null.
+ * Botun bu turda vereceği teklif. Vermeyecekse null (pas hakkı yok — sadece
+ * teklif vermez, sonraki elde fikri değişebilir).
  */
 export function decideBotBid(
   bot: Participant,
@@ -257,4 +259,29 @@ export function decideBotBid(
   const jump = Math.floor(headroom * jumpRatio * hash(`${bot.id}:${footballer.id}:${floor}`));
 
   return Math.min(floor + Math.max(0, jump), max);
+}
+
+/**
+ * Botun AÇILIŞ teklifi. Açılış zorunludur, bu yüzden `null` dönmez.
+ *
+ * Bot ilgilenmiyorsa asgari açılışı yapar (mecburiyet). İlgileniyorsa
+ * kararlılığı oranında tavanının bir kısmından açar — yüksek açılış rakipleri
+ * caydırma denemesidir, ama tavanın üstüne asla çıkmaz.
+ */
+export function botOpeningBid(
+  bot: Participant,
+  footballer: Footballer,
+  config: RoomConfig,
+  pool: Footballer[],
+): number {
+  const min = config.minBidIncrement;
+  const max = botMaxBid(bot, footballer, config, pool);
+  if (max <= min) return Math.max(min, Math.min(min, bot.budget));
+
+  const persona = botPersona(bot.id);
+  // Kararlı bot yüksekten açar (caydırma), temkinli bot tabandan yoklar.
+  const share = 0.15 + persona.decisiveness * 0.4;
+  const noise = 0.85 + hash(`${bot.id}:${footballer.id}:open`) * 0.3;
+  const opening = Math.floor(max * share * noise);
+  return Math.max(min, Math.min(opening, max, bot.budget));
 }

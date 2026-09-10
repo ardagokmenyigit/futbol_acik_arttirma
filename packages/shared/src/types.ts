@@ -29,7 +29,14 @@ export interface Footballer {
   defense: number;
   /** Genel değer — kart üzerinde gösterilir. */
   overall: number;
-  /** Açık artırma başlangıç fiyatı ("M" cinsinden, opsiyonel). */
+  /**
+   * @deprecated TABAN FİYAT KALDIRILDI. Açık artırma artık 0'dan başlar ve
+   * ilk teklif `config.minBidIncrement` kadardır; hiçbir fiyat, teklif tabanı,
+   * bot rezervi ya da zorunlu atama bu alanı KULLANMAZ.
+   *
+   * Alan yalnızca `players.json` ayrıştırması bozulmasın diye duruyor.
+   * Veri seti bu alandan tamamen arındırıldığında silinecek.
+   */
   basePrice?: number;
 }
 
@@ -44,9 +51,17 @@ export interface RoomConfig {
   squadSize: number;
   /** Her oyuncunun başlangıç bütçesi ("M"). */
   startingBudget: number;
-  /** Bir açık artırma round'unun süresi (saniye). */
+  /** Açılıştan sonraki SERBEST TEKLİF evresinin süresi (saniye). */
   bidDurationSec: number;
-  /** Minimum artış miktarı ("M"). */
+  /**
+   * Sırası gelen katılımcının AÇILIŞ TEKLİFİNİ verme süresi (saniye).
+   * Süre dolarsa sunucu onun adına asgari açılışı yapar (pas hakkı yoktur).
+   */
+  turnDurationSec: number;
+  /**
+   * Minimum artış miktarı ("M"). Taban fiyat kaldırıldığı için ilk teklif de
+   * bu değerdir — yani hiçbir futbolcu bundan ucuza gitmez.
+   */
   minBidIncrement: number;
   /** Odaya girebilecek min/max oyuncu. */
   minPlayers: number;
@@ -86,17 +101,48 @@ export interface Bid {
   at: number;
 }
 
-/** Aktif açık artırma round'unun durumu. */
+/** Açık artırmanın evresi. */
+export type AuctionPhase = 'opening' | 'bidding';
+
+/**
+ * Aktif açık artırmanın durumu.
+ *
+ * YAPI: Draft `squadSize × katılımcı` TUR sürer (4 oyuncu × 7 kadro = 28).
+ * Draft havuzu önceden seçilir ve pozisyon başına TAM OLARAK ihtiyaç kadar
+ * futbolcu içerir (4 kaleci, 8 defans, 8 orta saha, 8 forvet). Arz talebe
+ * denk olduğu için her tur satılır ve herkes tam kadroyla biter.
+ *
+ * AKIŞ:
+ *  1. `opening` — o turun sırasındaki ilk uygun katılımcı AÇILIŞ TEKLİFİNİ
+ *     vermek ZORUNDADIR (en az `minBidIncrement`). Süresi dolarsa sunucu
+ *     onun adına asgari açılışı yapar. Böylece her turda mutlaka gerçek bir
+ *     teklif olur — "kimse teklif vermedi, bedavaya gitti" durumu yoktur.
+ *  2. `bidding` — teklif serbesttir; pozisyona girebilen herkes teklif
+ *     verebilir. PAS HAKKI YOKTUR: istemeyen teklif vermez, fikri değişirse
+ *     geri girebilir. Süre bitiminde en yüksek teklif kazanır.
+ *
+ * Sıra yalnızca açılışı belirler; sıra numaralarının toplamı tüm katılımcılar
+ * için eşittir (bkz. server/auction/turnOrder.ts).
+ */
 export interface AuctionState {
-  /** Kaçıncı round (1'den başlar). */
+  /** Kaçıncı tur (1'den başlar). */
   round: number;
+  /** Toplam tur sayısı (`squadSize × katılımcı`). */
+  totalRounds: number;
   /** Şu an artırmada olan futbolcu. */
   footballer: Footballer;
-  /** En yüksek geçerli teklif. Henüz teklif yoksa null. */
+  /** Bu turun sırası — `turnOrder[0]` normalde açılışı yapar. */
+  turnOrder: string[];
+  /** Açılış teklifini verecek / vermiş katılımcı. */
+  openerId: string;
+  phase: AuctionPhase;
+  /** Bu futbolcuya teklif verebilecek katılımcılar (pozisyonu uygun olanlar). */
+  eligibleIds: string[];
+  /** En yüksek geçerli teklif. `opening` evresinde null. */
   highestBid: Bid | null;
-  /** Round'un biteceği sunucu zamanı (ms epoch). */
+  /** Mevcut evrenin biteceği sunucu zamanı (ms epoch). */
   endsAt: number;
-  /** Bu round'daki tüm geçerli teklifler (eskiden yeniye). */
+  /** Bu turdaki tüm geçerli teklifler (eskiden yeniye). */
   history: Bid[];
 }
 

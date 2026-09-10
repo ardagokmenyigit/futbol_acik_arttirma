@@ -83,18 +83,43 @@ sonunda kazananı belirler.
 
 ### 3.1 Açık Artırma (Draft) Motoru
 
-- Sunucu, havuzdan sırayla rastgele **bir** futbolcu çeker ve
-  `player:up_for_auction` event'i ile tüm istemcilere yayınlar.
-- Sunucu bir timer başlatır (örn. 20 saniye), her saniye `auction:tick`
-  event'iyle kalan süreyi yayınlar.
-- İstemciler `auction:bid` event'iyle teklif gönderir (`{ amount }`).
-  Sunucu, teklifi şu kontrollerden geçirir:
-  - Teklif, mevcut en yüksek tekliften büyük mü?
-  - Oyuncunun bütçesi bu teklifi karşılıyor mu?
-  - Oyuncunun kadrosunda bu pozisyon için hâlâ yer var mı?
-- Süre bitince en yüksek teklifi veren kazanır, `auction:won` event'i
-  yayınlanır, kazananın bütçesi düşülür, futbolcu kadrosuna eklenir.
-- Round biter, bir sonraki futbolcuya geçilir.
+> Güncel yapı. Eski "serbest teklif + tek havuz" ve ondan sonraki "sıra
+> tabanlı teklif/pas" modelleri KALDIRILDI.
+
+**Havuz tam denk.** Draft başında `buildDraftPool()` pozisyon başına TAM
+OLARAK ihtiyaç kadar futbolcu seçer: 4 katılımcı → 4 kaleci, 8 defans,
+8 orta saha, 8 forvet = 28 futbolcu. Sonuçları:
+
+- 28 satış + kişi başı kadro tavanı 7 → herkes tam kadroyla biter (aritmetik).
+- "Beklersem ucuza kaparım" bedava olmaktan çıkar: beklerken iyiler tükenir,
+  elde kalan gerçekten kimsenin istemediğidir. (Eski geniş havuzda 28 slot
+  için 108 futbolcu vardı; beklemenin hiçbir maliyeti yoktu.)
+
+**Draft `squadSize × katılımcı` TUR sürer** (4 oyuncu → 28 tur). Her tur bir
+futbolcunun açık artırmasıdır ve iki evrelidir:
+
+1. **`opening` — açılış teklifi ZORUNLU.** Sıradaki (kadrosu hâlâ eksik olan
+   ilk) katılımcı açılışı yapar. Futbolcu, AÇILIŞI YAPACAK KİŞİNİN ihtiyacına
+   göre havuzdan seçilir — böylece sıradaki her zaman açabilir ve "sıra sende,
+   ihtiyacın olan biri geliyor" sezgisi korunur. Süre (`turnDurationSec`)
+   dolarsa sunucu onun adına `minBidIncrement` ile açar. **Pas hakkı yoktur.**
+   Bu sayede her turda mutlaka gerçek bir teklif olur; "kimse teklif vermedi,
+   bedavaya gitti" durumu ortadan kalkar.
+2. **`bidding` — serbest teklif.** Pozisyona girebilen herkes teklif verebilir,
+   istemeyen vermez, fikri değişirse geri girer. Süre `bidDurationSec`;
+   son saniye teklifi mümkün olduğu için **anti-snipe (5sn) devrede.**
+   Süre bitiminde en yüksek teklif kazanır (`auction:won`).
+
+**TABAN FİYAT YOKTUR.** `Footballer.basePrice` hiçbir yerde kullanılmaz;
+açılış `minBidIncrement` kadardır, fiyatı tamamen rekabet belirler.
+
+**Sıra adaleti** (`server/src/auction/turnOrder.ts`): sıra yalnızca açılışı
+belirler. Tur sayısı `squadSize × n` olduğu için r her zaman n'in katıdır;
+döngüsel kaydırma her katılımcıya her sırayı tam `squadSize` kez verir →
+**sıra numaralarının toplamı TÜM oyuncu sayılarında birebir eşittir (fark 0).**
+(Eski 7 turluk yapıda çift oyuncu sayılarında bu matematiksel olarak
+imkansızdı; 28 tur bunu çözüyor.) r, n'in katı değilse deterministik onarım
+araması devreye girer ve teorik optimuma iner.
 
 ### 3.2 Maç Simülasyon Algoritması
 
@@ -231,21 +256,30 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
 - `shared/events.ts`: `auction:won`a `footballerName`/`winnerNickname`,
   `auction:bid`e `highestBid: Bid | null` eklendi
 
-**Kadro / format / bot (Kişi 1)**
+**Kadro / format / bot / AÇIK ARTIRMA YAPISI (Kişi 1)**
 
-- Kadro **7 oyuncu** (GK 1, DEF 2, MID 2, FWD 2), başlangıç bütçesi **140M**
-  - Havuz taban fiyatları 12–25M → en ucuz dolum ~96M, medyan ~105M.
-  - ⚠️ `startingBudget` en ucuz dolumun altına inerse kadrolar **asla dolmaz**
-    ve draft havuz bitene kadar sürer. (Eski 15 kişilik kadro + 100M bu yüzden
-    bozuktu — simülasyon fazına hiç geçilmiyordu.)
-- Oyun formatı `config.tournamentSize`: `null` = lig (round-robin),
-  `4 | 8` = eleme usulü turnuva ağacı. Host lobiden seçer (`room:setFormat`).
-- Turnuva formatında eksik takımlar **botlarla** tamamlanır (`isBot: true`).
-  Botlar açık artırmaya katılır: ihtiyaç + rezerv + değerleme üçlüsüne bakar
-  (`server/src/auction/bot.ts`), kadrosunu yarım bırakacak teklif vermez.
-- Draft güvenlikleri: tur tavanı (`squadSize × oyuncu × 2`) ve bitişte
-  `autoCompleteSquads()` — pasif/AFK oyuncu draft'ı sonsuza sürükleyemez,
-  simülasyona herkes tam kadro girer.
+- Kadro **7 oyuncu** (GK 1, DEF 2, MID 2, FWD 2), başlangıç bütçesi **220M**.
+- Açık artırma yapısının tamamı için bkz. §3.1 (tam denk havuz, 28 tur,
+  zorunlu açılış + serbest teklif, taban fiyat yok, pas yok, sıra adaleti).
+- Oyun formatı `config.tournamentSize`: `null` = lig, `4 | 8` = turnuva ağacı.
+  Eksik takımlar **botlarla** tamamlanır (`isBot: true`).
+- Botlar (`server/src/auction/bot.ts`): ihtiyaç + rezerv + değerleme üçlüsü.
+  `botOpeningBid` açılış (zorunlu, asla null), `decideBotBid` serbest evre
+  (null = teklif vermez). Taban fiyat kalktığı için rezerv iki parçalı:
+  sert taban (kalan slot × minBidIncrement) + stratejik pay (`RESERVE_SHARE`).
+- Güvenlik ağı: bitişte `autoCompleteSquads()`. Havuz tam denk olduğu için
+  normalde devreye girmez.
+
+⚠️ **BİLİNEN DENGE SORUNU — HAVUZA BAĞLI (ölçüldü, birçok kez).**
+Futbolcu havuzu çok dar (overall 83–91) olduğu için takım gücü farkları
+oluşmuyor: her takım ~76.5'e yığılıyor, turnuvada favori ~%30 şampiyon oluyor
+(şans %25). Denenen ve İŞE YARAMAYAN çözümler: havuzu ×2/×3/×4 gerdirme
+(iyiler sadece pahalanıyor, botlar yeniden eşitliyor), kıtlık (36 futbolcu),
+çekişmesiz alımın adil pay ödemesi. Yeni yapı "beklemek baskın strateji"
+açığını KAPATTI (kontrol %20.3 vs beklemek %19.8; eski pas'lı yapıda beklemek
+%21 ile baskındı) ama para harcamanın GETİRİSİ hâlâ yok — çünkü hangi
+futbolcuyu aldığın takım gücünü değiştirmiyor.
+Kişi 2'nin havuz çalışması bu yüzden kritik.
 
 **Sıradaki — Kişi 2**
 
