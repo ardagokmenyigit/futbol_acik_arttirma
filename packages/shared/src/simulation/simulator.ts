@@ -26,12 +26,18 @@ export interface SimulateMatchOptions {
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
   /**
-   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.084).
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.100).
    *
-   * `strengthSensitivity` 1.6'dan 2.5'e çıkınca gol ortalaması 2.90'dan
-   * 3.06'ya tırmandı: `threat ** sens` dışbükey olduğu için form dalgalanması
-   * ortalamayı yukarı çekiyor. 0.088 → 0.084 bunu geri alıyor (gol/maç 2.92)
-   * ve güç ayrımına hiç dokunmuyor (en güçlü %37.3, oran 2.6x — birebir aynı).
+   * MAÇ BAŞINA GOL bu değere neredeyse doğrusal bağlı — heyecan kolu budur.
+   * Ölçüm (12.000 turnuva, gerçek bot draft'ları):
+   *
+   *   0.084 → gol/maç 2.92   0-0 %7.2   penaltı %24.5
+   *   0.100 → gol/maç 3.48   0-0 %4.4   penaltı %21.7   ← güncel (+%19)
+   *   0.112 → gol/maç 3.90   0-0 %3.1   penaltı %20.1
+   *
+   * Güç ayrımına DOKUNMUYOR: 0.084'te de 0.100'de de en güçlü takım
+   * ~%38 şampiyon, oran ~2.6x. Yalnız gol sıklığını ölçekler; daha çok
+   * gol istenirse tek başına bu değer artırılır (0.55'te sert tavan var).
    */
   baseConversion?: number;
   /**
@@ -136,7 +142,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.0,
     chanceRate = 0.3,
-    baseConversion = 0.084,
+    baseConversion = 0.1,
     strengthSensitivity = 2.5,
     isTournament = true,
   } = options;
