@@ -38,10 +38,8 @@ export function setReady(ready: boolean): void {
   socket.emit('room:setReady', { ready });
 }
 
-/** Sadece host: null = lig, 4 | 8 = turnuva ağacı (eksikler bota gider). */
-export function setFormat(
-  tournamentSize: TournamentSize | null,
-): Promise<{ roomState: RoomState }> {
+/** Sadece host: turnuva boyutu 4 ya da 8 takım (eksikler bota gider). */
+export function setFormat(tournamentSize: TournamentSize): Promise<{ roomState: RoomState }> {
   return new Promise((resolve, reject) => {
     socket.emit('room:setFormat', { tournamentSize }, unwrap(resolve, reject));
   });

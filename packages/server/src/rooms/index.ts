@@ -1,6 +1,5 @@
 import type { RoomState } from '@fal/shared';
 import { beginDraft, cancelAuction, dropBidderIfLeading } from '../auction/index.js';
-import { cancelLeague, startLeagueImmediately } from '../league/index.js';
 import { cancelTournament, startTournamentImmediately } from '../tournament/runTournament.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { RoomError, roomStore } from './roomStore.js';
@@ -106,7 +105,6 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     const room = roomStore.getRoom(roomId);
     if (!room || room.hostId !== playerId) return;
     startTournamentImmediately(roomId);
-    startLeagueImmediately(roomId);
   });
 
   socket.on('room:leave', () => {
@@ -133,9 +131,8 @@ function handleLeave(io: TypedServer, socket: TypedSocket): void {
     io.to(room.roomId).emit('room:playerLeft', { playerId });
     broadcastRoomState(io, room);
   } else {
-    // Oda kapandı — devam eden açık artırma / lig timer'larını temizle.
+    // Oda kapandı — devam eden açık artırma / turnuva timer'larını temizle.
     cancelAuction(roomId);
-    cancelLeague(roomId);
     cancelTournament(roomId);
   }
 }

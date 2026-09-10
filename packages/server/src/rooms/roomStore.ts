@@ -67,8 +67,9 @@ class RoomStore {
     const room = this.getRoomByCode(code);
     if (!room) throw new RoomError('Böyle bir oda bulunamadı');
     if (room.phase !== 'lobby') throw new RoomError('Oyun başlamış, odaya katılınamaz');
-    if (room.participants.length >= room.config.maxPlayers) {
-      throw new RoomError(`Oda dolu (en fazla ${room.config.maxPlayers} kişi)`);
+    const capacity = room.config.tournamentSize;
+    if (room.participants.length >= capacity) {
+      throw new RoomError(`Oda dolu (en fazla ${capacity} kişi)`);
     }
 
     const cleanNick = validateNickname(nickname);
@@ -100,18 +101,18 @@ class RoomStore {
   }
 
   /**
-   * Host oyun formatını seçer: null = lig (round-robin),
-   * 4 | 8 = eleme usulü turnuva (eksik takımlar botlarla tamamlanır).
+   * Host turnuva boyutunu seçer (4 ya da 8 takım). Eksik takımlar draft
+   * başlarken botlarla tamamlanır. Lig formatı kaldırıldı.
    */
-  setFormat(roomId: string, requesterId: string, size: TournamentSize | null): RoomState {
+  setFormat(roomId: string, requesterId: string, size: TournamentSize): RoomState {
     const room = this.requireRoom(roomId);
     if (room.hostId !== requesterId) throw new RoomError('Formatı sadece host seçebilir');
     if (room.phase !== 'lobby') throw new RoomError('Oyun başladıktan sonra format değişmez');
-    if (size !== null && size !== 4 && size !== 8) {
+    if (size !== 4 && size !== 8) {
       throw new RoomError('Turnuva formatı 4 ya da 8 takım olabilir');
     }
     const humans = room.participants.length;
-    if (size !== null && humans > size) {
+    if (humans > size) {
       throw new RoomError(`Odada ${humans} oyuncu var, ${size} takımlık turnuvaya sığmaz`);
     }
     room.config = { ...room.config, tournamentSize: size };
@@ -169,21 +170,14 @@ class RoomStore {
     if (room.phase !== 'lobby') return { ok: false, reason: 'Oyun zaten başlamış' };
 
     const size = room.config.tournamentSize;
-    const cap = size ?? room.config.maxPlayers;
-    if (room.participants.length > cap) {
-      return { ok: false, reason: `En fazla ${cap} oyuncu` };
+    if (room.participants.length > size) {
+      return { ok: false, reason: `En fazla ${size} oyuncu` };
     }
 
     const connected = room.participants.filter((p) => p.connected);
-    // Turnuva formatında eksik takımlar botlarla tamamlanır — tek kişi de yeter.
-    const needed = size ? 1 : room.config.minPlayers;
-    if (connected.length < needed) {
-      return {
-        ok: false,
-        reason: size
-          ? 'En az 1 bağlı oyuncu gerekli'
-          : `En az ${room.config.minPlayers} bağlı oyuncu gerekli`,
-      };
+    // Eksik takımlar botlarla tamamlanır — tek bağlı oyuncu bile yeter.
+    if (connected.length < 1) {
+      return { ok: false, reason: 'En az 1 bağlı oyuncu gerekli' };
     }
     if (!connected.every((p) => p.isReady)) {
       return { ok: false, reason: 'Bağlı oyuncuların hepsi hazır değil' };
@@ -201,26 +195,24 @@ class RoomStore {
     const gate = this.canStart(room);
     if (!gate.ok) throw new RoomError(gate.reason);
 
-    // Turnuva formatı: eksik takımları botlarla tamamla. Botlar da açık
-    // artırmaya katılır, kendi bütçeleriyle kendi kadrolarını kurar.
+    // Eksik takımları botlarla tamamla (turnuva her zaman 4 ya da 8 takım).
+    // Botlar da açık artırmaya katılır, kendi bütçeleriyle kadro kurar.
     const size = room.config.tournamentSize;
-    if (size) {
-      const missing = size - room.participants.length;
-      const taken = new Set(room.participants.map((p) => p.nickname.toLowerCase()));
-      for (let i = 0; i < missing; i++) {
-        const nickname = pickBotNickname(taken);
-        taken.add(nickname.toLowerCase());
-        room.participants.push({
-          id: `bot-${randomUUID()}`,
-          nickname,
-          isHost: false,
-          isReady: true,
-          connected: true,
-          budget: room.config.startingBudget,
-          squad: [],
-          isBot: true,
-        });
-      }
+    const missing = size - room.participants.length;
+    const taken = new Set(room.participants.map((p) => p.nickname.toLowerCase()));
+    for (let i = 0; i < missing; i++) {
+      const nickname = pickBotNickname(taken);
+      taken.add(nickname.toLowerCase());
+      room.participants.push({
+        id: `bot-${randomUUID()}`,
+        nickname,
+        isHost: false,
+        isReady: true,
+        connected: true,
+        budget: room.config.startingBudget,
+        squad: [],
+        isBot: true,
+      });
     }
 
     room.phase = 'draft';

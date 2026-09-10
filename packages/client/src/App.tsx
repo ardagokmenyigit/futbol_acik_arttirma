@@ -1,18 +1,11 @@
 import { useEffect, useState } from 'react';
-import type {
-  AuctionState,
-  LeagueState,
-  MatchResult,
-  RoomState,
-  TournamentState,
-} from '@fal/shared';
+import type { AuctionState, RoomState, TournamentState } from '@fal/shared';
 import { useSocket } from './hooks/useSocket.js';
 import { rejoinRoom } from './lib/roomClient.js';
 import { clearSession, loadSession } from './lib/session.js';
 import { DraftPage } from './pages/DraftPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { LobbyPage } from './pages/LobbyPage.js';
-import { ResultsPage } from './pages/ResultsPage.js';
 import { TournamentPage } from './pages/TournamentPage.js';
 import { SimulationPage } from './pages/SimulationPage.js';
 import { useRoomStore } from './store.js';
@@ -34,10 +27,6 @@ export function App() {
       // Tick'ler arasında / reconnect sonrası geri sayımı endsAt'ten türet.
       if (next.auction) {
         useRoomStore.getState().setRemainingMs(Math.max(0, next.auction.endsAt - Date.now()));
-      }
-      // finished halinde lig durumu room:state ile de gelir (reconnect).
-      if (next.league) {
-        useRoomStore.getState().setLeague(next.league);
       }
       if (next.tournament) {
         useRoomStore.getState().setTournament(next.tournament);
@@ -65,15 +54,6 @@ export function App() {
     }) {
       useRoomStore.getState().setLastWon(payload);
     }
-    function onLeagueFixtures(league: LeagueState) {
-      useRoomStore.getState().setLeague(league);
-    }
-    function onLeagueMatchResult({ league }: { result: MatchResult; league: LeagueState }) {
-      useRoomStore.getState().setLeague(league);
-    }
-    function onLeagueFinished({ league }: { league: LeagueState }) {
-      useRoomStore.getState().setLeague(league);
-    }
     function onTournamentBracket(tournament: TournamentState) {
       useRoomStore.getState().setTournament(tournament);
     }
@@ -91,9 +71,6 @@ export function App() {
     socket.on('auction:opened', onAuctionOpened);
     socket.on('auction:tick', onAuctionTick);
     socket.on('auction:won', onAuctionWon);
-    socket.on('league:fixtures', onLeagueFixtures);
-    socket.on('league:matchResult', onLeagueMatchResult);
-    socket.on('league:finished', onLeagueFinished);
     socket.on('tournament:bracket', onTournamentBracket);
     socket.on('tournament:matchResult', onTournamentMatch);
     socket.on('tournament:finished', onTournamentFinished);
@@ -105,9 +82,6 @@ export function App() {
       socket.off('auction:opened', onAuctionOpened);
       socket.off('auction:tick', onAuctionTick);
       socket.off('auction:won', onAuctionWon);
-      socket.off('league:fixtures', onLeagueFixtures);
-      socket.off('league:matchResult', onLeagueMatchResult);
-      socket.off('league:finished', onLeagueFinished);
       socket.off('tournament:bracket', onTournamentBracket);
       socket.off('tournament:matchResult', onTournamentMatch);
       socket.off('tournament:finished', onTournamentFinished);
@@ -167,22 +141,18 @@ export function App() {
             {roomState?.phase === 'draft' && <DraftPage room={roomState} />}
             {roomState &&
               (roomState.phase === 'simulation' || roomState.phase === 'finished') &&
-              (roomState.config.tournamentSize ? (
-                tournament ? (
-                  <TournamentPage room={roomState} tournament={tournament} />
-                ) : (
-                  <div className="panel gold">
-                    <div className="round-label" style={{ color: 'var(--chalk-faint)' }}>
-                      Draft tamamlandı
-                    </div>
-                    <h1 style={{ fontSize: 30, marginBottom: 12 }}>Turnuva hazırlanıyor</h1>
-                    <p className="footnote" style={{ marginTop: 0 }}>
-                      Eşleşmeler kuruluyor, maçlar birazdan başlıyor…
-                    </p>
-                  </div>
-                )
+              (tournament ? (
+                <TournamentPage room={roomState} tournament={tournament} />
               ) : (
-                <ResultsPage room={roomState} />
+                <div className="panel gold">
+                  <div className="round-label" style={{ color: 'var(--chalk-faint)' }}>
+                    Draft tamamlandı
+                  </div>
+                  <h1 style={{ fontSize: 30, marginBottom: 12 }}>Turnuva hazırlanıyor</h1>
+                  <p className="footnote" style={{ marginTop: 0 }}>
+                    Eşleşmeler kuruluyor, maçlar birazdan başlıyor…
+                  </p>
+                </div>
               ))}
           </>
         )}

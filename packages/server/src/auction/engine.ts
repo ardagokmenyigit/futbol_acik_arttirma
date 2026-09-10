@@ -1,5 +1,4 @@
 import type { AckResult, Bid, Footballer, Participant, RoomState } from '@fal/shared';
-import { runLeague } from '../league/runLeague.js';
 import { roomStore } from '../rooms/roomStore.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { runTournament } from '../tournament/runTournament.js';
@@ -509,9 +508,6 @@ function finishDraft(io: TypedServer, room: RoomState): void {
   io.to(room.roomId).emit('room:state', room);
   io.to(room.roomId).emit('auction:finished', room);
 
-  if (room.config.tournamentSize) {
-    runTournament(io, room.roomId);
-  } else {
-    runLeague(io, room.roomId);
-  }
+  // Oyun her zaman eleme usulü turnuvayla biter (lig formatı kaldırıldı).
+  runTournament(io, room.roomId);
 }
