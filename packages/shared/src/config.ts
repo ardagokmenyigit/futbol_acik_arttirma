@@ -16,6 +16,15 @@ import type { RoomConfig } from './types.js';
  * TABAN FİYAT YOK. Açık artırma `minBidIncrement` ile açılır; fiyatı tamamen
  * rekabet belirler. Açılış teklifi ZORUNLUDUR, pas hakkı yoktur.
  *
+ * BÜTÇE 150M: Taban fiyat kalktığı için kadronun zorunlu (asgari) maliyeti
+ * yalnızca 7 × `minBidIncrement` = 7M. Kalan ~143M tamamen açık artırmaya
+ * gider (oyuncu başına ~20M pay) — eski 220M'de taban fiyatlar ~96M'yi
+ * kilitlediği için serbest pay zaten ~124M'ydi; 150M o dönemin serbest
+ * payından daha cömert, açık artırma sönmez. Bot mantığı bütçeyle orantılı
+ * (bkz. auction/bot.ts: fairShare, reserve, maxSingleShare hepsi budget'a
+ * bağlı) — bu yüzden bütçe değişince bot davranışı kendiliğinden ölçeklenir,
+ * sabit ayar gerekmez (ölçümle doğrulandı).
+ *
  * SÜRELER: `turnDurationSec` açılış teklifi penceresi, `bidDurationSec`
  * sonrasındaki serbest teklif evresi. Serbest evrede son saniye teklifi
  * mümkün olduğu için anti-snipe geri geldi.
@@ -23,7 +32,7 @@ import type { RoomConfig } from './types.js';
 export const DEFAULT_ROOM_CONFIG: RoomConfig = {
   squad: { GK: 1, DEF: 2, MID: 2, FWD: 2 },
   squadSize: 7,
-  startingBudget: 220,
+  startingBudget: 150,
   bidDurationSec: 15,
   turnDurationSec: 10,
   minBidIncrement: 1,

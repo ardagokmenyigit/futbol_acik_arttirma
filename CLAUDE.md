@@ -25,7 +25,7 @@ oynayabilir — eksik takımlar botlarla tamamlanır. (Lig formatı kaldırıld�
    `squadSize × katılımcı` tur sürer, her tur bir futbolcunun açık
    artırmasıdır (zorunlu açılış + serbest teklif, taban fiyat yok, pas yok).
 3. **Kadro Kuralları**: Her takım **7 oyuncu** — 1 GK, 2 DEF, 2 MID, 2 FWD.
-   Başlangıç bütçesi **220M** (kurgusal, "M"). Kural dışı pozisyon veya
+   Başlangıç bütçesi **150M** (kurgusal, "M"). Kural dışı pozisyon veya
    bütçe aşımı → teklif reddedilir. (`DEFAULT_ROOM_CONFIG`, ayarlanabilir.)
 4. **Simülasyon Fazı**: Tüm kadrolar tamamlanınca **eleme usulü turnuva**
    (4 ya da 8 takım) kurulur; maçlar tur tur olay bazlı simüle edilir.
@@ -257,7 +257,7 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
 
 **Kadro / format / bot / AÇIK ARTIRMA YAPISI (Kişi 1)**
 
-- Kadro **7 oyuncu** (GK 1, DEF 2, MID 2, FWD 2), başlangıç bütçesi **220M**.
+- Kadro **7 oyuncu** (GK 1, DEF 2, MID 2, FWD 2), başlangıç bütçesi **150M**.
 - Açık artırma yapısının tamamı için bkz. §3.1 (tam denk havuz, 28 tur,
   zorunlu açılış + serbest teklif, taban fiyat yok, pas yok, sıra adaleti).
 - Oyun formatı `config.tournamentSize`: her zaman `4` ya da `8` (eleme
@@ -271,16 +271,23 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
 - Güvenlik ağı: bitişte `autoCompleteSquads()`. Havuz tam denk olduğu için
   normalde devreye girmez.
 
-⚠️ **DENGE — 504'lük havuzla ölçüm (5000 draft, 4 takım, 1-2-2-2).**
-Kişi 2'nin geniş veri setiyle durum İYİLEŞTİ ama çözülmedi:
-takım gücü ort. 74.2, sd 1.1, gerçekleşen aralık **68–78.5**; draft başına
-en iyi–en kötü takım farkı ort. **2.0**, p90 **4.0**. Eski 108'lik "elit"
-havuzda takımlar 76.5'te kümeleniyordu — artık hangi futbolcuyu kazandığın
-takım gücünü birkaç puan oynatıyor, yani paranın küçük de olsa bir getirisi
-var. Yeni açık artırma yapısı "beklemek baskın strateji" açığını da KAPATTI
-(kontrol %20.3 vs beklemek %19.8; eski pas'lı yapıda beklemek %21 ile
-baskındı). Daha büyük fark isteniyorsa havuzun üst ucunun (90+ overall)
-genişlemesi ya da bütçe/kadro asimetrisi gerekir.
+⚠️ **DENGE — 504 havuz + gerçek bot açık artırması (2000 draft, 4 bot, 150M).**
+Kişi 2'nin geniş veri seti + gerçek bot değerlemesiyle:
+takım gücü ort. 76.5, sd ~2.2; draft başına en iyi–en kötü takım farkı
+ort. **~5.1**, p90 **~7.5**. (Naif rastgele/snake atamada fark ~2 çıkıyordu;
+botlar yüksek `overall` + marjinal uyuma göre teklif verdiği için kadrolar
+gerçekte daha çok farklılaşıyor.) Yani para harcamanın artık ölçülebilir
+bir getirisi var. Yeni açık artırma yapısı "beklemek baskın strateji"
+açığını da KAPATTI (kontrol %20.3 vs beklemek %19.8; eski pas'lı yapıda
+beklemek %21 ile baskındı).
+
+**BÜTÇE 150M — bot mantığı bütçeyle orantılı, sabit ayar GEREKMEZ.**
+`bot.ts`'teki `fairShare` (= budget/slotsLeft), `reserveNeeded`,
+`maxSingleShare` (`config.startingBudget × persona`) hepsi budget'a bağlı.
+220M→150M ölçümü (2000 draft): eksik kadro 0/8000, ort. fiyat 29.7M→20.2M
+(~%68, bütçeyle orantılı), 1M'ye giden tur %1.1→%3.5 (hâlâ önemsiz),
+tur başına teklif 12.8→10.4 (canlı), kalan bütçe %5.6→%5.7 (aynı oran).
+Açık artırma sönmüyor.
 
 **Açık uçlar**
 
