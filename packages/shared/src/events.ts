@@ -34,9 +34,9 @@ export interface ClientToServerEvents {
   ) => void;
   'room:leave': () => void;
   'room:setReady': (payload: { ready: boolean }) => void;
-  /** Sadece host: oyun formatını seç (null = lig, 4|8 = turnuva ağacı). */
+  /** Sadece host: turnuva boyutunu seç (4 ya da 8 takım). */
   'room:setFormat': (
-    payload: { tournamentSize: TournamentSize | null },
+    payload: { tournamentSize: TournamentSize },
     ack: (res: AckResult<{ roomState: RoomState }>) => void,
   ) => void;
   'room:start': (ack: (res: AckResult<{ roomState: RoomState }>) => void) => void;

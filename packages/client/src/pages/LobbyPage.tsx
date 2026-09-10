@@ -21,14 +21,13 @@ export function LobbyPage({ room }: Props) {
   const connectedPlayers = room.participants.filter((p) => p.connected);
   const readyCount = connectedPlayers.filter((p) => p.isReady).length;
   const format = room.config.tournamentSize;
-  // Turnuva formatında eksik takımlar botlarla dolar — tek kişi de başlatabilir.
-  const minNeeded = format ? 1 : room.config.minPlayers;
-  const enoughPlayers = connectedPlayers.length >= minNeeded;
+  // Eksik takımlar botlarla dolar — tek kişi bile başlatabilir.
+  const enoughPlayers = connectedPlayers.length >= 1;
   const allReady = connectedPlayers.length > 0 && readyCount === connectedPlayers.length;
   const canStart = isHost && enoughPlayers && allReady;
-  const botCount = format ? Math.max(0, format - room.participants.length) : 0;
+  const botCount = Math.max(0, format - room.participants.length);
 
-  async function chooseFormat(size: TournamentSize | null) {
+  async function chooseFormat(size: TournamentSize) {
     setStartError(null);
     try {
       await setFormat(size);
@@ -65,8 +64,7 @@ export function LobbyPage({ room }: Props) {
         Lobi
       </h1>
       <p className="lede" style={{ marginBottom: 22 }}>
-        {connectedPlayers.length}/{room.config.maxPlayers} oyuncu bağlandı, {readyCount} tanesi
-        hazır.
+        {connectedPlayers.length}/{format} oyuncu bağlandı, {readyCount} tanesi hazır.
       </p>
 
       <label className="field-label">Oda kodu</label>
@@ -100,11 +98,10 @@ export function LobbyPage({ room }: Props) {
         </button>
       </div>
 
-      <div className="section-label">Oyun formatı</div>
+      <div className="section-label">Turnuva boyutu</div>
       <div className="format-row">
         {(
           [
-            { key: 'lig', size: null, title: 'Lig', sub: 'Herkes herkesle' },
             { key: 't4', size: 4, title: '4 Takım', sub: 'Yarı final' },
             { key: 't8', size: 8, title: '8 Takım', sub: 'Çeyrek final' },
           ] as const
@@ -166,7 +163,7 @@ export function LobbyPage({ room }: Props) {
       {isHost && !canStart && (
         <p className="footnote">
           {!enoughPlayers
-            ? `Başlatmak için en az ${minNeeded} bağlı oyuncu gerekli.`
+            ? 'Başlatmak için en az 1 bağlı oyuncu gerekli.'
             : 'Bağlı oyuncuların tamamı hazır olmadan oyun başlatılamaz.'}
         </p>
       )}

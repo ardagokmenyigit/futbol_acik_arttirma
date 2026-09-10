@@ -63,14 +63,18 @@ export interface RoomConfig {
    * bu değerdir — yani hiçbir futbolcu bundan ucuza gitmez.
    */
   minBidIncrement: number;
-  /** Odaya girebilecek min/max oyuncu. */
-  minPlayers: number;
+  /**
+   * Odaya girebilecek en fazla insan oyuncu. Fiili kapasite `tournamentSize`
+   * ile sınırlıdır (4 ya da 8); tek kişi bile oyunu başlatabilir, eksik
+   * takımlar botlarla tamamlanır.
+   */
   maxPlayers: number;
   /**
-   * Oyun formatı. null → lig (round-robin, herkes herkesle).
-   * 4 | 8 → eleme usulü turnuva ağacı; eksik takımlar botlarla tamamlanır.
+   * Oyun formatı: eleme usulü turnuva ağacı. 4 ya da 8 takım. Odadaki insan
+   * sayısı kadarı gerçek, kalanı bot (`isBot: true`) olur. Lig formatı
+   * kaldırıldı — bu alan artık her zaman 4 ya da 8'dir.
    */
-  tournamentSize: TournamentSize | null;
+  tournamentSize: TournamentSize;
 }
 
 /** Bir katılımcı (oda üyesi). İnsan ya da bot olabilir. */
