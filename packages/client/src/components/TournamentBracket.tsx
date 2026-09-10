@@ -20,7 +20,7 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
         style={{
           display: 'flex',
           gap: 32,
-          minWidth: tournament.size === 8 ? 950 : 650,
+          minWidth: tournament.size === 8 ? 950 : tournament.size === 4 ? 650 : 380,
           justifyContent: 'center',
           alignItems: 'stretch',
         }}
