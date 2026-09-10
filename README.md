@@ -8,7 +8,7 @@ kadroyu kurar ve turnuva sonunda takımlar simüle edilen maçlarla yarışır.
 
 ## 🎮 Oyun Akışı
 
-1. **Lobi** — host oda kurar, 2-6 oyuncu katılır
+1. **Lobi** — host oda kurar, 1-8 oyuncu katılır
 2. **Draft (Açık Artırma)** — her round'da rastgele bir futbolcu ortaya çıkar,
    oyuncular süreli teklif verir, en yüksek teklif kazanır
 3. **Kadro Kuralları** — pozisyon dağılımı (GK/DEF/MID/FWD) ve bütçe limiti
