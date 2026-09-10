@@ -278,6 +278,16 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
   sert taban (kalan slot × minBidIncrement) + stratejik pay (`RESERVE_SHARE`).
 - Güvenlik ağı: bitişte `autoCompleteSquads()`. Havuz tam denk olduğu için
   normalde devreye girmez.
+- **GİZLİ BÜTÇE MODU** (`config.hiddenBudgets`, oda kurulurken seçilir):
+  - Açık mod (varsayılan): rakiplerin kalan bütçesi görünür. Botlar bunu
+    kullanır — `rivalCeiling()` ile bu mevkiye çıkabilecek en yüksek rakip
+    teklifini tahmin eder; kimse rakip değilse asgariye yakın kapar, çekişme
+    varsa rakip tavanının bir tık üstüne razı olur (fazla ödemez).
+  - Gizli mod: sunucu draft sırasında her sokete YALNIZ kendi bütçesini
+    gönderir (`rooms/broadcast.ts` → `emitRoomState` / `redactRoomState`,
+    diğerleri `HIDDEN_BUDGET = -1`, istemci `isBudgetHidden()`). Botlara
+    `rivals = null` geçilir — rakip bütçesini hiç bilmezler. Draft bitince
+    (`phase !== 'draft'`) bütçeler herkese açılır.
 
 ⚠️ **DENGE — 504 havuz + gerçek bot açık artırması (2000 draft, 4 bot, 150M).**
 Kişi 2'nin geniş veri seti + gerçek bot değerlemesiyle:

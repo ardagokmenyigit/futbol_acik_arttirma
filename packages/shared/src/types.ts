@@ -75,6 +75,15 @@ export interface RoomConfig {
    * kaldırıldı — bu alan artık her zaman 4 ya da 8'dir.
    */
   tournamentSize: TournamentSize;
+  /**
+   * GİZLİ BÜTÇE MODU. `false` (varsayılan): rakipler birbirlerinin kalan
+   * bütçesini görür ve botlar bu bilgiyi kullanarak fazla ödemez / güçlü
+   * rakip aynı mevkiye oynuyorsa erken bağlanır. `true`: sunucu draft
+   * sırasında her istemciye YALNIZ kendi bütçesini gönderir (diğerleri
+   * `HIDDEN_BUDGET`), botlar da rakip bütçelerini görmez. Oda kurulurken
+   * seçilir, sonra değişmez.
+   */
+  hiddenBudgets: boolean;
 }
 
 /** Bir katılımcı (oda üyesi). İnsan ya da bot olabilir. */
@@ -86,7 +95,11 @@ export interface Participant {
   isReady: boolean;
   /** Şu an bağlı mı? Bağlantı kopunca draft durmaz (CLAUDE.md §4.5). */
   connected: boolean;
-  /** Kalan bütçe ("M"). */
+  /**
+   * Kalan bütçe ("M"). Gizli bütçe modunda (`RoomConfig.hiddenBudgets`)
+   * sunucu, draft sırasında BAŞKA katılımcıların bu alanını `HIDDEN_BUDGET`
+   * (-1) olarak gönderir; `isBudgetHidden()` ile kontrol edin.
+   */
   budget: number;
   /** Kazanılan futbolcular. */
   squad: Footballer[];

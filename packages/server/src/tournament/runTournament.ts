@@ -1,5 +1,6 @@
 import type { TournamentState } from '@fal/shared';
 import { roomStore } from '../rooms/roomStore.js';
+import { emitRoomState } from '../rooms/broadcast.js';
 import type { TypedServer } from '../socketTypes.js';
 import {
   advanceTournament,
@@ -73,7 +74,7 @@ export function runTournament(io: TypedServer, roomId: string): void {
     const empty = createTournament(teams, size);
     room.tournament = { ...empty, championId: teams[0]?.id ?? null, currentMatchId: null };
     room.phase = 'finished';
-    io.to(roomId).emit('room:state', room);
+    emitRoomState(io, room);
     io.to(roomId).emit('tournament:finished', { tournament: room.tournament });
     return;
   }
@@ -83,7 +84,7 @@ export function runTournament(io: TypedServer, roomId: string): void {
   // Ağacı hemen (sonuçsuz) yayınla — oyuncular eşleşmeleri ve kadroları görsün.
   let live: TournamentState = createTournament(teams, size);
   room.tournament = live;
-  io.to(roomId).emit('room:state', room);
+  emitRoomState(io, room);
   io.to(roomId).emit('tournament:bracket', live);
 
   cancelTournament(roomId);
@@ -121,7 +122,7 @@ export function runTournament(io: TypedServer, roomId: string): void {
       cancelTournament(roomId);
       current.tournament = live;
       current.phase = 'finished';
-      io.to(roomId).emit('room:state', current);
+      emitRoomState(io, current);
       io.to(roomId).emit('tournament:finished', { tournament: live });
       return;
     }
@@ -138,7 +139,7 @@ export function runTournament(io: TypedServer, roomId: string): void {
       live = advanceTournament(live, result);
       room2.tournament = live;
       io.to(roomId).emit('tournament:matchResult', { result, tournament: live });
-      io.to(roomId).emit('room:state', room2);
+      emitRoomState(io, room2);
       schedule(() => playNext(i + 1), human ? POST_LIVE_GAP_MS : BOT_MATCH_MS);
     };
 

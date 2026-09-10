@@ -1,5 +1,6 @@
 import type { LeagueState, MatchResult } from '@fal/shared';
 import { roomStore } from '../rooms/roomStore.js';
+import { emitRoomState } from '../rooms/broadcast.js';
 import type { TypedServer } from '../socketTypes.js';
 import {
   createInitialStandings,
@@ -65,7 +66,7 @@ export function runLeague(io: TypedServer, roomId: string): void {
     };
     room.league = league;
     room.phase = 'finished';
-    io.to(roomId).emit('room:state', room);
+    emitRoomState(io, room);
     io.to(roomId).emit('league:finished', { league });
     return;
   }
@@ -97,7 +98,7 @@ export function runLeague(io: TypedServer, roomId: string): void {
         if (!current) return;
         current.league = full;
         current.phase = 'finished';
-        io.to(roomId).emit('room:state', current);
+        emitRoomState(io, current);
         io.to(roomId).emit('league:finished', { league: full });
         return;
       }

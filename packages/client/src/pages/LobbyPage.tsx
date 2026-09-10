@@ -123,6 +123,10 @@ export function LobbyPage({ room }: Props) {
           katılır.
         </p>
       )}
+      <p className="footnote" style={{ marginTop: 8 }}>
+        Bütçe modu: <strong>{room.config.hiddenBudgets ? '🔒 gizli' : 'açık'}</strong> — oda
+        kurulurken seçildi, değiştirilemez.
+      </p>
 
       <div className="section-label" style={{ marginTop: 22 }}>
         Katılımcılar

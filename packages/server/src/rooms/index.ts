@@ -1,13 +1,11 @@
-import type { RoomState } from '@fal/shared';
 import { beginDraft, cancelAuction, dropBidderIfLeading } from '../auction/index.js';
 import { cancelTournament, startTournamentImmediately } from '../tournament/runTournament.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
+import { emitRoomState, redactRoomState } from './broadcast.js';
 import { RoomError, roomStore } from './roomStore.js';
 
 /** Odadaki herkese güncel tam durumu yayınlar (client sadece render eder). */
-function broadcastRoomState(io: TypedServer, room: RoomState): void {
-  io.to(room.roomId).emit('room:state', room);
-}
+const broadcastRoomState = emitRoomState;
 
 function errorMessage(err: unknown): string {
   if (err instanceof RoomError) return err.message;
@@ -50,7 +48,9 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       socket.data.playerId = you.id;
       socket.data.roomId = room.roomId;
       void socket.join(room.roomId);
-      ack({ ok: true, data: { roomState: room, you } });
+      // Draft sırasında gizli bütçe modunda geri dönen oyuncu da yalnız
+      // kendi bütçesini görür.
+      ack({ ok: true, data: { roomState: redactRoomState(room, you.id), you } });
       broadcastRoomState(io, room);
     } catch (err) {
       ack({ ok: false, error: errorMessage(err) });

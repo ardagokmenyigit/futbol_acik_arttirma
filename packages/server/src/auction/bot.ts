@@ -3,6 +3,40 @@ import { calculateTeamStats } from '../simulation/teamStats.js';
 import { positionCount } from './validateBid.js';
 
 /**
+ * Rakip bilgisi — YALNIZ açık bütçe modunda botların eline geçer
+ * (`RoomConfig.hiddenBudgets === false`). Gizli modda `null` gelir ve bot
+ * rakip bütçelerini hiç bilmez.
+ */
+export interface RivalView {
+  budget: number;
+  squad: Footballer[];
+}
+
+/**
+ * Bu mevkiye hâlâ ihtiyacı olan rakiplerin BU futbolcuya çıkabileceği en
+ * yüksek teklif tahmini. Kimse ihtiyaç duymuyorsa 0.
+ *
+ * Rakip, kalan zorunlu slotları için kişi başı en az `minBidIncrement`
+ * kenarda tutar diye varsayılır (temkinli tahmin — bot düşük teklif verip
+ * kaçırmasın). Yani rakip neredeyse tüm parasını basabilir kabul edilir.
+ */
+function rivalCeiling(rivals: RivalView[], pos: Position, config: RoomConfig): number {
+  let ceiling = 0;
+  for (const r of rivals) {
+    const posNeed = config.squad[pos] - r.squad.filter((f) => f.position === pos).length;
+    if (posNeed <= 0) continue;
+    if (r.squad.length >= config.squadSize) continue;
+    const otherSlotsLeft = Math.max(0, config.squadSize - r.squad.length - 1);
+    const reachable = Math.max(
+      config.minBidIncrement,
+      r.budget - otherSlotsLeft * config.minBidIncrement,
+    );
+    if (reachable > ceiling) ceiling = reachable;
+  }
+  return ceiling;
+}
+
+/**
  * ============================================================================
  *  BOT TEKLİF MOTORU
  * ----------------------------------------------------------------------------
@@ -156,12 +190,18 @@ function reserveNeeded(
  *
  * Aynı (bot, futbolcu) çifti için HER ZAMAN aynı değeri döndürür — tavanın
  * tur içinde oynamaması kritik (yoksa bot kendi kararıyla çelişir).
+ *
+ * `rivals` verilirse (açık bütçe modu) bot rakiplerin ödeyebileceği en yüksek
+ * teklifin üstüne çıkmaz: kimse rakip değilse ucuza kapar, çekişme varsa
+ * rakip tavanının bir tık üstüne razı olur. `null` ise (gizli mod) rakip
+ * bütçesini hiç hesaba katmaz.
  */
 export function botMaxBid(
   bot: Participant,
   footballer: Footballer,
   config: RoomConfig,
   pool: Footballer[],
+  rivals: RivalView[] | null = null,
 ): number {
   const pos = footballer.position;
 
@@ -226,6 +266,19 @@ export function botMaxBid(
     valuation = Math.max(valuation, affordable * (0.55 + persona.starHunter * 0.35));
   }
 
+  // AÇIK BÜTÇE AVANTAJI — rakiplerin bütçesi görünüyorsa fazla ödeme.
+  // Kıtlık (mecburen sonuna kadar) durumunda uygulanmaz — kadro önce gelir.
+  if (rivals && availableForPos > need) {
+    const ceiling = rivalCeiling(rivals, pos, config);
+    if (ceiling <= 0) {
+      // Bu mevkiye kimse rakip değil — asgariye yakın kap, parayı sakla.
+      valuation = Math.min(valuation, config.minBidIncrement * 2);
+    } else {
+      // Rakibin çıkabileceği en yükseğin bir tık üstü yeter.
+      valuation = Math.min(valuation, ceiling + config.minBidIncrement);
+    }
+  }
+
   // Deterministik kişisel sapma (±%7) — aynı çift için hep aynı
   valuation *= 0.93 + hash(`${bot.id}:${footballer.id}`) * 0.14;
 
@@ -244,10 +297,11 @@ export function decideBotBid(
   pool: Footballer[],
   currentHighest: { playerId: string; amount: number } | null,
   floor: number,
+  rivals: RivalView[] | null = null,
 ): number | null {
   if (currentHighest?.playerId === bot.id) return null;
 
-  const max = botMaxBid(bot, footballer, config, pool);
+  const max = botMaxBid(bot, footballer, config, pool, rivals);
   if (max <= 0 || floor > max) return null;
 
   const persona = botPersona(bot.id);
@@ -273,14 +327,22 @@ export function botOpeningBid(
   footballer: Footballer,
   config: RoomConfig,
   pool: Footballer[],
+  rivals: RivalView[] | null = null,
 ): number {
   const min = config.minBidIncrement;
-  const max = botMaxBid(bot, footballer, config, pool);
+  const max = botMaxBid(bot, footballer, config, pool, rivals);
   if (max <= min) return Math.max(min, Math.min(min, bot.budget));
 
   const persona = botPersona(bot.id);
   // Kararlı bot yüksekten açar (caydırma), temkinli bot tabandan yoklar.
-  const share = 0.15 + persona.decisiveness * 0.4;
+  let share = 0.15 + persona.decisiveness * 0.4;
+  // Açık bütçe modu: bu mevkiye rakip yoksa asgariden aç (parayı sakla);
+  // güçlü rakip varsa daha yüksek aç (caydır).
+  if (rivals) {
+    const ceiling = rivalCeiling(rivals, footballer.position, config);
+    if (ceiling <= 0) return Math.max(min, Math.min(min, bot.budget));
+    if (ceiling >= max) share = Math.min(0.85, share + 0.25);
+  }
   const noise = 0.85 + hash(`${bot.id}:${footballer.id}:open`) * 0.3;
   const opening = Math.floor(max * share * noise);
   return Math.max(min, Math.min(opening, max, bot.budget));
