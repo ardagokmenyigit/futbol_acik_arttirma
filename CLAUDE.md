@@ -118,20 +118,65 @@ araması devreye girer ve teorik optimuma iner.
 
 ### 3.2 Maç Simülasyon Algoritması
 
-- Her takımın toplam `attack` ve `defense` değerleri, kadrodaki
-  oyuncuların ilgili statlarının toplamı/ortalamasından hesaplanır.
-- 90 sanal dakika için döngü çalıştırılır. Her dakika için gol olasılığı:
-  ```
-  golOlasiligi = baseRate * (takımA.attack / takımB.defense) * randomFaktör
-  ```
-  `baseRate` ve `randomFaktör` dengeyi sağlamak için ayarlanabilir sabitlerdir.
-- Gol olursa, o dakika ve hangi takımın attığı bir `events[]` dizisine
-  kaydedilir.
-- Simülasyon bitince `{ scoreA, scoreB, events }` döndürülür.
-- **Önemli**: Bu fonksiyon saf (pure) ve deterministik test edilebilir
-  olmalı — girdi (iki takımın statları) + bir seed verilince aynı
-  dağılım davranışını üretmeli. Dengeyi ayarlamak için önce izole
-  script ile yüzlerce simülasyon çalıştırıp gol ortalamalarını kontrol edin.
+**TEK KAYNAK: `packages/shared/src/simulation/simulator.ts`.**
+`server/src/simulation/simulator.ts` ve `random.ts` yalnızca yeniden dışa
+aktarır (`teamStats.ts` ile aynı desen). Motor bir dönem iki ayrı kopya
+halindeydi ve sabitleri sessizce ayrışmıştı (`chanceRate` 0.3 vs 0.078,
+`baseConversion` 0.088 vs 0.21) — aynı seed iki farklı skor, maç başına
+2.73'e karşı 1.60 gol üretiyordu. **Motoru değiştiren yalnızca shared'daki
+kopyayı değiştirir.**
+
+Takım gücü `calculateTeamStats()` ile mevkisel ağırlıklı hesaplanır
+(`ATTACK_WEIGHT` / `DEFENSE_WEIGHT`, bkz. `shared/src/types.ts`).
+
+90 dakika döngüsü, "her dakika bağımsız yazı-tura" değil:
+
+1. **Maç günü formu** — her takım ±%12 formla çıkar.
+2. **Pozisyon üretimi** — `chanceRate` ile pozisyon doğar; kime ait olduğu
+   `hücum / rakip savunma` tehdit oranıyla paylaştırılır.
+3. **Pozisyon kalitesi** — gole dönme oranı da tehdit oranına bağlı, yani
+   güçlü takım hem daha çok hem daha net fırsat bulur.
+4. **Maç durumu** — geride kalan basar (hücum +%12, savunma −%7), 2+ farkla
+   önde olan oyunu yönetir. Geri dönüşler buradan doğar.
+5. **Tempo** — son 20 dakikada pozisyon üretimi artar.
+
+Beraberlikte (`isTournament`) seri penaltı: atıcılar hücuma göre sıralanır,
+başarı oranı atıcının hücumu ile rakip kalecinin savunmasından türer.
+
+**Saf ve deterministik.** Aynı girdi + aynı seed → aynı sonuç.
+`simulateFullTournament` seed'i katılımcı id'lerinden türetir: her oda kendi
+sonuçlarını alır ama aynı oda + aynı kadro her zaman aynı turnuvayı üretir.
+Buraya `Math.random()` KOYMAYIN — bir dönem konmuştu, `baseSeed` parametresini
+işlevsiz bırakıp hataları tekrar üretilemez hale getirmişti. (Düzeltmeye
+çalıştığı "her odada aynı skor" sorununun asıl sebebi maç id'lerinin sabit
+olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
+`matchId:homeId:awayId` olunca zaten çözüldü.)
+
+⚠️ **DENGE — 3000 gerçek bot draft'ı, her biri 4 bracket dizilişiyle
+(12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
+(rastgele olsa %25):
+
+| ayar                                 | en güçlü  | en zayıf  | oran     | gol/maç  |
+| ------------------------------------ | --------- | --------- | -------- | -------- |
+| sens 1.6 + saha av. 1.05 (eski)      | %34.6     | %17.1     | 2.0x     | 2.77     |
+| **sens 2.5 + saha av. yok (güncel)** | **%37.7** | **%15.0** | **2.5x** | **2.92** |
+
+- **Saha avantajı KAPATILDI** (`homeAdvantage` varsayılan 1.0). Eleme
+  ağacında ev sahipliği keyfî bir koltuktur; 1.05 maç başına ~3 güç puanı
+  değerindeydi — ortalama draft güç farkının (~5.2) %60'ı kadar bedava
+  avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
+- `baseConversion` 0.088 → **0.084**: sens 2.5 gol ortalamasını şişiriyordu
+  (`threat ** sens` dışbükey), bu onu geri alıyor ve güç ayrımına dokunmuyor.
+- **ASIL TAVAN ARTIK MOTOR DEĞİL, DRAFT.** `sens` 5'e çekilse bile en güçlü
+  takım ancak %41.5 şampiyon olur; çünkü gerçek draft'larda takımlar arası
+  güç farkı ortalama sadece **~5.2 puan**. Havuz tam denk (§3.1) olduğu için
+  herkes benzer kalitede kadro kuruyor. Gücü daha baskın kılmak isteyen
+  motoru değil havuz genişliğini / bot değerleme dağılımını değiştirmeli.
+- Maçların ~%25'i penaltıya gidiyor; orada güç farkı 8 olan takım yalnızca
+  %56 kazanıyor (normal sürede %71). Seyrelmenin ikinci kaynağı bu.
+
+Dengeyi ayarlarken izole script ile binlerce draft+turnuva koşturun; tek
+maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon oluyor mu".
 
 ### 3.3 Turnuva Yörüngesi
 

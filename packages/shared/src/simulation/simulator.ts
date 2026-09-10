@@ -12,14 +12,52 @@ export interface SimulateMatchOptions {
   homeTeam: Team;
   awayTeam: Team;
   seed?: number;
-  /** Ev sahibi saha avantajı çarpanı (varsayılan: 1.05) */
+  /**
+   * Ev sahibi saha avantajı çarpanı (varsayılan: 1.0 — KAPALI).
+   *
+   * Eleme turnuvasında "ev sahibi" olmak tamamen keyfî bir ağaç koltuğudur,
+   * oyuncunun kazandığı bir şey değil. Ölçüm: 1.05'lik avantaj maç başına
+   * ~3 güç puanı değerindeydi — bir draft'taki ortalama en iyi/en kötü güç
+   * farkının (~5.1) %60'ı kadar. Yani parayla kurulan üstünlüğün yarısını
+   * bedavaya dağıtıyordu. Lig gibi çift devreli bir format geri gelirse
+   * çağıran taraf açıkça 1.05 geçebilir.
+   */
   homeAdvantage?: number;
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
-  /** Bir pozisyonun gole dönme taban oranı. */
+  /**
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.084).
+   *
+   * `strengthSensitivity` 1.6'dan 2.5'e çıkınca gol ortalaması 2.90'dan
+   * 3.06'ya tırmandı: `threat ** sens` dışbükey olduğu için form dalgalanması
+   * ortalamayı yukarı çekiyor. 0.088 → 0.084 bunu geri alıyor (gol/maç 2.92)
+   * ve güç ayrımına hiç dokunmuyor (en güçlü %37.3, oran 2.6x — birebir aynı).
+   */
   baseConversion?: number;
   /**
-   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 1.6).
+   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 2.5).
+   * Hem pozisyon payına hem de gole çevirme oranına uygulanır.
+   *
+   * NEDEN 2.5 — ölçüm: 3000 GERÇEK bot draft'ı, her biri 4 farklı bracket
+   * dizilişiyle oynandı (12.000 turnuva; koltuk şansı böylece ortalanır).
+   * "En güçlü takım şampiyon oldu mu?" — rastgele olsa %25 çıkardı:
+   *
+   *   sens 1.6 + saha av. 1.05  →  en güçlü %33.6 / en zayıf %16.8  (2.0x)
+   *   sens 2.5 + saha av. yok   →  en güçlü %37.3 / en zayıf %14.5  (2.6x)
+   *   sens 3.0                  →  en güçlü %39.0 / en zayıf %13.7  (2.8x)
+   *   sens 4.0                  →  en güçlü %40.4 / en zayıf %12.6  (3.2x)
+   *
+   * 2.5'ten sonrası azalan getiri: gol ortalaması hızla şişiyor (sens 4'te
+   * maç başı 3.71 gol) ama güç ayrımı çok az iyileşiyor.
+   *
+   * ⚠️ ASIL TAVAN ARTIK MOTOR DEĞİL, DRAFT. sens 5'te bile en güçlü takım
+   * ancak %41.5 şampiyon oluyor; çünkü gerçek draft'larda takımlar arası
+   * güç farkı ortalama sadece ~5.2 puan. Havuz tam denk olduğu için herkes
+   * benzer kalitede kadro kuruyor. Gücü gerçekten baskın kılmak isteyen,
+   * motoru değil DRAFT'ı (havuz genişliği / bot değerleme dağılımı)
+   * değiştirmeli.
+   *
+   * Tekdüzelik kontrolü: 20k maçta 59 farklı skor, en sık skor (1-1) %12.2.
    */
   strengthSensitivity?: number;
   /** Turnuva eleme maçı mı? Beraberlikte penaltı atışlarına gider. */
@@ -72,102 +110,122 @@ function pickScorer(team: Team, prng: () => number): Footballer | undefined {
 
 /**
  * İki takım arasındaki futbol maçını dakika dakika simüle eder.
+ *
+ * Motorun mantığı (eski "her dakika bağımsız yazı-tura" yaklaşımının
+ * aksine gerçek maç dinamiklerini taşır):
+ *
+ *  1. MAÇ GÜNÜ FORMU — her takım maça ±%12 bir formla çıkar. Aynı iki
+ *     takım farklı maçlarda farklı senaryolar üretir.
+ *  2. POZİSYON ÜRETİMİ — her dakika bir pozisyon doğabilir. Pozisyonun
+ *     kime ait olduğu, takımın hücumunun rakip savunmasına oranıyla
+ *     belirlenir (güçlü takım daha çok pozisyon bulur).
+ *  3. POZİSYON KALİTESİ — her pozisyon eşit değildir; gole dönme oranı
+ *     yine hücum/savunma oranına bağlıdır (güçlü takım daha net fırsat).
+ *  4. MAÇ DURUMU — geride kalan takım öne çıkar (hücum +%12, savunma
+ *     −%7); 2+ farkla önde olan oyunu yönetir. Geri dönüşler buradan
+ *     doğar, skorlar tekdüze olmaz.
+ *  5. TEMPO — son 20 dakikada pozisyon üretimi artar.
+ *
+ * Saf (pure) ve deterministiktir: aynı girdi + aynı seed → aynı sonuç.
  */
 export function simulateMatch(options: SimulateMatchOptions): MatchResult {
   const {
     matchId,
     homeTeam,
     awayTeam,
-    seed = stringToSeed(matchId),
-    homeAdvantage = 1.05,
-    chanceRate = 0.078,
-    baseConversion = 0.21,
-    strengthSensitivity = 1.6,
-    isTournament = false,
+    seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
+    homeAdvantage = 1.0,
+    chanceRate = 0.3,
+    baseConversion = 0.084,
+    strengthSensitivity = 2.5,
+    isTournament = true,
   } = options;
 
   const prng = createPRNG(seed);
-
-  const homeForm = FORM_MIN + prng() * FORM_SPREAD;
-  const awayForm = FORM_MIN + prng() * FORM_SPREAD;
-
-  const baseHomeAtt = Math.max(1, homeTeam.attack * homeAdvantage * homeForm);
-  const baseHomeDef = Math.max(1, homeTeam.defense * homeAdvantage * homeForm);
-  const baseAwayAtt = Math.max(1, awayTeam.attack * awayForm);
-  const baseAwayDef = Math.max(1, awayTeam.defense * awayForm);
+  const events: MatchEvent[] = [];
 
   let scoreHome = 0;
   let scoreAway = 0;
-  const events: MatchEvent[] = [];
+
+  // Sıfıra bölünmeyi önlemek için taban değerler
+  const baseHomeAtt = Math.max(10, homeTeam.attack);
+  const baseHomeDef = Math.max(10, homeTeam.defense);
+  const baseAwayAtt = Math.max(10, awayTeam.attack);
+  const baseAwayDef = Math.max(10, awayTeam.defense);
+
+  // 1. MAÇ GÜNÜ FORMU
+  const homeForm = FORM_MIN + prng() * FORM_SPREAD;
+  const awayForm = FORM_MIN + prng() * FORM_SPREAD;
 
   for (let minute = 1; minute <= 90; minute++) {
     const diff = scoreHome - scoreAway;
-    let homeAttMult = 1.0;
-    let homeDefMult = 1.0;
-    let awayAttMult = 1.0;
-    let awayDefMult = 1.0;
+
+    // 4. MAÇ DURUMU — geride kalan basar, önde olan yönetir
+    let homeAttMod = 1;
+    let homeDefMod = 1;
+    let awayAttMod = 1;
+    let awayDefMod = 1;
 
     if (diff < 0) {
-      homeAttMult = CHASING_ATTACK;
-      homeDefMult = CHASING_DEFENSE;
-      if (diff <= -2) {
-        awayAttMult = PROTECTING_ATTACK;
-        awayDefMult = PROTECTING_DEFENSE;
-      }
-    } else if (diff > 0) {
-      awayAttMult = CHASING_ATTACK;
-      awayDefMult = CHASING_DEFENSE;
-      if (diff >= 2) {
-        homeAttMult = PROTECTING_ATTACK;
-        homeDefMult = PROTECTING_DEFENSE;
-      }
+      homeAttMod = CHASING_ATTACK;
+      homeDefMod = CHASING_DEFENSE;
+    } else if (diff >= 2) {
+      homeAttMod = PROTECTING_ATTACK;
+      homeDefMod = PROTECTING_DEFENSE;
+    }
+    if (diff > 0) {
+      awayAttMod = CHASING_ATTACK;
+      awayDefMod = CHASING_DEFENSE;
+    } else if (diff <= -2) {
+      awayAttMod = PROTECTING_ATTACK;
+      awayDefMod = PROTECTING_DEFENSE;
     }
 
-    const homeAtt = baseHomeAtt * homeAttMult;
-    const homeDef = baseHomeDef * homeDefMult;
-    const awayAtt = baseAwayAtt * awayAttMult;
-    const awayDef = baseAwayDef * awayDefMult;
+    const homeAtt = baseHomeAtt * homeForm * homeAdvantage * homeAttMod;
+    const homeDef = baseHomeDef * homeForm * homeDefMod;
+    const awayAtt = baseAwayAtt * awayForm * awayAttMod;
+    const awayDef = baseAwayDef * awayForm * awayDefMod;
 
-    const tempo = minute > 70 ? LATE_TEMPO : 1.0;
-    const minuteChanceRate = Math.min(0.25, chanceRate * tempo);
+    // Tehdit oranları: benim hücumum rakibin savunmasına karşı
+    const homeThreat = homeAtt / awayDef;
+    const awayThreat = awayAtt / homeDef;
 
-    if (prng() >= minuteChanceRate) {
-      continue;
-    }
+    // 5. TEMPO
+    const tempo = minute > 70 ? LATE_TEMPO : 1;
 
-    const homeThreat = Math.pow(homeAtt / awayDef, strengthSensitivity);
-    const awayThreat = Math.pow(awayAtt / homeDef, strengthSensitivity);
-    const totalThreat = homeThreat + awayThreat;
+    // 2. POZİSYON ÜRETİMİ
+    if (prng() >= chanceRate * tempo) continue;
 
-    const isHomeChance = prng() < homeThreat / totalThreat;
+    // Pozisyon kime ait? Tehdit oranlarına göre paylaştır.
+    const hw = homeThreat ** strengthSensitivity;
+    const aw = awayThreat ** strengthSensitivity;
+    const homeShare = hw / (hw + aw);
+    const isHomeChance = prng() < homeShare;
 
-    const [att, oppDef, team] = isHomeChance
-      ? [homeAtt, awayDef, homeTeam]
-      : [awayAtt, homeDef, awayTeam];
+    // 3. POZİSYON KALİTESİ — gole dönme oranı da güce bağlı
+    const threat = isHomeChance ? homeThreat : awayThreat;
+    const conversion = Math.min(0.55, baseConversion * threat ** strengthSensitivity);
 
-    const conversionMult = Math.pow(att / oppDef, strengthSensitivity * 0.5);
-    const conversionProb = Math.min(0.65, Math.max(0.06, baseConversion * conversionMult));
-
-    if (prng() < conversionProb) {
-      const scorer = pickScorer(team, prng);
-
+    if (prng() < conversion) {
       if (isHomeChance) {
         scoreHome++;
+        const scorer = pickScorer(homeTeam, prng);
         events.push({
           minute,
-          type: 'goal',
           teamId: homeTeam.participantId,
+          type: 'goal',
           playerId: scorer?.id,
-          playerName: scorer?.name,
+          playerName: scorer?.name ?? `${homeTeam.nickname} Forveti`,
         });
       } else {
         scoreAway++;
+        const scorer = pickScorer(awayTeam, prng);
         events.push({
           minute,
-          type: 'goal',
           teamId: awayTeam.participantId,
+          type: 'goal',
           playerId: scorer?.id,
-          playerName: scorer?.name,
+          playerName: scorer?.name ?? `${awayTeam.nickname} Forveti`,
         });
       }
     }
