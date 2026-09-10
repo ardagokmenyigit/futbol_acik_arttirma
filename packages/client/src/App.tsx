@@ -114,7 +114,7 @@ export function App() {
     <>
       <div className="pitch-mark" />
       <a
-        href="/easter-target.jpg"
+        href="/easter-egg.html"
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Sürpriz Hediye"
