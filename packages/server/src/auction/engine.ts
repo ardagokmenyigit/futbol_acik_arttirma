@@ -212,6 +212,20 @@ function anyoneCanUse(room: RoomState, f: Footballer): boolean {
   );
 }
 
+/**
+ * Bütçeye bakmadan: bu pozisyona hâlâ ihtiyacı olan (kadrosu dolmamış) biri
+ * var mı? Bir takım parasını erken bitirip taban fiyatı karşılayamaz hâle
+ * gelse bile tur yine açılır ve futbolcu zorunlu atanır (endRound →
+ * pickForcedWinner). Draft'ın tam `maxRounds` tur sürmesini bu garantiler.
+ */
+function anyoneNeeds(room: RoomState, f: Footballer): boolean {
+  return room.participants.some(
+    (p) =>
+      p.squad.length < room.config.squadSize &&
+      positionCount(p, f.position) < room.config.squad[f.position],
+  );
+}
+
 function everySquadFull(room: RoomState): boolean {
   return room.participants.every((p) => p.squad.length >= room.config.squadSize);
 }
@@ -227,9 +241,12 @@ function maxRounds(room: RoomState): number {
 
 /**
  * Teklif gelmeyen turda futbolcuyu zorunlu olarak alacak katılımcı.
- * O pozisyona hâlâ ihtiyacı olanlar arasından, taban fiyatı karşılayabilen
- * ve en çok bütçesi kalan seçilir (eşitlikte id ile deterministik). Böylece
- * her tur bir slot doldurur ve draft tam `maxRounds` turda biter.
+ * O pozisyona hâlâ ihtiyacı olanlar arasından seçilir; taban fiyatı
+ * karşılayabilenler öncelikli, içlerinden en çok bütçesi kalan alır
+ * (eşitlikte id ile deterministik). Hiçbiri karşılayamıyorsa (bir takım
+ * parasını erken bitirmiş olabilir) bütçe koşulu düşer — endRound `min(bütçe,
+ * basePrice)` kadar keser, bütçe negatife inmez. Kadro bütünlüğü teklif
+ * kuralından önce gelir (autoCompleteSquads ile aynı ilke).
  */
 function pickForcedWinner(room: RoomState, f: Footballer): Participant | undefined {
   const eligible = room.participants.filter(
@@ -290,23 +307,35 @@ function startNextRound(io: TypedServer, roomId: string): void {
     return;
   }
 
-  // Havuzdan kullanılabilir bir sonraki futbolcuyu çek (kimsenin
-  // alamayacağı futbolcuları atla). next bulunamazsa havuz tükenmiştir.
+  // Sıradaki futbolcuyu seç. Öncelik: birinin BÜTÇESİYLE alabileceği futbolcu
+  // (normal açık artırma). Kimsenin parası yetmiyorsa ama hâlâ eksik kadro
+  // varsa, o pozisyona ihtiyacı olan futbolcu yine de çıkarılır — endRound onu
+  // zorunlu atar (min(bütçe, basePrice) düşer). Böylece her tur bir slot
+  // doldurur ve draft tam `maxRounds` (oyuncu × kadro) tur sürer.
+  // Tarama tahribatsız: yalnızca seçilen id havuzdan çıkarılır.
   let next: Footballer | undefined;
-  while (room.remainingPoolIds.length > 0) {
-    const id = room.remainingPoolIds.shift();
-    if (!id) break;
-    const candidate = findFootballer(id);
-    if (candidate && anyoneCanUse(room, candidate)) {
+  let nextIdx = -1;
+  let fallbackIdx = -1;
+  for (let i = 0; i < room.remainingPoolIds.length; i++) {
+    const candidate = findFootballer(room.remainingPoolIds[i]!);
+    if (!candidate) continue;
+    if (anyoneCanUse(room, candidate)) {
       next = candidate;
+      nextIdx = i;
       break;
     }
+    if (fallbackIdx < 0 && anyoneNeeds(room, candidate)) fallbackIdx = i;
+  }
+  if (!next && fallbackIdx >= 0) {
+    nextIdx = fallbackIdx;
+    next = findFootballer(room.remainingPoolIds[fallbackIdx]!);
   }
 
-  if (!next) {
+  if (!next || nextIdx < 0) {
     finishDraft(io, room);
     return;
   }
+  room.remainingPoolIds.splice(nextIdx, 1);
 
   const round = (room.auction?.round ?? 0) + 1;
   const durationMs = room.config.bidDurationSec * 1000;
