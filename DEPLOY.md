@@ -69,8 +69,10 @@ Blueprint çalışmazsa manuel: **New +** → **Web Service** → repo → ayarl
 
 1. `https://<proje>.vercel.app` aç → "Sunucuya bağlı" yeşil olmalı
    (cold start ise ilk ~50 sn "Bağlanıyor…" kalabilir, sekmeyi yenile).
-2. Bir kişi oda kurar, kodu paylaşır; diğerleri katılır; herkes "Hazırım" → host "Başlat".
-3. Açık artırma + lig + şampiyon akışını birlikte oynayın.
+2. Bir kişi oda kurar (açık/gizli bütçe modunu seçer), kodu paylaşır; diğerleri
+   katılır; herkes "Hazırım" → host "Başlat". Tek kişi de başlatabilir — eksik
+   takımlar botlarla dolar.
+3. Açık artırma + eleme turnuvası + şampiyon akışını birlikte oynayın.
 
 ---
 
@@ -83,3 +85,40 @@ VITE_SERVER_URL=https://<render-adresin>
 ```
 
 Sonra `npm run dev -w @fal/client` — yerel arayüz, canlı sunucu.
+
+---
+
+## Bilinmesi gerekenler (temiz klonda prod koşullarında doğrulandı)
+
+**`VITE_SERVER_URL` derleme zamanında gömülür.** Vite `import.meta.env` değerlerini
+bundle'a yazar; bu bir çalışma zamanı ayarı DEĞİLDİR. Render adresini sonradan
+değiştirirsen Vercel'de env'i güncellemek yetmez, **yeniden deploy** etmen gerekir
+(Vercel → Deployments → ⋯ → Redeploy).
+
+**Render ücretsiz plan 15 dk trafiksizlikte uyur.** Sunucu bellekte durum tuttuğu
+için uyuyan sunucu = **açık odalar silinir**. Oyun sırasında sürekli trafik olduğu
+için oyun ortasında uyumaz; sorun yalnızca ilk açılıştaki ~50 sn gecikmedir. Oyun
+öncesi `https://<render-adresin>/health` adresini bir kez açıp sunucuyu uyandırın.
+
+**CORS bir güvenlik duvarı değildir.** `CLIENT_ORIGIN` doğru çalışıyor (izinli
+origin `Access-Control-Allow-Origin` alır, izinsiz almaz) ama bu yalnızca
+_tarayıcıdaki_ karşı-origin isteklerini engeller. WebSocket'e tarayıcılar CORS
+uygulamaz ve tarayıcı olmayan istemciler (script, curl) CORS'u tamamen yok sayar.
+Oyunda kimlik doğrulama ya da kişisel veri olmadığı için bu bir risk değil, ama
+`CLIENT_ORIGIN`'i kötü niyetli bağlantılara karşı koruma sanmayın. Gerçekten
+kapatmak gerekirse socket.io'nun `allowRequest` kancası kullanılmalı.
+
+**Sürüm kontrolü.** `package.json` `engines: node >=20`, `render.yaml`
+`NODE_VERSION=20`. Uyumlu.
+
+### Doğrulanmış prod testi
+
+Temiz `git clone` + `npm ci` + `render.yaml`'daki tam build/start komutlarıyla:
+
+- Render build komutu ✓, `node packages/server/dist/index.js` ayağa kalkıyor ✓
+- `/health` → `{"ok":true,...}` ✓
+- `players.json` yolu prod'da doğru çözülüyor ✓
+  (`dist/auction/pool.js` → `../../data/players.json`)
+- Vercel origin'inden WebSocket bağlantısı ✓, oda kur ✓, katıl ✓,
+  format seç ✓, draft başlat (2 insan + 2 bot) ✓, canlı açık artırma olayları ✓
+- İstemci `VITE_SERVER_URL` ile derlenip adresi bundle'a gömüyor ✓
