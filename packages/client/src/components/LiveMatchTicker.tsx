@@ -292,7 +292,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   const shootoutRounds = Array.from({ length: maxShootoutRound }, (_, i) => i + 1);
 
   const renderPenaltyDots = (teamId: string) => {
-    if (!hasShootout) return null;
+    if (!hasShootout || phase === 'regular') return null;
     const shootout = result.penaltyShootout!;
 
     return (
@@ -435,7 +435,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         <div style={{ textAlign: 'right' }}>
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>{homeName}</h3>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>EV SAHİBİ</span>
-          {hasShootout && renderPenaltyDots(result.homeId)}
+          {phase !== 'regular' && hasShootout && renderPenaltyDots(result.homeId)}
         </div>
 
         <div style={{ textAlign: 'center' }}>
@@ -472,7 +472,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         <div style={{ textAlign: 'left' }}>
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>{awayName}</h3>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>DEPLASMAN</span>
-          {hasShootout && renderPenaltyDots(result.awayId)}
+          {phase !== 'regular' && hasShootout && renderPenaltyDots(result.awayId)}
         </div>
       </div>
 
