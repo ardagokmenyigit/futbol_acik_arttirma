@@ -39,6 +39,20 @@ export function shuffled<T>(input: readonly T[]): T[] {
 }
 
 /**
+ * Üst seviye oyuncu eşik değeri:
+ * Orijinal veri setinde 87+ GEN olan 49 süperstar (%9.72'lik grup), %7 istatistik
+ * artışından sonra >= 93 GEN olmuştur.
+ */
+export const TOP_TIER_OVR_THRESHOLD = 93;
+
+/**
+ * Draft havuzundaki üst seviye oyuncu oranı (%25).
+ * 4 katılımcılı 28 turluk bir oyunda tam 7 adet (1 GK, 2 DEF, 2 MID, 2 FWD)
+ * üst seviye oyuncunun gelmesini sağlar.
+ */
+export const TOP_TIER_DRAFT_RATIO = 0.25;
+
+/**
  * Draft havuzunu kurar: pozisyon başına TAM OLARAK ihtiyaç kadar futbolcu.
  *
  * 4 katılımcı × (1 GK, 2 DEF, 2 MID, 2 FWD) → 4 kaleci, 8 defans, 8 orta saha,
@@ -50,8 +64,10 @@ export function shuffled<T>(input: readonly T[]): T[] {
  *    tükeniyor, elde kalan gerçekten kimsenin istemediği oluyor. Eski geniş
  *    havuzda (28 slot için 108 futbolcu) beklemenin hiçbir maliyeti yoktu.
  *
- * Seçim rastgeledir (her oyun farklı havuz). Pozisyonda yeterli futbolcu
- * yoksa hata verir — veri seti bunu karşılamalıdır.
+ * Seçim sırasında mevkisel olarak %25 oranında üst seviye (93+ GEN) futbolcular
+ * dahil edilir (4 kişilik oyunda tam 7 adet: 1 GK, 2 DEF, 2 MID, 2 FWD).
+ *
+ * Pozisyonda yeterli futbolcu yoksa hata verir — veri seti bunu karşılamalıdır.
  */
 export function buildDraftPool(config: RoomConfig, participantCount: number): Footballer[] {
   const all = loadFootballers();
@@ -66,7 +82,20 @@ export function buildDraftPool(config: RoomConfig, participantCount: number): Fo
         `players.json: ${position} için ${need} futbolcu gerekiyor, havuzda ${candidates.length} var`,
       );
     }
-    picked.push(...shuffled(candidates).slice(0, need));
+
+    const topCandidates = candidates.filter((f) => f.overall >= TOP_TIER_OVR_THRESHOLD);
+    const normalCandidates = candidates.filter((f) => f.overall < TOP_TIER_OVR_THRESHOLD);
+
+    // Her mevkide ihtiyacın %25'i kadar üst seviye oyuncu seç (örn. 4 GK için 1, 8 DEF için 2).
+    const topNeed = Math.min(topCandidates.length, Math.round(need * TOP_TIER_DRAFT_RATIO));
+    const normalNeed = need - topNeed;
+
+    if (normalCandidates.length < normalNeed) {
+      picked.push(...shuffled(candidates).slice(0, need));
+    } else {
+      picked.push(...shuffled(topCandidates).slice(0, topNeed));
+      picked.push(...shuffled(normalCandidates).slice(0, normalNeed));
+    }
   }
   // Turların sırası da rastgele olsun — pozisyonlar bloklar hâlinde gelmesin.
   return shuffled(picked);
