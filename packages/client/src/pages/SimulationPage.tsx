@@ -1,5 +1,6 @@
 import { useEffect, useState, type FC } from 'react';
 import type {
+  Footballer,
   MatchResult,
   Participant,
   TournamentMatch,
@@ -7,6 +8,7 @@ import type {
   TournamentSize,
   TournamentState,
 } from '@fal/shared';
+import { buildTeam, simulateMatch } from '@fal/shared';
 import { useSocket } from '../hooks/useSocket.js';
 import { TournamentBracket } from '../components/TournamentBracket.js';
 import { LiveMatchTicker } from '../components/LiveMatchTicker.js';
@@ -29,22 +31,167 @@ const BOT_NAMES = [
   'Bayer Leverkusen (Bot)',
 ];
 
+const DEFAULT_DEMO_SQUADS: Record<string, Footballer[]> = {
+  'user-1': [
+    { id: 'u1-1', name: 'Thibaut Courtois', position: 'GK', attack: 15, defense: 89, overall: 89 },
+    { id: 'u1-2', name: 'Antonio Rüdiger', position: 'DEF', attack: 45, defense: 86, overall: 86 },
+    { id: 'u1-3', name: 'Dani Carvajal', position: 'DEF', attack: 68, defense: 85, overall: 85 },
+    { id: 'u1-4', name: 'Jude Bellingham', position: 'MID', attack: 88, defense: 78, overall: 90 },
+    {
+      id: 'u1-5',
+      name: 'Federico Valverde',
+      position: 'MID',
+      attack: 84,
+      defense: 82,
+      overall: 88,
+    },
+    { id: 'u1-6', name: 'Vinícius Jr.', position: 'FWD', attack: 92, defense: 35, overall: 90 },
+    { id: 'u1-7', name: 'Kylian Mbappé', position: 'FWD', attack: 95, defense: 38, overall: 91 },
+  ],
+  'user-2': [
+    { id: 'u2-1', name: 'Ederson', position: 'GK', attack: 22, defense: 88, overall: 88 },
+    { id: 'u2-2', name: 'Rúben Dias', position: 'DEF', attack: 40, defense: 88, overall: 88 },
+    { id: 'u2-3', name: 'Joško Gvardiol', position: 'DEF', attack: 65, defense: 84, overall: 84 },
+    { id: 'u2-4', name: 'Rodri', position: 'MID', attack: 80, defense: 88, overall: 91 },
+    { id: 'u2-5', name: 'Kevin De Bruyne', position: 'MID', attack: 89, defense: 70, overall: 90 },
+    { id: 'u2-6', name: 'Phil Foden', position: 'FWD', attack: 88, defense: 55, overall: 88 },
+    { id: 'u2-7', name: 'Erling Haaland', position: 'FWD', attack: 94, defense: 45, overall: 91 },
+  ],
+  'bot-1': [
+    { id: 'b1-1', name: 'Manuel Neuer', position: 'GK', attack: 20, defense: 87, overall: 87 },
+    { id: 'b1-2', name: 'Dayot Upamecano', position: 'DEF', attack: 40, defense: 82, overall: 82 },
+    { id: 'b1-3', name: 'Alphonso Davies', position: 'DEF', attack: 75, defense: 82, overall: 82 },
+    { id: 'b1-4', name: 'Joshua Kimmich', position: 'MID', attack: 84, defense: 83, overall: 86 },
+    { id: 'b1-5', name: 'Jamal Musiala', position: 'MID', attack: 88, defense: 60, overall: 87 },
+    { id: 'b1-6', name: 'Leroy Sané', position: 'FWD', attack: 85, defense: 40, overall: 85 },
+    { id: 'b1-7', name: 'Harry Kane', position: 'FWD', attack: 93, defense: 48, overall: 90 },
+  ],
+  'bot-2': [
+    { id: 'b2-1', name: 'David Raya', position: 'GK', attack: 18, defense: 84, overall: 84 },
+    { id: 'b2-2', name: 'William Saliba', position: 'DEF', attack: 42, defense: 87, overall: 87 },
+    {
+      id: 'b2-3',
+      name: 'Gabriel Magalhães',
+      position: 'DEF',
+      attack: 45,
+      defense: 86,
+      overall: 86,
+    },
+    { id: 'b2-4', name: 'Declan Rice', position: 'MID', attack: 78, defense: 86, overall: 87 },
+    { id: 'b2-5', name: 'Martin Ødegaard', position: 'MID', attack: 87, defense: 68, overall: 89 },
+    {
+      id: 'b2-6',
+      name: 'Gabriel Martinelli',
+      position: 'FWD',
+      attack: 84,
+      defense: 45,
+      overall: 84,
+    },
+    { id: 'b2-7', name: 'Bukayo Saka', position: 'FWD', attack: 89, defense: 65, overall: 87 },
+  ],
+  'bot-3': [
+    { id: 'b3-1', name: 'Yann Sommer', position: 'GK', attack: 15, defense: 87, overall: 87 },
+    {
+      id: 'b3-2',
+      name: 'Alessandro Bastoni',
+      position: 'DEF',
+      attack: 52,
+      defense: 87,
+      overall: 87,
+    },
+    { id: 'b3-3', name: 'Federico Dimarco', position: 'DEF', attack: 76, defense: 82, overall: 83 },
+    { id: 'b3-4', name: 'Nicolò Barella', position: 'MID', attack: 82, defense: 84, overall: 87 },
+    { id: 'b3-5', name: 'Hakan Çalhanoğlu', position: 'MID', attack: 86, defense: 80, overall: 86 },
+    { id: 'b3-6', name: 'Marcus Thuram', position: 'FWD', attack: 84, defense: 48, overall: 84 },
+    { id: 'b3-7', name: 'Lautaro Martínez', position: 'FWD', attack: 91, defense: 50, overall: 89 },
+  ],
+  'bot-4': [
+    {
+      id: 'b4-1',
+      name: 'Gianluigi Donnarumma',
+      position: 'GK',
+      attack: 15,
+      defense: 89,
+      overall: 89,
+    },
+    { id: 'b4-2', name: 'Marquinhos', position: 'DEF', attack: 48, defense: 87, overall: 87 },
+    { id: 'b4-3', name: 'Achraf Hakimi', position: 'DEF', attack: 79, defense: 83, overall: 84 },
+    { id: 'b4-4', name: 'Vitinha', position: 'MID', attack: 82, defense: 80, overall: 85 },
+    {
+      id: 'b4-5',
+      name: 'Warren Zaïre-Emery',
+      position: 'MID',
+      attack: 80,
+      defense: 78,
+      overall: 80,
+    },
+    { id: 'b4-6', name: 'Bradley Barcola', position: 'FWD', attack: 84, defense: 40, overall: 82 },
+    { id: 'b4-7', name: 'Ousmane Dembélé', position: 'FWD', attack: 86, defense: 38, overall: 86 },
+  ],
+  'bot-5': [
+    {
+      id: 'b5-1',
+      name: 'Marc-André ter Stegen',
+      position: 'GK',
+      attack: 18,
+      defense: 89,
+      overall: 89,
+    },
+    { id: 'b5-2', name: 'Ronald Araújo', position: 'DEF', attack: 40, defense: 86, overall: 86 },
+    { id: 'b5-3', name: 'Jules Koundé', position: 'DEF', attack: 62, defense: 85, overall: 85 },
+    { id: 'b5-4', name: 'Pedri', position: 'MID', attack: 85, defense: 72, overall: 86 },
+    { id: 'b5-5', name: 'Dani Olmo', position: 'MID', attack: 86, defense: 65, overall: 84 },
+    { id: 'b5-6', name: 'Lamine Yamal', position: 'FWD', attack: 88, defense: 42, overall: 85 },
+    {
+      id: 'b5-7',
+      name: 'Robert Lewandowski',
+      position: 'FWD',
+      attack: 92,
+      defense: 44,
+      overall: 88,
+    },
+  ],
+  'bot-6': [
+    { id: 'b6-1', name: 'Lukáš Hrádecký', position: 'GK', attack: 15, defense: 84, overall: 84 },
+    { id: 'b6-2', name: 'Jonathan Tah', position: 'DEF', attack: 42, defense: 86, overall: 86 },
+    { id: 'b6-3', name: 'Jeremie Frimpong', position: 'DEF', attack: 84, defense: 78, overall: 84 },
+    { id: 'b6-4', name: 'Granit Xhaka', position: 'MID', attack: 82, defense: 84, overall: 86 },
+    { id: 'b6-5', name: 'Florian Wirtz', position: 'MID', attack: 89, defense: 62, overall: 88 },
+    { id: 'b6-6', name: 'Victor Boniface', position: 'FWD', attack: 86, defense: 44, overall: 82 },
+    {
+      id: 'b6-7',
+      name: 'Alejandro Grimaldo',
+      position: 'FWD',
+      attack: 87,
+      defense: 76,
+      overall: 86,
+    },
+  ],
+};
+
 function createClientTournament(
   userParticipants: Participant[],
   targetSize: TournamentSize,
 ): { tournament: TournamentState; allParticipants: Participant[] } {
-  const all: Participant[] = [...userParticipants];
+  const all: Participant[] = userParticipants.map((u) => ({
+    ...u,
+    squad:
+      u.squad && u.squad.length > 0
+        ? u.squad
+        : (DEFAULT_DEMO_SQUADS[u.id] ?? DEFAULT_DEMO_SQUADS['user-1']!),
+  }));
   const needed = targetSize - all.length;
 
   for (let i = 0; i < needed; i++) {
+    const botId = `bot-${i + 1}`;
     all.push({
-      id: `bot-${i + 1}`,
+      id: botId,
       nickname: BOT_NAMES[i % BOT_NAMES.length] ?? `Bot Takım ${i + 1}`,
       isHost: false,
       isReady: true,
       connected: true,
       budget: 0,
-      squad: [],
+      squad: DEFAULT_DEMO_SQUADS[botId] ?? DEFAULT_DEMO_SQUADS['bot-1']!,
     });
   }
 
@@ -277,7 +424,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
               isReady: true,
               connected: true,
               budget: 0,
-              squad: [],
+              squad: DEFAULT_DEMO_SQUADS['user-1']!,
             },
             {
               id: 'user-2',
@@ -286,7 +433,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
               isReady: true,
               connected: true,
               budget: 0,
-              squad: [],
+              squad: DEFAULT_DEMO_SQUADS['user-2']!,
             },
           ];
 
@@ -306,57 +453,40 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     setIsSimulating(false);
   };
 
-  // Bir maçı simüle et
-  const handleSimulateMatch = (match: TournamentMatch) => {
+  // Bir maçı gerçek simülasyon motoruyla simüle et
+  const handleSimulateMatch = (match: TournamentMatch, forcePenalties = false) => {
     if (!match.homeId || !match.awayId || isSimulating) return;
+
+    const homePart = participants.find((p) => p.id === match.homeId);
+    const awayPart = participants.find((p) => p.id === match.awayId);
+    if (!homePart || !awayPart) return;
 
     setIsSimulating(true);
 
-    const homeScore = Math.floor(Math.random() * 3);
-    const awayScore = Math.floor(Math.random() * 3);
+    const homeTeam = buildTeam(homePart);
+    const awayTeam = buildTeam(awayPart);
 
-    const events = [];
-    for (let i = 0; i < homeScore; i++) {
-      events.push({
-        minute: Math.floor(Math.random() * 80) + 5,
-        teamId: match.homeId,
-        type: 'goal' as const,
+    let matchResult: MatchResult;
+
+    if (forcePenalties) {
+      // Penaltı heyecanını test etmek için 0-0 berabere bitirip seri penaltıları başlat
+      matchResult = simulateMatch({
+        matchId: match.matchId,
+        homeTeam,
+        awayTeam,
+        isTournament: true,
+        chanceRate: 0, // 0-0 berabere biter
+        seed: Math.floor(Math.random() * 1000000),
       });
-    }
-    for (let i = 0; i < awayScore; i++) {
-      events.push({
-        minute: Math.floor(Math.random() * 80) + 5,
-        teamId: match.awayId,
-        type: 'goal' as const,
-      });
-    }
-    events.sort((a, b) => a.minute - b.minute);
-
-    let penHome: number | undefined;
-    let penAway: number | undefined;
-    let winnerId: string;
-
-    if (homeScore > awayScore) {
-      winnerId = match.homeId;
-    } else if (awayScore > homeScore) {
-      winnerId = match.awayId;
     } else {
-      penHome = 5;
-      penAway = 4;
-      winnerId = match.homeId;
+      matchResult = simulateMatch({
+        matchId: match.matchId,
+        homeTeam,
+        awayTeam,
+        isTournament: true,
+        seed: Math.floor(Math.random() * 1000000),
+      });
     }
-
-    const matchResult: MatchResult = {
-      matchId: match.matchId,
-      homeId: match.homeId,
-      awayId: match.awayId,
-      scoreHome: homeScore,
-      scoreAway: awayScore,
-      events,
-      penaltiesHome: penHome,
-      penaltiesAway: penAway,
-      winnerId,
-    };
 
     setLiveSimulatingResult(matchResult);
   };
@@ -377,7 +507,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
   };
 
   // Sıradaki hazır maçı bul ve başlat
-  const handleSimulateNext = () => {
+  const handleSimulateNext = (forcePenalties = false) => {
     if (!tournament || isSimulating) return;
 
     let targetMatch: TournamentMatch | null = null;
@@ -392,7 +522,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     }
 
     if (targetMatch) {
-      handleSimulateMatch(targetMatch);
+      handleSimulateMatch(targetMatch, forcePenalties);
     }
   };
 
@@ -438,20 +568,43 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         {/* Aksiyon Butonları & Format Seçimi */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           {tournament && !tournament.championId && (
-            <button
-              onClick={handleSimulateNext}
-              disabled={isSimulating}
-              style={{
-                backgroundColor: 'var(--accent-gold)',
-                color: '#000',
-                padding: '8px 18px',
-                fontWeight: 800,
-                fontSize: '0.9rem',
-                boxShadow: '0 0 10px var(--accent-gold-glow)',
-              }}
-            >
-              {isSimulating ? 'Simüle Ediliyor...' : '⚡ Sıradaki Maçı Simüle Et'}
-            </button>
+            <>
+              <button
+                onClick={() => handleSimulateNext(false)}
+                disabled={isSimulating}
+                style={{
+                  backgroundColor: 'var(--accent-gold)',
+                  color: '#000',
+                  padding: '8px 18px',
+                  fontWeight: 800,
+                  fontSize: '0.9rem',
+                  boxShadow: '0 0 10px var(--accent-gold-glow)',
+                  borderRadius: 6,
+                  border: 'none',
+                  cursor: isSimulating ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {isSimulating ? 'Simüle Ediliyor...' : '⚡ Sıradaki Maçı Simüle Et'}
+              </button>
+
+              <button
+                onClick={() => handleSimulateNext(true)}
+                disabled={isSimulating}
+                title="Maçı 0-0 berabere bitirerek seri penaltı atışları heyecanını anında test eder"
+                style={{
+                  backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                  color: 'var(--accent-gold)',
+                  border: '1px solid var(--accent-gold)',
+                  padding: '8px 14px',
+                  fontWeight: 800,
+                  fontSize: '0.85rem',
+                  borderRadius: 6,
+                  cursor: isSimulating ? 'not-allowed' : 'pointer',
+                }}
+              >
+                🎯 Penaltı Testi
+              </button>
+            </>
           )}
 
           <div
@@ -475,14 +628,33 @@ export const SimulationPage: FC<SimulationPageProps> = ({
               Format:
             </span>
             <button
+              onClick={() => handleSelectSize(2)}
+              disabled={isSimulating}
+              style={{
+                padding: '6px 10px',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                backgroundColor: tournamentSize === 2 ? 'var(--accent-green)' : 'transparent',
+                color: tournamentSize === 2 ? '#000' : 'var(--text-secondary)',
+                borderRadius: 4,
+                border: 'none',
+                cursor: isSimulating ? 'not-allowed' : 'pointer',
+              }}
+            >
+              2 Takım
+            </button>
+            <button
               onClick={() => handleSelectSize(4)}
               disabled={isSimulating}
               style={{
-                padding: '6px 12px',
+                padding: '6px 10px',
                 fontSize: '0.85rem',
                 fontWeight: 700,
                 backgroundColor: tournamentSize === 4 ? 'var(--accent-green)' : 'transparent',
                 color: tournamentSize === 4 ? '#000' : 'var(--text-secondary)',
+                borderRadius: 4,
+                border: 'none',
+                cursor: isSimulating ? 'not-allowed' : 'pointer',
               }}
             >
               4 Takım
@@ -491,11 +663,14 @@ export const SimulationPage: FC<SimulationPageProps> = ({
               onClick={() => handleSelectSize(8)}
               disabled={isSimulating}
               style={{
-                padding: '6px 12px',
+                padding: '6px 10px',
                 fontSize: '0.85rem',
                 fontWeight: 700,
                 backgroundColor: tournamentSize === 8 ? 'var(--accent-green)' : 'transparent',
                 color: tournamentSize === 8 ? '#000' : 'var(--text-secondary)',
+                borderRadius: 4,
+                border: 'none',
+                cursor: isSimulating ? 'not-allowed' : 'pointer',
               }}
             >
               8 Takım
@@ -510,8 +685,8 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           championRow={{
             participantId: champion.id,
             nickname: champion.nickname,
-            played: tournamentSize === 4 ? 2 : 3,
-            won: tournamentSize === 4 ? 2 : 3,
+            played: tournamentSize === 2 ? 1 : tournamentSize === 4 ? 2 : 3,
+            won: tournamentSize === 2 ? 1 : tournamentSize === 4 ? 2 : 3,
             drawn: 0,
             lost: 0,
             goalsFor: 6,
@@ -558,7 +733,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
           <TournamentBracket
             tournament={tournament}
             getTeamName={getTeamName}
-            onSimulateMatch={handleSimulateMatch}
+            onSimulateMatch={(match) => handleSimulateMatch(match, false)}
             isSimulating={isSimulating}
           />
         </div>
