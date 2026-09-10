@@ -169,7 +169,7 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
             return (
               <div key={pos} className={`position-group-block pos-block-${pos.toLowerCase()}`}>
                 <div className="position-group-header">
-                  <PositionBadge position={pos} size="sm" showLabel />
+                  <PositionBadge position={pos} size="sm" />
                   <span className="position-group-count">
                     {posPlayers.length}
                     {quota !== undefined ? `/${quota} Oyuncu` : ' Oyuncu'}

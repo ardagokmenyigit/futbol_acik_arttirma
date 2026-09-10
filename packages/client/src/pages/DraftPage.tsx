@@ -123,7 +123,7 @@ export function DraftPage({ room }: Props) {
         <div className="player-card">
           <div className="player-top">
             <span className="player-name">{f.name}</span>
-            <PositionBadge position={f.position} size="md" showLabel />
+            <PositionBadge position={f.position} size="md" />
           </div>
           <div className="player-meta">
             {isOpening
@@ -301,7 +301,7 @@ export function DraftPage({ room }: Props) {
               return (
                 <div key={pos} className={`position-group-block pos-block-${pos.toLowerCase()}`}>
                   <div className="position-group-header">
-                    <PositionBadge position={pos} size="sm" showLabel />
+                    <PositionBadge position={pos} size="sm" />
                     <span className="position-group-count">
                       {posPlayers.length}/{quota} Oyuncu
                     </span>

@@ -105,7 +105,7 @@ function PositionIcon({ position, size }: { position: Position; size: number }) 
   );
 }
 
-export function PositionBadge({ position, size = 'md', showLabel = false }: Props) {
+export function PositionBadge({ position, size = 'md' }: Props) {
   const conf = POSITION_CONFIG[position];
   const iconSize = size === 'sm' ? 10 : size === 'lg' ? 14 : 12;
 
@@ -115,7 +115,7 @@ export function PositionBadge({ position, size = 'md', showLabel = false }: Prop
       title={`${conf.label} (${position})`}
     >
       <PositionIcon position={position} size={iconSize} />
-      <span>{showLabel ? `${conf.short} · ${conf.label}` : conf.short}</span>
+      <span>{conf.short}</span>
     </span>
   );
 }
