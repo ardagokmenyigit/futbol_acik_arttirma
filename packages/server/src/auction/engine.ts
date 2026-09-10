@@ -217,13 +217,29 @@ function everySquadFull(room: RoomState): boolean {
 }
 
 /**
- * Draft'ın sürebileceği azami tur sayısı. Bir oyuncu pasif kalır / AFK olursa
- * kadrosu hiç dolmaz ve draft havuz bitene kadar (100+ tur) sürerdi. Bu tavan,
- * oyunun makul sürede bitmesini garanti eder.
+ * Draft'ın tur sayısı. Her tur TAM OLARAK bir kadro slotu doldurduğu için
+ * (teklif gelmese bile futbolcu zorunlu olarak birine verilir — bkz. endRound)
+ * draft kesin bu kadar tur sürer: 4 oyuncu × 7 kadro = 28 tur.
  */
 function maxRounds(room: RoomState): number {
-  // ×3: satılmayan turlara pay bırakır ama üst sınırı korur.
-  return room.config.squadSize * room.participants.length * 3;
+  return room.config.squadSize * room.participants.length;
+}
+
+/**
+ * Teklif gelmeyen turda futbolcuyu zorunlu olarak alacak katılımcı.
+ * O pozisyona hâlâ ihtiyacı olanlar arasından, taban fiyatı karşılayabilen
+ * ve en çok bütçesi kalan seçilir (eşitlikte id ile deterministik). Böylece
+ * her tur bir slot doldurur ve draft tam `maxRounds` turda biter.
+ */
+function pickForcedWinner(room: RoomState, f: Footballer): Participant | undefined {
+  const eligible = room.participants.filter(
+    (p) =>
+      p.squad.length < room.config.squadSize &&
+      positionCount(p, f.position) < room.config.squad[f.position],
+  );
+  const canAfford = eligible.filter((p) => p.budget >= f.basePrice);
+  const pool = canAfford.length > 0 ? canAfford : eligible;
+  return [...pool].sort((a, b) => b.budget - a.budget || a.id.localeCompare(b.id))[0];
 }
 
 /**
@@ -335,12 +351,22 @@ function endRound(io: TypedServer, roomId: string): void {
   cancelAuction(roomId);
 
   const { footballer, highestBid, round } = room.auction;
-  const winner = highestBid
-    ? room.participants.find((p) => p.id === highestBid.playerId)
-    : undefined;
+  let winner = highestBid ? room.participants.find((p) => p.id === highestBid.playerId) : undefined;
+  let amount = winner ? highestBid!.amount : 0;
 
-  if (highestBid && winner) {
-    winner.budget -= highestBid.amount;
+  // Teklif gelmediyse tur boşa gitmesin: futbolcu, pozisyona ihtiyacı olan
+  // katılımcıya taban fiyattan zorunlu verilir. Her tur bir slot doldurur →
+  // draft kesin `maxRounds` (oyuncu × kadro) tur sürer.
+  if (!winner) {
+    const forced = pickForcedWinner(room, footballer);
+    if (forced) {
+      winner = forced;
+      amount = Math.min(forced.budget, footballer.basePrice);
+    }
+  }
+
+  if (winner) {
+    winner.budget -= amount;
     winner.squad.push(footballer);
   }
 
@@ -350,7 +376,7 @@ function endRound(io: TypedServer, roomId: string): void {
     footballerName: footballer.name,
     winnerId: winner?.id ?? null,
     winnerNickname: winner?.nickname ?? null,
-    amount: winner ? highestBid!.amount : 0,
+    amount: winner ? amount : 0,
   });
   io.to(roomId).emit('room:state', room);
 
