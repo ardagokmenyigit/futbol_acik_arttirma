@@ -134,6 +134,7 @@ class RoomStore {
     if (room.hostId === playerId) {
       const nextHost = room.participants.find((p) => p.connected) ?? room.participants[0]!;
       nextHost.isHost = true;
+      nextHost.isReady = true;
       room.hostId = nextHost.id;
     }
     return room;
@@ -156,6 +157,7 @@ class RoomStore {
       if (nextHost) {
         participant.isHost = false;
         nextHost.isHost = true;
+        nextHost.isReady = true;
         room.hostId = nextHost.id;
       }
     }
@@ -165,6 +167,7 @@ class RoomStore {
   /**
    * Host oyunu başlatabilir mi? Bağlantısı kopuk oyuncular "hazır" kilidini
    * açamayacağı için sadece BAĞLI oyuncular üzerinden değerlendirilir.
+   * Host dışındaki diğer tüm bağlı oyuncuların hazır vermiş olması gerekir.
    */
   canStart(room: RoomState): { ok: true } | { ok: false; reason: string } {
     if (room.phase !== 'lobby') return { ok: false, reason: 'Oyun zaten başlamış' };
@@ -179,8 +182,11 @@ class RoomStore {
     if (connected.length < 1) {
       return { ok: false, reason: 'En az 1 bağlı oyuncu gerekli' };
     }
-    if (!connected.every((p) => p.isReady)) {
-      return { ok: false, reason: 'Bağlı oyuncuların hepsi hazır değil' };
+
+    // Host dışındaki diğer tüm bağlı oyuncular hazır olmalıdır
+    const others = connected.filter((p) => !p.isHost && !p.isBot);
+    if (!others.every((p) => p.isReady)) {
+      return { ok: false, reason: 'Diğer oyuncuların hepsi hazır değil' };
     }
     return { ok: true };
   }
@@ -273,7 +279,7 @@ function makeParticipant(nickname: string, config: RoomConfig, isHost: boolean):
     id: randomUUID(),
     nickname,
     isHost,
-    isReady: false,
+    isReady: isHost,
     connected: true,
     budget: config.startingBudget,
     squad: [],

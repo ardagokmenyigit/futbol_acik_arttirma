@@ -19,12 +19,13 @@ export function LobbyPage({ room }: Props) {
   const isHost = room.hostId === you.id;
   // Sunucu gibi: sadece bağlı oyunculara bak (kopuk oyuncu "hazır" olamaz).
   const connectedPlayers = room.participants.filter((p) => p.connected);
-  const readyCount = connectedPlayers.filter((p) => p.isReady).length;
+  const otherPlayers = connectedPlayers.filter((p) => p.id !== room.hostId && !p.isBot);
+  const otherReadyCount = otherPlayers.filter((p) => p.isReady).length;
+  const othersReady = otherPlayers.every((p) => p.isReady);
   const format = room.config.tournamentSize;
   // Eksik takımlar botlarla dolar — tek kişi bile başlatabilir.
   const enoughPlayers = connectedPlayers.length >= 1;
-  const allReady = connectedPlayers.length > 0 && readyCount === connectedPlayers.length;
-  const canStart = isHost && enoughPlayers && allReady;
+  const canStart = isHost && enoughPlayers && othersReady;
   const botCount = Math.max(0, format - room.participants.length);
 
   async function chooseFormat(size: TournamentSize) {
@@ -64,7 +65,10 @@ export function LobbyPage({ room }: Props) {
         Lobi
       </h1>
       <p className="lede" style={{ marginBottom: 22 }}>
-        {connectedPlayers.length}/{format} oyuncu bağlandı, {readyCount} tanesi hazır.
+        {connectedPlayers.length}/{format} oyuncu bağlandı
+        {otherPlayers.length > 0
+          ? `, ${otherReadyCount}/${otherPlayers.length} katılımcı hazır.`
+          : '.'}
       </p>
 
       <label className="field-label">Oda kodu</label>
@@ -143,9 +147,11 @@ export function LobbyPage({ room }: Props) {
             <div style={{ display: 'flex', gap: 6 }}>
               {p.isBot && <span className="tag bot">bot</span>}
               {p.isHost && <span className="tag host">host</span>}
-              <span className={`tag ${p.isReady ? 'ready' : 'waiting'}`}>
-                {p.isReady ? 'hazır' : 'bekliyor'}
-              </span>
+              {!p.isHost && !p.isBot && (
+                <span className={`tag ${p.isReady ? 'ready' : 'waiting'}`}>
+                  {p.isReady ? 'hazır' : 'bekliyor'}
+                </span>
+              )}
             </div>
           </div>
         ))}
@@ -155,9 +161,11 @@ export function LobbyPage({ room }: Props) {
         <button className="btn-outline" onClick={handleLeave}>
           Odadan çık
         </button>
-        <button className="btn-outline" onClick={() => setReady(!you.isReady)}>
-          {you.isReady ? 'Hazır değilim' : 'Hazırım'}
-        </button>
+        {!isHost && (
+          <button className="btn-outline" onClick={() => setReady(!you.isReady)}>
+            {you.isReady ? 'Hazır değilim' : 'Hazırım'}
+          </button>
+        )}
         {isHost && (
           <button className="btn-primary" disabled={!canStart} onClick={() => void handleStart()}>
             Başlat
@@ -167,12 +175,25 @@ export function LobbyPage({ room }: Props) {
 
       {isHost && !canStart && (
         <p className="footnote">
-          {!enoughPlayers
-            ? 'Başlatmak için en az 1 bağlı oyuncu gerekli.'
-            : 'Bağlı oyuncuların tamamı hazır olmadan oyun başlatılamaz.'}
+          {otherPlayers.length > 0 && !othersReady
+            ? 'Diğer oyuncuların tamamı hazır vermeden oyun başlatılamaz.'
+            : !enoughPlayers
+              ? 'Başlatmak için en az 1 bağlı oyuncu gerekli.'
+              : 'Oyun başlatılamıyor.'}
         </p>
       )}
-      {!isHost && <p className="footnote">Formatı ve başlatmayı host belirler.</p>}
+      {isHost && canStart && otherPlayers.length > 0 && (
+        <p className="footnote" style={{ color: 'var(--accent-green, #10b981)' }}>
+          ✓ Tüm oyuncular hazır! Oyunu başlatabilirsin.
+        </p>
+      )}
+      {!isHost && (
+        <p className="footnote">
+          {you.isReady
+            ? '✓ Hazırsın! Host oyunu başlattığında açık artırma başlayacak.'
+            : 'Başlamaya hazırsan "Hazırım" butonuna tıkla.'}
+        </p>
+      )}
       {startError && <p className="error">{startError}</p>}
     </div>
   );
