@@ -133,12 +133,12 @@ function reserveNeeded(
 
     const prices = pool
       .filter((f) => f.position === pos)
-      .map((f) => f.basePrice)
+      .map((f) => f.basePrice ?? 1)
       .sort((a, b) => a - b);
 
     for (let i = 0; i < need; i++) {
       // Havuz tükenmişse temkinli bir tahmin kullan.
-      total += prices[i] ?? 20;
+      total += prices[i] ?? 1;
     }
   }
   return Math.ceil(total * RESERVE_SAFETY);
@@ -168,7 +168,8 @@ export function botMaxBid(
   // 2. REZERV — bu alımdan sonra kalan slotlara para kalmalı
   const reserve = reserveNeeded(bot, config, pool, pos, true);
   const affordable = bot.budget - reserve;
-  if (affordable < footballer.basePrice) return 0;
+  const minCost = footballer.basePrice ?? 1;
+  if (affordable < minCost) return 0;
 
   const persona = botPersona(bot.id);
   const slotsLeft = config.squadSize - bot.squad.length;
@@ -197,7 +198,9 @@ export function botMaxBid(
     fairShare * (0.5 + qualityWeight * qualityPct + fitWeight * fitScore) * persona.aggression;
 
   // Taban fiyatın altına düşmesin
-  valuation = Math.max(valuation, footballer.basePrice);
+  if (footballer.basePrice != null) {
+    valuation = Math.max(valuation, footballer.basePrice);
+  }
 
   // KITLIK — havuzda o pozisyondan ihtiyacım kadar ya da az kaldıysa kaçırma
   const need = config.squad[pos] - positionCount(bot, pos);

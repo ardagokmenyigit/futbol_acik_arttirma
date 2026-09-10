@@ -29,7 +29,9 @@ export function DraftPage({ room }: Props) {
 
   const floor = useMemo(() => {
     if (!auction) return 0;
-    return auction.highestBid ? auction.highestBid.amount + minInc : auction.footballer.basePrice;
+    return auction.highestBid
+      ? auction.highestBid.amount + minInc
+      : (auction.footballer.basePrice ?? minInc);
   }, [auction, minInc]);
 
   const [amount, setAmount] = useState(floor);
@@ -105,7 +107,9 @@ export function DraftPage({ room }: Props) {
             <span className="player-name">{f.name}</span>
             <PositionBadge position={f.position} size="md" showLabel />
           </div>
-          <div className="player-meta">Başlangıç değeri {f.basePrice}M</div>
+          {f.basePrice != null && (
+            <div className="player-meta">Başlangıç değeri {f.basePrice}M</div>
+          )}
 
           <div className="stat-row">
             <StatItem label="GEN" value={f.overall} />

@@ -11,7 +11,7 @@ export function positionCount(participant: Participant, position: Position): num
 export function bidFloor(auction: AuctionState, config: RoomConfig): number {
   return auction.highestBid
     ? auction.highestBid.amount + config.minBidIncrement
-    : auction.footballer.basePrice;
+    : (auction.footballer.basePrice ?? config.minBidIncrement);
 }
 
 /**

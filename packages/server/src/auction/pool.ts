@@ -60,6 +60,6 @@ function parseFootballer(entry: unknown, index: number): Footballer {
     attack: num('attack'),
     defense: num('defense'),
     overall: num('overall'),
-    basePrice: num('basePrice'),
+    ...(o.basePrice !== undefined && o.basePrice !== null ? { basePrice: num('basePrice') } : {}),
   };
 }

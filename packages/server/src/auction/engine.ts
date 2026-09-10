@@ -204,11 +204,12 @@ function runBotTurn(io: TypedServer, roomId: string, botId: string): void {
 /* --------------------------- iç mantık --------------------------- */
 
 function anyoneCanUse(room: RoomState, f: Footballer): boolean {
+  const minCost = f.basePrice ?? 0;
   return room.participants.some(
     (p) =>
       p.squad.length < room.config.squadSize &&
       positionCount(p, f.position) < room.config.squad[f.position] &&
-      p.budget >= f.basePrice,
+      p.budget >= minCost,
   );
 }
 
@@ -285,7 +286,7 @@ function autoCompleteSquads(room: RoomState): void {
         for (let i = 0; i < pool.length; i++) {
           const f = pool[i];
           if (!f || f.position !== pos) continue;
-          if (!pick || f.basePrice < pick.basePrice) {
+          if (!pick || (f.basePrice ?? 0) < (pick.basePrice ?? 0)) {
             pick = f;
             pickIdx = i;
           }
@@ -398,7 +399,7 @@ function endRound(io: TypedServer, roomId: string): void {
     const forced = pickForcedWinner(room, footballer);
     if (forced) {
       winner = forced;
-      amount = Math.min(forced.budget, footballer.basePrice);
+      amount = Math.min(forced.budget, footballer.basePrice ?? 0);
     }
   }
 
