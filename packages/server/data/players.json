@@ -1,5 +1,5 @@
 {
-  "_comment": "EA SPORTS FC 26 Veri Tabanından derlenmiş en iyi 108 elit futbolcu (16 GK, 34 DEF, 34 MID, 24 FWD). Dengeli açık artırma taban fiyatları dahil edilmiştir.",
+  "_comment": "EA SPORTS FC 26 Veri Tabanından derlenmiş 504 futbolcu (72 GK, 144 DEF, 144 MID, 144 FWD). 1:2:2:2 pozisyon dengesi.",
   "players": [
     {
       "id": "fc26-gk-001",
@@ -7,8 +7,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 88,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-gk-002",
@@ -16,8 +15,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 90,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-gk-003",
@@ -25,8 +23,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 88,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-gk-004",
@@ -34,8 +31,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "overall": 88,
-      "basePrice": 20
+      "overall": 88
     },
     {
       "id": "fc26-gk-005",
@@ -43,8 +39,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-gk-006",
@@ -52,8 +47,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 87,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-gk-007",
@@ -61,8 +55,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-gk-008",
@@ -70,8 +63,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 85,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-gk-009",
@@ -79,8 +71,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 87,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-gk-010",
@@ -88,8 +79,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 83,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-gk-011",
@@ -97,8 +87,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 84,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-gk-012",
@@ -106,8 +95,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 85,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-gk-013",
@@ -115,8 +103,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 84,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-gk-014",
@@ -124,8 +111,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-gk-015",
@@ -133,8 +119,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 86,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-gk-016",
@@ -142,8 +127,7 @@
       "position": "GK",
       "attack": 29,
       "defense": 81,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-017",
@@ -151,8 +135,7 @@
       "position": "DEF",
       "attack": 47,
       "defense": 90,
-      "overall": 90,
-      "basePrice": 20
+      "overall": 90
     },
     {
       "id": "fc26-def-018",
@@ -160,8 +143,7 @@
       "position": "DEF",
       "attack": 57,
       "defense": 82,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-def-019",
@@ -169,8 +151,7 @@
       "position": "DEF",
       "attack": 40,
       "defense": 88,
-      "overall": 88,
-      "basePrice": 20
+      "overall": 88
     },
     {
       "id": "fc26-def-020",
@@ -178,8 +159,7 @@
       "position": "DEF",
       "attack": 48,
       "defense": 89,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-def-021",
@@ -187,8 +167,7 @@
       "position": "DEF",
       "attack": 45,
       "defense": 86,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-def-022",
@@ -196,8 +175,7 @@
       "position": "DEF",
       "attack": 45,
       "defense": 88,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-def-023",
@@ -205,8 +183,7 @@
       "position": "DEF",
       "attack": 40,
       "defense": 87,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-def-024",
@@ -214,8 +191,7 @@
       "position": "DEF",
       "attack": 37,
       "defense": 87,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-def-025",
@@ -223,8 +199,7 @@
       "position": "DEF",
       "attack": 58,
       "defense": 80,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-def-026",
@@ -232,8 +207,7 @@
       "position": "DEF",
       "attack": 50,
       "defense": 80,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-def-027",
@@ -241,8 +215,7 @@
       "position": "DEF",
       "attack": 46,
       "defense": 84,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-def-028",
@@ -250,8 +223,7 @@
       "position": "DEF",
       "attack": 41,
       "defense": 86,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-def-029",
@@ -259,8 +231,7 @@
       "position": "DEF",
       "attack": 36,
       "defense": 86,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-def-030",
@@ -268,8 +239,7 @@
       "position": "DEF",
       "attack": 37,
       "defense": 86,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-def-031",
@@ -277,8 +247,7 @@
       "position": "DEF",
       "attack": 57,
       "defense": 79,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-def-032",
@@ -286,8 +255,7 @@
       "position": "DEF",
       "attack": 50,
       "defense": 81,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-def-033",
@@ -295,8 +263,7 @@
       "position": "DEF",
       "attack": 49,
       "defense": 85,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-def-034",
@@ -304,8 +271,7 @@
       "position": "DEF",
       "attack": 47,
       "defense": 85,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-def-035",
@@ -313,8 +279,7 @@
       "position": "DEF",
       "attack": 40,
       "defense": 84,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-def-036",
@@ -322,8 +287,7 @@
       "position": "DEF",
       "attack": 39,
       "defense": 86,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-def-037",
@@ -331,8 +295,7 @@
       "position": "DEF",
       "attack": 54,
       "defense": 79,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-038",
@@ -340,8 +303,7 @@
       "position": "DEF",
       "attack": 55,
       "defense": 78,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-039",
@@ -349,8 +311,7 @@
       "position": "DEF",
       "attack": 56,
       "defense": 78,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-040",
@@ -358,8 +319,7 @@
       "position": "DEF",
       "attack": 52,
       "defense": 82,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-041",
@@ -367,8 +327,7 @@
       "position": "DEF",
       "attack": 52,
       "defense": 74,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-042",
@@ -376,8 +335,7 @@
       "position": "DEF",
       "attack": 52,
       "defense": 84,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-043",
@@ -385,8 +343,7 @@
       "position": "DEF",
       "attack": 51,
       "defense": 86,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-044",
@@ -394,8 +351,7 @@
       "position": "DEF",
       "attack": 51,
       "defense": 79,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-045",
@@ -403,8 +359,7 @@
       "position": "DEF",
       "attack": 44,
       "defense": 85,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-046",
@@ -412,8 +367,7 @@
       "position": "DEF",
       "attack": 41,
       "defense": 84,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-047",
@@ -421,8 +375,7 @@
       "position": "DEF",
       "attack": 42,
       "defense": 87,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-048",
@@ -430,8 +383,7 @@
       "position": "DEF",
       "attack": 41,
       "defense": 86,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-049",
@@ -439,8 +391,7 @@
       "position": "DEF",
       "attack": 35,
       "defense": 86,
-      "overall": 84,
-      "basePrice": 12
+      "overall": 84
     },
     {
       "id": "fc26-def-050",
@@ -448,8 +399,7 @@
       "position": "DEF",
       "attack": 51,
       "defense": 79,
-      "overall": 83,
-      "basePrice": 12
+      "overall": 83
     },
     {
       "id": "fc26-mid-051",
@@ -457,8 +407,7 @@
       "position": "MID",
       "attack": 87,
       "defense": 45,
-      "overall": 91,
-      "basePrice": 25
+      "overall": 91
     },
     {
       "id": "fc26-mid-052",
@@ -466,8 +415,7 @@
       "position": "MID",
       "attack": 85,
       "defense": 78,
-      "overall": 90,
-      "basePrice": 20
+      "overall": 90
     },
     {
       "id": "fc26-mid-053",
@@ -475,8 +423,7 @@
       "position": "MID",
       "attack": 83,
       "defense": 86,
-      "overall": 90,
-      "basePrice": 20
+      "overall": 90
     },
     {
       "id": "fc26-mid-054",
@@ -484,8 +431,7 @@
       "position": "MID",
       "attack": 84,
       "defense": 83,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-mid-055",
@@ -493,8 +439,7 @@
       "position": "MID",
       "attack": 82,
       "defense": 83,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-mid-056",
@@ -502,8 +447,7 @@
       "position": "MID",
       "attack": 83,
       "defense": 75,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-mid-057",
@@ -511,8 +455,7 @@
       "position": "MID",
       "attack": 85,
       "defense": 53,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-mid-058",
@@ -520,8 +463,7 @@
       "position": "MID",
       "attack": 79,
       "defense": 78,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-mid-059",
@@ -529,8 +471,7 @@
       "position": "MID",
       "attack": 85,
       "defense": 54,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-mid-060",
@@ -538,8 +479,7 @@
       "position": "MID",
       "attack": 84,
       "defense": 23,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-mid-061",
@@ -547,8 +487,7 @@
       "position": "MID",
       "attack": 81,
       "defense": 66,
-      "overall": 88,
-      "basePrice": 20
+      "overall": 88
     },
     {
       "id": "fc26-mid-062",
@@ -556,8 +495,7 @@
       "position": "MID",
       "attack": 81,
       "defense": 81,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-mid-063",
@@ -565,8 +503,7 @@
       "position": "MID",
       "attack": 84,
       "defense": 78,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-mid-064",
@@ -574,8 +511,7 @@
       "position": "MID",
       "attack": 86,
       "defense": 65,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-mid-065",
@@ -583,8 +519,7 @@
       "position": "MID",
       "attack": 79,
       "defense": 83,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-mid-066",
@@ -592,8 +527,7 @@
       "position": "MID",
       "attack": 78,
       "defense": 78,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-mid-067",
@@ -601,8 +535,7 @@
       "position": "MID",
       "attack": 88,
       "defense": 65,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-mid-068",
@@ -610,8 +543,7 @@
       "position": "MID",
       "attack": 84,
       "defense": 67,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-mid-069",
@@ -619,8 +551,7 @@
       "position": "MID",
       "attack": 71,
       "defense": 84,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-mid-070",
@@ -628,8 +559,7 @@
       "position": "MID",
       "attack": 85,
       "defense": 50,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-mid-071",
@@ -637,8 +567,7 @@
       "position": "MID",
       "attack": 84,
       "defense": 81,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-mid-072",
@@ -646,8 +575,7 @@
       "position": "MID",
       "attack": 78,
       "defense": 81,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-mid-073",
@@ -655,8 +583,7 @@
       "position": "MID",
       "attack": 81,
       "defense": 77,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-mid-074",
@@ -664,8 +591,7 @@
       "position": "MID",
       "attack": 80,
       "defense": 79,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-mid-075",
@@ -673,8 +599,7 @@
       "position": "MID",
       "attack": 85,
       "defense": 41,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-mid-076",
@@ -682,8 +607,7 @@
       "position": "MID",
       "attack": 82,
       "defense": 50,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-mid-077",
@@ -691,8 +615,7 @@
       "position": "MID",
       "attack": 78,
       "defense": 36,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-mid-078",
@@ -700,8 +623,7 @@
       "position": "MID",
       "attack": 76,
       "defense": 82,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-mid-079",
@@ -709,8 +631,7 @@
       "position": "MID",
       "attack": 79,
       "defense": 81,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-mid-080",
@@ -718,8 +639,7 @@
       "position": "MID",
       "attack": 80,
       "defense": 80,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-mid-081",
@@ -727,8 +647,7 @@
       "position": "MID",
       "attack": 82,
       "defense": 75,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-mid-082",
@@ -736,8 +655,7 @@
       "position": "MID",
       "attack": 79,
       "defense": 75,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-mid-083",
@@ -745,8 +663,7 @@
       "position": "MID",
       "attack": 80,
       "defense": 78,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-mid-084",
@@ -754,8 +671,7 @@
       "position": "MID",
       "attack": 69,
       "defense": 85,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-fwd-085",
@@ -763,8 +679,7 @@
       "position": "FWD",
       "attack": 88,
       "defense": 15,
-      "overall": 91,
-      "basePrice": 25
+      "overall": 91
     },
     {
       "id": "fc26-fwd-086",
@@ -772,8 +687,7 @@
       "position": "FWD",
       "attack": 87,
       "defense": 20,
-      "overall": 90,
-      "basePrice": 20
+      "overall": 90
     },
     {
       "id": "fc26-fwd-087",
@@ -781,8 +695,7 @@
       "position": "FWD",
       "attack": 86,
       "defense": 18,
-      "overall": 90,
-      "basePrice": 20
+      "overall": 90
     },
     {
       "id": "fc26-fwd-088",
@@ -790,8 +703,7 @@
       "position": "FWD",
       "attack": 90,
       "defense": 19,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-fwd-089",
@@ -799,8 +711,7 @@
       "position": "FWD",
       "attack": 83,
       "defense": 15,
-      "overall": 89,
-      "basePrice": 20
+      "overall": 89
     },
     {
       "id": "fc26-fwd-090",
@@ -808,8 +719,7 @@
       "position": "FWD",
       "attack": 83,
       "defense": 24,
-      "overall": 88,
-      "basePrice": 20
+      "overall": 88
     },
     {
       "id": "fc26-fwd-091",
@@ -817,8 +727,7 @@
       "position": "FWD",
       "attack": 85,
       "defense": 20,
-      "overall": 88,
-      "basePrice": 20
+      "overall": 88
     },
     {
       "id": "fc26-fwd-092",
@@ -826,8 +735,7 @@
       "position": "FWD",
       "attack": 87,
       "defense": 18,
-      "overall": 88,
-      "basePrice": 20
+      "overall": 88
     },
     {
       "id": "fc26-fwd-093",
@@ -835,8 +743,7 @@
       "position": "FWD",
       "attack": 85,
       "defense": 16,
-      "overall": 88,
-      "basePrice": 20
+      "overall": 88
     },
     {
       "id": "fc26-fwd-094",
@@ -844,8 +751,7 @@
       "position": "FWD",
       "attack": 86,
       "defense": 23,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-fwd-095",
@@ -853,8 +759,7 @@
       "position": "FWD",
       "attack": 81,
       "defense": 23,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-fwd-096",
@@ -862,8 +767,7 @@
       "position": "FWD",
       "attack": 85,
       "defense": 18,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-fwd-097",
@@ -871,8 +775,7 @@
       "position": "FWD",
       "attack": 83,
       "defense": 15,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-fwd-098",
@@ -880,8 +783,7 @@
       "position": "FWD",
       "attack": 79,
       "defense": 17,
-      "overall": 87,
-      "basePrice": 15
+      "overall": 87
     },
     {
       "id": "fc26-fwd-099",
@@ -889,8 +791,7 @@
       "position": "FWD",
       "attack": 85,
       "defense": 15,
-      "overall": 86,
-      "basePrice": 15
+      "overall": 86
     },
     {
       "id": "fc26-fwd-100",
@@ -898,8 +799,7 @@
       "position": "FWD",
       "attack": 86,
       "defense": 24,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-fwd-101",
@@ -907,8 +807,7 @@
       "position": "FWD",
       "attack": 83,
       "defense": 20,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-fwd-102",
@@ -916,8 +815,7 @@
       "position": "FWD",
       "attack": 79,
       "defense": 22,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-fwd-103",
@@ -925,8 +823,7 @@
       "position": "FWD",
       "attack": 81,
       "defense": 20,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-fwd-104",
@@ -934,8 +831,7 @@
       "position": "FWD",
       "attack": 83,
       "defense": 17,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-fwd-105",
@@ -943,8 +839,7 @@
       "position": "FWD",
       "attack": 81,
       "defense": 23,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-fwd-106",
@@ -952,8 +847,7 @@
       "position": "FWD",
       "attack": 85,
       "defense": 15,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-fwd-107",
@@ -961,8 +855,7 @@
       "position": "FWD",
       "attack": 83,
       "defense": 15,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
     },
     {
       "id": "fc26-fwd-108",
@@ -970,8 +863,3175 @@
       "position": "FWD",
       "attack": 80,
       "defense": 15,
-      "overall": 85,
-      "basePrice": 15
+      "overall": 85
+    },
+    {
+      "id": "fc26-gk-109",
+      "name": "F. Muslera",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-110",
+      "name": "D. Sánchez",
+      "position": "DEF",
+      "attack": 41,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-111",
+      "name": "Ferdi Kadıoğlu",
+      "position": "DEF",
+      "attack": 56,
+      "defense": 78,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-112",
+      "name": "L. Torreira",
+      "position": "MID",
+      "attack": 74,
+      "defense": 81,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-113",
+      "name": "Rafa Silva",
+      "position": "MID",
+      "attack": 83,
+      "defense": 48,
+      "overall": 83
+    },
+    {
+      "id": "fc26-fwd-114",
+      "name": "M. Icardi",
+      "position": "FWD",
+      "attack": 84,
+      "defense": 20,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-115",
+      "name": "C. Immobile",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 18,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-116",
+      "name": "D. Livakovic",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-117",
+      "name": "A. Laporte",
+      "position": "DEF",
+      "attack": 43,
+      "defense": 84,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-118",
+      "name": "A. Djiku",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-119",
+      "name": "Fred",
+      "position": "MID",
+      "attack": 78,
+      "defense": 79,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-120",
+      "name": "Gedson Fernandes",
+      "position": "MID",
+      "attack": 76,
+      "defense": 78,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-121",
+      "name": "Y. En-Nesyri",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 22,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-122",
+      "name": "E. Dzeko",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 18,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-123",
+      "name": "A. Meret",
+      "position": "GK",
+      "attack": 29,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-124",
+      "name": "C. Romero",
+      "position": "DEF",
+      "attack": 44,
+      "defense": 84,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-125",
+      "name": "M. Akanji",
+      "position": "DEF",
+      "attack": 44,
+      "defense": 84,
+      "overall": 84
+    },
+    {
+      "id": "fc26-mid-126",
+      "name": "L. Modric",
+      "position": "MID",
+      "attack": 82,
+      "defense": 72,
+      "overall": 84
+    },
+    {
+      "id": "fc26-mid-127",
+      "name": "E. Palacios",
+      "position": "MID",
+      "attack": 77,
+      "defense": 82,
+      "overall": 83
+    },
+    {
+      "id": "fc26-fwd-128",
+      "name": "O. Watkins",
+      "position": "FWD",
+      "attack": 84,
+      "defense": 25,
+      "overall": 84
+    },
+    {
+      "id": "fc26-fwd-129",
+      "name": "D. Vlahovic",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 20,
+      "overall": 84
+    },
+    {
+      "id": "fc26-gk-130",
+      "name": "R. Sánchez",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-131",
+      "name": "B. White",
+      "position": "DEF",
+      "attack": 49,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-132",
+      "name": "P. Torres",
+      "position": "DEF",
+      "attack": 45,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-mid-133",
+      "name": "Lucas Paquetá",
+      "position": "MID",
+      "attack": 82,
+      "defense": 72,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-134",
+      "name": "K. Laimer",
+      "position": "MID",
+      "attack": 76,
+      "defense": 81,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-135",
+      "name": "L. Díaz",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 25,
+      "overall": 84
+    },
+    {
+      "id": "fc26-fwd-136",
+      "name": "C. Gakpo",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 25,
+      "overall": 83
+    },
+    {
+      "id": "fc26-gk-137",
+      "name": "U. Çakır",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-138",
+      "name": "Pedro Porro",
+      "position": "DEF",
+      "attack": 58,
+      "defense": 79,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-139",
+      "name": "E. Konsa",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-mid-140",
+      "name": "D. Tadic",
+      "position": "MID",
+      "attack": 82,
+      "defense": 42,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-141",
+      "name": "G. Sara",
+      "position": "MID",
+      "attack": 80,
+      "defense": 74,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-142",
+      "name": "Barış Alper Yılmaz",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 35,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-143",
+      "name": "M. Kudus",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 28,
+      "overall": 83
+    },
+    {
+      "id": "fc26-gk-144",
+      "name": "M. Flekken",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-145",
+      "name": "Destiny Udogie",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 78,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-146",
+      "name": "J. Timber",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-147",
+      "name": "M. Locatelli",
+      "position": "MID",
+      "attack": 77,
+      "defense": 80,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-148",
+      "name": "R. Bentancur",
+      "position": "MID",
+      "attack": 78,
+      "defense": 79,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-149",
+      "name": "B. Sesko",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 20,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-150",
+      "name": "D. Nuñez",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 22,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-151",
+      "name": "B. Samba",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-152",
+      "name": "Gabriel Paulista",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-153",
+      "name": "A. Bardakcı",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-154",
+      "name": "S. Szymanski",
+      "position": "MID",
+      "attack": 79,
+      "defense": 65,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-155",
+      "name": "J. Ward-Prowse",
+      "position": "MID",
+      "attack": 80,
+      "defense": 75,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-156",
+      "name": "Semih Kılıçsoy",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-157",
+      "name": "C. Wood",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 18,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-158",
+      "name": "K. Trapp",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-159",
+      "name": "M. Guéhi",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-160",
+      "name": "L. Dunk",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-161",
+      "name": "W. Zaire-Emery",
+      "position": "MID",
+      "attack": 77,
+      "defense": 78,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-162",
+      "name": "I. Bennacer",
+      "position": "MID",
+      "attack": 78,
+      "defense": 79,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-163",
+      "name": "N. Jackson",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 24,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-164",
+      "name": "M. Tel",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 22,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-165",
+      "name": "Álex Remiro",
+      "position": "GK",
+      "attack": 29,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-166",
+      "name": "R. Le Normand",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-167",
+      "name": "Danilo",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-168",
+      "name": "M. Merino",
+      "position": "MID",
+      "attack": 79,
+      "defense": 80,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-169",
+      "name": "E. Camavinga",
+      "position": "MID",
+      "attack": 80,
+      "defense": 82,
+      "overall": 83
+    },
+    {
+      "id": "fc26-fwd-170",
+      "name": "Ferran Torres",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 22,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-171",
+      "name": "Richarlison",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 24,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-172",
+      "name": "W. Benítez",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-173",
+      "name": "S. Savic",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-174",
+      "name": "I. Zubeldia",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-175",
+      "name": "İ. Yüksek",
+      "position": "MID",
+      "attack": 72,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-176",
+      "name": "K. Thuram",
+      "position": "MID",
+      "attack": 78,
+      "defense": 79,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-177",
+      "name": "K. Aktürkoğlu",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 24,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-178",
+      "name": "Á. Morata",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 20,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-179",
+      "name": "G. Vicario",
+      "position": "GK",
+      "attack": 29,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-180",
+      "name": "M. van de Ven",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-181",
+      "name": "Lisandro Martínez",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 84,
+      "overall": 84
+    },
+    {
+      "id": "fc26-mid-182",
+      "name": "J. Maddison",
+      "position": "MID",
+      "attack": 83,
+      "defense": 55,
+      "overall": 84
+    },
+    {
+      "id": "fc26-mid-183",
+      "name": "Douglas Luiz",
+      "position": "MID",
+      "attack": 79,
+      "defense": 80,
+      "overall": 83
+    },
+    {
+      "id": "fc26-fwd-184",
+      "name": "K. Havertz",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 30,
+      "overall": 83
+    },
+    {
+      "id": "fc26-fwd-185",
+      "name": "Gabriel Jesus",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 25,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-186",
+      "name": "G. Mamardashvili",
+      "position": "GK",
+      "attack": 29,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-187",
+      "name": "J. Foyth",
+      "position": "DEF",
+      "attack": 44,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-188",
+      "name": "M. Hermoso",
+      "position": "DEF",
+      "attack": 45,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-189",
+      "name": "B. Méndez",
+      "position": "MID",
+      "attack": 81,
+      "defense": 70,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-190",
+      "name": "İ. C. Kahveci",
+      "position": "MID",
+      "attack": 80,
+      "defense": 52,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-191",
+      "name": "A. Sørloth",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 22,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-192",
+      "name": "I. Williams",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 30,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-193",
+      "name": "W. Szczęsny",
+      "position": "GK",
+      "attack": 29,
+      "defense": 84,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-194",
+      "name": "A. Rrahmani",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-195",
+      "name": "M. Darmian",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-196",
+      "name": "T. Koopmeiners",
+      "position": "MID",
+      "attack": 82,
+      "defense": 78,
+      "overall": 83
+    },
+    {
+      "id": "fc26-mid-197",
+      "name": "L. Pellegrini",
+      "position": "MID",
+      "attack": 80,
+      "defense": 68,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-198",
+      "name": "P. Cutrone",
+      "position": "FWD",
+      "attack": 77,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-199",
+      "name": "D. Zapata",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 22,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-200",
+      "name": "L. Hrádecký",
+      "position": "GK",
+      "attack": 29,
+      "defense": 84,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-201",
+      "name": "J. Frimpong",
+      "position": "DEF",
+      "attack": 62,
+      "defense": 76,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-202",
+      "name": "A. Grimaldo",
+      "position": "DEF",
+      "attack": 64,
+      "defense": 76,
+      "overall": 84
+    },
+    {
+      "id": "fc26-mid-203",
+      "name": "R. Andrich",
+      "position": "MID",
+      "attack": 76,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-204",
+      "name": "A. Stiller",
+      "position": "MID",
+      "attack": 76,
+      "defense": 77,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-205",
+      "name": "L. Openda",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 20,
+      "overall": 83
+    },
+    {
+      "id": "fc26-fwd-206",
+      "name": "D. Malen",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 22,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-207",
+      "name": "A. Bayındır",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-208",
+      "name": "K. Walker",
+      "position": "DEF",
+      "attack": 49,
+      "defense": 80,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-209",
+      "name": "J. Stones",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 84,
+      "overall": 84
+    },
+    {
+      "id": "fc26-mid-210",
+      "name": "T. Souček",
+      "position": "MID",
+      "attack": 75,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-211",
+      "name": "M. Kovačić",
+      "position": "MID",
+      "attack": 80,
+      "defense": 78,
+      "overall": 83
+    },
+    {
+      "id": "fc26-fwd-212",
+      "name": "R. Sterling",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 22,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-213",
+      "name": "M. Rashford",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 22,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-214",
+      "name": "N. Pope",
+      "position": "GK",
+      "attack": 29,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-215",
+      "name": "M. de Ligt",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 84,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-216",
+      "name": "Kim Min Jae",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-mid-217",
+      "name": "K. Coman",
+      "position": "MID",
+      "attack": 82,
+      "defense": 30,
+      "overall": 83
+    },
+    {
+      "id": "fc26-mid-218",
+      "name": "L. Sané",
+      "position": "MID",
+      "attack": 83,
+      "defense": 32,
+      "overall": 84
+    },
+    {
+      "id": "fc26-fwd-219",
+      "name": "S. Gnabry",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 25,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-220",
+      "name": "D. Berardi",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 25,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-221",
+      "name": "M. Günok",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-222",
+      "name": "E. Bailly",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-223",
+      "name": "M. Müldür",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 77,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-224",
+      "name": "Al-Musrati",
+      "position": "MID",
+      "attack": 72,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-225",
+      "name": "K. Demirbay",
+      "position": "MID",
+      "attack": 77,
+      "defense": 72,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-226",
+      "name": "E. Zhegrova",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 22,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-227",
+      "name": "O. Marmoush",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 25,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-228",
+      "name": "L. Chevalier",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-229",
+      "name": "G. Mancini",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-230",
+      "name": "Tiago Djaló",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-231",
+      "name": "A. Rabiot",
+      "position": "MID",
+      "attack": 79,
+      "defense": 79,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-232",
+      "name": "H. Mkhitaryan",
+      "position": "MID",
+      "attack": 81,
+      "defense": 72,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-233",
+      "name": "A. Lookman",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 25,
+      "overall": 83
+    },
+    {
+      "id": "fc26-fwd-234",
+      "name": "M. Retegui",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 20,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-235",
+      "name": "B. Leno",
+      "position": "GK",
+      "attack": 29,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-236",
+      "name": "P. Estupiñán",
+      "position": "DEF",
+      "attack": 54,
+      "defense": 77,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-237",
+      "name": "K. Trippier",
+      "position": "DEF",
+      "attack": 55,
+      "defense": 78,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-238",
+      "name": "J. Palhinha",
+      "position": "MID",
+      "attack": 70,
+      "defense": 84,
+      "overall": 83
+    },
+    {
+      "id": "fc26-mid-239",
+      "name": "Lucas Torró",
+      "position": "MID",
+      "attack": 73,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-240",
+      "name": "B. Johnson",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 25,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-241",
+      "name": "C. Hudson-Odoi",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 24,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-242",
+      "name": "D. Henderson",
+      "position": "GK",
+      "attack": 29,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-243",
+      "name": "C. Söyüncü",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-244",
+      "name": "J. Nelsson",
+      "position": "DEF",
+      "attack": 36,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-245",
+      "name": "B. Kutlu",
+      "position": "MID",
+      "attack": 72,
+      "defense": 77,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-246",
+      "name": "M. Jensen",
+      "position": "MID",
+      "attack": 76,
+      "defense": 75,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-247",
+      "name": "B. Banza",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 20,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-248",
+      "name": "Rey Manaj",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 20,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-249",
+      "name": "O. Baumann",
+      "position": "GK",
+      "attack": 29,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-250",
+      "name": "W. Anton",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-251",
+      "name": "N. Mazraoui",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 78,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-252",
+      "name": "E. Can",
+      "position": "MID",
+      "attack": 75,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-253",
+      "name": "M. Sabitzer",
+      "position": "MID",
+      "attack": 80,
+      "defense": 77,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-254",
+      "name": "K. Adeyemi",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 25,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-255",
+      "name": "M. Beier",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-256",
+      "name": "A. Lunin",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-257",
+      "name": "Pau Cubarsí",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-258",
+      "name": "M. Senesi",
+      "position": "DEF",
+      "attack": 41,
+      "defense": 79,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-259",
+      "name": "S. Lobotka",
+      "position": "MID",
+      "attack": 78,
+      "defense": 81,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-260",
+      "name": "A. Zambo Anguissa",
+      "position": "MID",
+      "attack": 77,
+      "defense": 80,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-261",
+      "name": "Gonçalo Ramos",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 20,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-262",
+      "name": "E. Wahi",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 20,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-263",
+      "name": "José Sá",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-264",
+      "name": "D. Burn",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-265",
+      "name": "F. Schär",
+      "position": "DEF",
+      "attack": 44,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-266",
+      "name": "Joelinton",
+      "position": "MID",
+      "attack": 76,
+      "defense": 81,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-267",
+      "name": "S. Longstaff",
+      "position": "MID",
+      "attack": 74,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-268",
+      "name": "H. Barnes",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 24,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-269",
+      "name": "A. Gordon",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 28,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-270",
+      "name": "Sergio Herrera",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-271",
+      "name": "D. Carmo",
+      "position": "DEF",
+      "attack": 36,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-272",
+      "name": "K. Ayhan",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-273",
+      "name": "O. Kökçü",
+      "position": "MID",
+      "attack": 81,
+      "defense": 72,
+      "overall": 82
+    },
+    {
+      "id": "fc26-mid-274",
+      "name": "G. Kondogbia",
+      "position": "MID",
+      "attack": 72,
+      "defense": 81,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-275",
+      "name": "M. Cham",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 22,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-276",
+      "name": "E. Visca",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 24,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-277",
+      "name": "I. Provedel",
+      "position": "GK",
+      "attack": 29,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-278",
+      "name": "A. Romagnoli",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-279",
+      "name": "M. Lazzari",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 77,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-280",
+      "name": "M. Guendouzi",
+      "position": "MID",
+      "attack": 77,
+      "defense": 79,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-281",
+      "name": "N. Rovella",
+      "position": "MID",
+      "attack": 76,
+      "defense": 78,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-282",
+      "name": "M. Zaccagni",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 25,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-283",
+      "name": "T. Castellanos",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-284",
+      "name": "K. Casteels",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-285",
+      "name": "Edmond Tapsoba",
+      "position": "DEF",
+      "attack": 44,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-286",
+      "name": "P. Hincapié",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-287",
+      "name": "J. Brandt",
+      "position": "MID",
+      "attack": 83,
+      "defense": 62,
+      "overall": 83
+    },
+    {
+      "id": "fc26-mid-288",
+      "name": "M. Arnold",
+      "position": "MID",
+      "attack": 78,
+      "defense": 78,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-289",
+      "name": "P. Schick",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 20,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-290",
+      "name": "A. Kramarić",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 22,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-291",
+      "name": "E. Destanoğlu",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-292",
+      "name": "J. Matip",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-293",
+      "name": "J. Andersen",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-294",
+      "name": "C. Doucouré",
+      "position": "MID",
+      "attack": 70,
+      "defense": 81,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-295",
+      "name": "E. Eze",
+      "position": "MID",
+      "attack": 82,
+      "defense": 58,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-296",
+      "name": "J. Ayew",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 26,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-297",
+      "name": "J. Mateta",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 20,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-298",
+      "name": "G. Rulli",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-299",
+      "name": "L. Balerdi",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-300",
+      "name": "B. Brassier",
+      "position": "DEF",
+      "attack": 36,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-301",
+      "name": "P. Højbjerg",
+      "position": "MID",
+      "attack": 75,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-302",
+      "name": "V. Rongier",
+      "position": "MID",
+      "attack": 74,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-303",
+      "name": "M. Greenwood",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 20,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-304",
+      "name": "E. Ben Seghir",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-305",
+      "name": "A. Vural",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-306",
+      "name": "A. Masuaku",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-307",
+      "name": "E. Elmalı",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-308",
+      "name": "B. Özdemir",
+      "position": "MID",
+      "attack": 72,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-309",
+      "name": "M. Crespo",
+      "position": "MID",
+      "attack": 74,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-310",
+      "name": "P. Onuachu",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 18,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-311",
+      "name": "Trézéguet",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 25,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-312",
+      "name": "Á. Vallés",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-313",
+      "name": "Raúl Albiol",
+      "position": "DEF",
+      "attack": 35,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-314",
+      "name": "Cristhian Mosquera",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-315",
+      "name": "Pepelu",
+      "position": "MID",
+      "attack": 77,
+      "defense": 79,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-316",
+      "name": "Javi Guerra",
+      "position": "MID",
+      "attack": 78,
+      "defense": 75,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-317",
+      "name": "Hugo Duro",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-318",
+      "name": "A. Danjuma",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 20,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-319",
+      "name": "A. Areola",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-320",
+      "name": "M. Kilman",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-321",
+      "name": "E. Pinnock",
+      "position": "DEF",
+      "attack": 36,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-322",
+      "name": "C. Nörgaard",
+      "position": "MID",
+      "attack": 72,
+      "defense": 81,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-323",
+      "name": "M. Damsgaard",
+      "position": "MID",
+      "attack": 78,
+      "defense": 65,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-324",
+      "name": "Yoane Wissa",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 22,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-325",
+      "name": "Pedro Neto",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 24,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-326",
+      "name": "M. Carnesecchi",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-327",
+      "name": "S. Kolašinac",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-328",
+      "name": "B. Henrichs",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 78,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-329",
+      "name": "M. de Roon",
+      "position": "MID",
+      "attack": 73,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-330",
+      "name": "Éderson Lourenço",
+      "position": "MID",
+      "attack": 77,
+      "defense": 80,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-331",
+      "name": "C. De Ketelaere",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 25,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-332",
+      "name": "G. Scamacca",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 20,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-333",
+      "name": "G. Güvenç",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-334",
+      "name": "L. Dubois",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-335",
+      "name": "S. Denswil",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-336",
+      "name": "B. Mendy",
+      "position": "MID",
+      "attack": 72,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-337",
+      "name": "S. Uçan",
+      "position": "MID",
+      "attack": 76,
+      "defense": 73,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-338",
+      "name": "C. Ünder",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-339",
+      "name": "V. Aboubakar",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 18,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-340",
+      "name": "M. Perin",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-341",
+      "name": "T. Adarabioyo",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-342",
+      "name": "T. Chalobah",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-343",
+      "name": "R. Lavia",
+      "position": "MID",
+      "attack": 74,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-344",
+      "name": "H. Wilson",
+      "position": "MID",
+      "attack": 79,
+      "defense": 60,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-345",
+      "name": "N. Madueke",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 25,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-346",
+      "name": "A. Elanga",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 24,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-347",
+      "name": "S. Johnstone",
+      "position": "GK",
+      "attack": 29,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-348",
+      "name": "T. Castagne",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-349",
+      "name": "A. Robinson",
+      "position": "DEF",
+      "attack": 54,
+      "defense": 78,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-350",
+      "name": "A. Iwobi",
+      "position": "MID",
+      "attack": 79,
+      "defense": 68,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-351",
+      "name": "S. Berge",
+      "position": "MID",
+      "attack": 74,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-352",
+      "name": "R. Jiménez",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 20,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-353",
+      "name": "Rodrigo Muniz",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 20,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-354",
+      "name": "D. Soria",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-355",
+      "name": "O. Alderete",
+      "position": "DEF",
+      "attack": 36,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-356",
+      "name": "Juan Iglesias",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 77,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-357",
+      "name": "L. Milla",
+      "position": "MID",
+      "attack": 76,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-358",
+      "name": "M. Arambarri",
+      "position": "MID",
+      "attack": 74,
+      "defense": 80,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-359",
+      "name": "B. Mayoral",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 18,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-360",
+      "name": "C. Stuani",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 16,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-361",
+      "name": "V. Milinković-Savić",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-362",
+      "name": "P. Schuurs",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-363",
+      "name": "M. Vojvoda",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-364",
+      "name": "S. Ricci",
+      "position": "MID",
+      "attack": 76,
+      "defense": 78,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-365",
+      "name": "I. Ilić",
+      "position": "MID",
+      "attack": 78,
+      "defense": 74,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-366",
+      "name": "A. Sanabria",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-367",
+      "name": "Ché Adams",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-368",
+      "name": "F. Dahmen",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-369",
+      "name": "K. Schlotterbeck",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-370",
+      "name": "J. Gouweleeuw",
+      "position": "DEF",
+      "attack": 35,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-371",
+      "name": "A. Maier",
+      "position": "MID",
+      "attack": 77,
+      "defense": 74,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-372",
+      "name": "E. Rexhbeçaj",
+      "position": "MID",
+      "attack": 74,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-373",
+      "name": "P. Tietz",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-374",
+      "name": "S. Essende",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 18,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-375",
+      "name": "Bilal Bayazit",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-376",
+      "name": "P. Djilobodji",
+      "position": "DEF",
+      "attack": 36,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-377",
+      "name": "Serdar Aziz",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 77,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-378",
+      "name": "B. Mensah",
+      "position": "MID",
+      "attack": 78,
+      "defense": 72,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-379",
+      "name": "J. Shelvey",
+      "position": "MID",
+      "attack": 78,
+      "defense": 70,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-380",
+      "name": "K. Piątek",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 18,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-381",
+      "name": "João Figueiredo",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-382",
+      "name": "B. Lecomte",
+      "position": "GK",
+      "attack": 29,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-383",
+      "name": "F. Sacko",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-384",
+      "name": "B. Kouyaté",
+      "position": "DEF",
+      "attack": 34,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-385",
+      "name": "J. Chotard",
+      "position": "MID",
+      "attack": 73,
+      "defense": 79,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-386",
+      "name": "T. Savanier",
+      "position": "MID",
+      "attack": 81,
+      "defense": 65,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-387",
+      "name": "Akor Adams",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-388",
+      "name": "A. Nordin",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-389",
+      "name": "M. Turner",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-390",
+      "name": "Murillo",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-391",
+      "name": "Neco Williams",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-392",
+      "name": "Danilo dos Santos",
+      "position": "MID",
+      "attack": 76,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-393",
+      "name": "M. Gibbs-White",
+      "position": "MID",
+      "attack": 81,
+      "defense": 68,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-394",
+      "name": "T. Awoniyi",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 20,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-395",
+      "name": "J. Murphy",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 25,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-396",
+      "name": "Kepa",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-397",
+      "name": "Y. Berchiche",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 78,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-398",
+      "name": "Yeray",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-399",
+      "name": "M. Vesga",
+      "position": "MID",
+      "attack": 72,
+      "defense": 80,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-400",
+      "name": "Beñat Prados",
+      "position": "MID",
+      "attack": 74,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-401",
+      "name": "Gorka Guruzeta",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 22,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-402",
+      "name": "Á. Berenguer",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 26,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-403",
+      "name": "M. Di Gregorio",
+      "position": "GK",
+      "attack": 29,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-404",
+      "name": "F. Gatti",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-405",
+      "name": "P. Kalulu",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-406",
+      "name": "W. McKennie",
+      "position": "MID",
+      "attack": 78,
+      "defense": 79,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-407",
+      "name": "N. Fagioli",
+      "position": "MID",
+      "attack": 78,
+      "defense": 76,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-408",
+      "name": "K. Yildiz",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 25,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-409",
+      "name": "T. Weah",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 28,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-410",
+      "name": "M. Zentner",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-411",
+      "name": "S. Bell",
+      "position": "DEF",
+      "attack": 34,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-412",
+      "name": "A. Hanche-Olsen",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-413",
+      "name": "N. Amiri",
+      "position": "MID",
+      "attack": 80,
+      "defense": 68,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-414",
+      "name": "Lee Jae Sung",
+      "position": "MID",
+      "attack": 78,
+      "defense": 72,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-415",
+      "name": "J. Burkardt",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 22,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-416",
+      "name": "K. Onisiwo",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 24,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-417",
+      "name": "E. Kardeşler",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-418",
+      "name": "H. Ali Kaldırım",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-419",
+      "name": "L. Duarte",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-420",
+      "name": "D. Pelkas",
+      "position": "MID",
+      "attack": 78,
+      "defense": 64,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-421",
+      "name": "Berkay Özcan",
+      "position": "MID",
+      "attack": 76,
+      "defense": 72,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-422",
+      "name": "D. Türüç",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 24,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-423",
+      "name": "Davidson",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 22,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-424",
+      "name": "Y. Mvogo",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-425",
+      "name": "J. O'Brien",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-426",
+      "name": "Clinton Mata",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-427",
+      "name": "M. Caqueret",
+      "position": "MID",
+      "attack": 76,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-428",
+      "name": "C. Tolisso",
+      "position": "MID",
+      "attack": 78,
+      "defense": 78,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-429",
+      "name": "A. Lacazette",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 20,
+      "overall": 82
+    },
+    {
+      "id": "fc26-fwd-430",
+      "name": "G. Mikautadze",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 22,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-431",
+      "name": "M. Bizot",
+      "position": "GK",
+      "attack": 29,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-432",
+      "name": "N. Aguerd",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-433",
+      "name": "L. Badé",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-434",
+      "name": "R. Freuler",
+      "position": "MID",
+      "attack": 75,
+      "defense": 79,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-435",
+      "name": "L. Ferguson",
+      "position": "MID",
+      "attack": 78,
+      "defense": 76,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-436",
+      "name": "B. Dia",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 20,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-437",
+      "name": "N. Kühn",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 22,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-438",
+      "name": "S. Castro",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-439",
+      "name": "Neto",
+      "position": "GK",
+      "attack": 29,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-440",
+      "name": "A. Truffert",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 77,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-441",
+      "name": "J. Medina",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-442",
+      "name": "M. Aebischer",
+      "position": "MID",
+      "attack": 76,
+      "defense": 77,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-443",
+      "name": "G. Frendrup",
+      "position": "MID",
+      "attack": 72,
+      "defense": 81,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-444",
+      "name": "R. Orsolini",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 24,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-445",
+      "name": "D. Ndoye",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 26,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-446",
+      "name": "J. Karlsson",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 22,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-447",
+      "name": "J. Cillessen",
+      "position": "GK",
+      "attack": 29,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-448",
+      "name": "D. Hancko",
+      "position": "DEF",
+      "attack": 44,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-449",
+      "name": "M. Pongračić",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-450",
+      "name": "M. Badelj",
+      "position": "MID",
+      "attack": 74,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-451",
+      "name": "Y. Fofana",
+      "position": "MID",
+      "attack": 77,
+      "defense": 80,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-452",
+      "name": "A. Pinamonti",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 18,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-453",
+      "name": "A. Laurienté",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-454",
+      "name": "M. Nzola",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-455",
+      "name": "P. Rajković",
+      "position": "GK",
+      "attack": 29,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-456",
+      "name": "Arthur Theate",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-457",
+      "name": "S. Beukema",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-458",
+      "name": "A. Sambi Lokonga",
+      "position": "MID",
+      "attack": 75,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-459",
+      "name": "K. Doué",
+      "position": "MID",
+      "attack": 76,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-460",
+      "name": "Evanilson",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 22,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-461",
+      "name": "J. Strand Larsen",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 20,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-462",
+      "name": "Matheus Cunha",
+      "position": "FWD",
+      "attack": 82,
+      "defense": 26,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-463",
+      "name": "A. Cragno",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-464",
+      "name": "J. Lucumí",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-465",
+      "name": "S. Posch",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-mid-466",
+      "name": "A. Vermeeren",
+      "position": "MID",
+      "attack": 76,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-467",
+      "name": "P. Sarr",
+      "position": "MID",
+      "attack": 77,
+      "defense": 78,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-468",
+      "name": "Hwang Hee Chan",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 25,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-469",
+      "name": "P. Sarabia",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 24,
+      "overall": 80
+    },
+    {
+      "id": "fc26-fwd-470",
+      "name": "E. Ferguson",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-471",
+      "name": "L. Montipò",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-472",
+      "name": "R. Bellanova",
+      "position": "DEF",
+      "attack": 54,
+      "defense": 76,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-473",
+      "name": "F. Parisi",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 77,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-474",
+      "name": "C. Ugochukwu",
+      "position": "MID",
+      "attack": 72,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-475",
+      "name": "K. Dewsbury-Hall",
+      "position": "MID",
+      "attack": 79,
+      "defense": 72,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-476",
+      "name": "D. Welbeck",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-477",
+      "name": "S. Adingra",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 24,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-478",
+      "name": "K. Mitoma",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 28,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-479",
+      "name": "O. Blaswich",
+      "position": "GK",
+      "attack": 29,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-480",
+      "name": "M. Kayode",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-481",
+      "name": "L. Ranieri",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-482",
+      "name": "E. Anderson",
+      "position": "MID",
+      "attack": 77,
+      "defense": 74,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-483",
+      "name": "J. Garner",
+      "position": "MID",
+      "attack": 76,
+      "defense": 77,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-484",
+      "name": "I. Sarr",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 25,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-485",
+      "name": "C. Nkunku",
+      "position": "FWD",
+      "attack": 83,
+      "defense": 25,
+      "overall": 83
+    },
+    {
+      "id": "fc26-fwd-486",
+      "name": "J. Félix",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 24,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-487",
+      "name": "F. Falcone",
+      "position": "GK",
+      "attack": 29,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-def-488",
+      "name": "A. Gigot",
+      "position": "DEF",
+      "attack": 36,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-489",
+      "name": "K. Danso",
+      "position": "DEF",
+      "attack": 36,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-mid-490",
+      "name": "A. Onana",
+      "position": "MID",
+      "attack": 74,
+      "defense": 82,
+      "overall": 81
+    },
+    {
+      "id": "fc26-mid-491",
+      "name": "B. Soumaré",
+      "position": "MID",
+      "attack": 74,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-492",
+      "name": "Samuel Lino",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 30,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-493",
+      "name": "B. Zaragoza",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 22,
+      "overall": 79
+    },
+    {
+      "id": "fc26-fwd-494",
+      "name": "S. Chukwueze",
+      "position": "FWD",
+      "attack": 80,
+      "defense": 24,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-495",
+      "name": "E. Caprile",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-496",
+      "name": "B. Meijer",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-497",
+      "name": "F. Grillitsch",
+      "position": "MID",
+      "attack": 77,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-498",
+      "name": "N. Okafor",
+      "position": "FWD",
+      "attack": 79,
+      "defense": 20,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-499",
+      "name": "L. Jović",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 18,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-500",
+      "name": "P. Pentz",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-def-501",
+      "name": "A. Seys",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 76,
+      "overall": 78
+    },
+    {
+      "id": "fc26-mid-502",
+      "name": "T. Krauß",
+      "position": "MID",
+      "attack": 74,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-fwd-503",
+      "name": "M. Kean",
+      "position": "FWD",
+      "attack": 81,
+      "defense": 20,
+      "overall": 81
+    },
+    {
+      "id": "fc26-fwd-504",
+      "name": "G. Simeone",
+      "position": "FWD",
+      "attack": 78,
+      "defense": 22,
+      "overall": 78
     }
   ]
 }
