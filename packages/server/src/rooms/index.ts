@@ -1,8 +1,13 @@
-import { beginDraft, cancelAuction, dropBidderIfLeading } from '../auction/index.js';
+import {
+  beginDraft,
+  cancelAuction,
+  dropBidderIfLeading,
+  handleBotTakeover,
+} from '../auction/index.js';
 import { cancelTournament, startTournamentImmediately } from '../tournament/runTournament.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { emitRoomState, redactRoomState } from './broadcast.js';
-import { RoomError, roomStore } from './roomStore.js';
+import { DISCONNECT_GRACE_MS, RoomError, roomStore } from './roomStore.js';
 
 /** Odadaki herkese güncel tam durumu yayınlar (client sadece render eder). */
 const broadcastRoomState = emitRoomState;
@@ -45,6 +50,8 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
   socket.on('room:rejoin', ({ roomId, playerId }, ack) => {
     try {
       const { room, you } = roomStore.rejoinRoom(roomId, playerId);
+      // Geri döndü — bekleyen bot devrini iptal et.
+      cancelBotTakeover(room.roomId, you.id);
       socket.data.playerId = you.id;
       socket.data.roomId = room.roomId;
       void socket.join(room.roomId);
@@ -115,24 +122,88 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     const { roomId, playerId } = socket.data;
     if (!roomId || !playerId) return;
     const room = roomStore.markDisconnected(roomId, playerId);
-    if (room) broadcastRoomState(io, room);
+    if (!room) return;
+    broadcastRoomState(io, room);
+    // Oyun sürüyorsa süresiz bekleyemeyiz: yeniden bağlanma penceresi
+    // dolunca yerine bot geçer (aksi halde tur onun sırasında kilitlenir
+    // ve terk edilmiş odalar sunucuda süresiz yaşardı).
+    if (room.phase !== 'lobby') scheduleBotTakeover(io, roomId, playerId);
   });
+}
+
+/* --------------------- kopan bağlantı → bot devri --------------------- */
+
+/** roomId:playerId -> bekleyen devir timer'ı. */
+const takeoverTimers = new Map<string, NodeJS.Timeout>();
+
+const takeoverKey = (roomId: string, playerId: string): string => `${roomId}:${playerId}`;
+
+/** Oyuncu geri döndüğünde (ya da odadan çıktığında) bekleyen devri iptal et. */
+function cancelBotTakeover(roomId: string, playerId: string): void {
+  const key = takeoverKey(roomId, playerId);
+  const timer = takeoverTimers.get(key);
+  if (timer) {
+    clearTimeout(timer);
+    takeoverTimers.delete(key);
+  }
+}
+
+function scheduleBotTakeover(io: TypedServer, roomId: string, playerId: string): void {
+  cancelBotTakeover(roomId, playerId);
+  const key = takeoverKey(roomId, playerId);
+  const timer = setTimeout(() => {
+    takeoverTimers.delete(key);
+    const current = roomStore.getRoom(roomId);
+    // Bu arada geri bağlandıysa dokunma.
+    const participant = current?.participants.find((p) => p.id === playerId);
+    if (!current || !participant || participant.connected || participant.isBot) return;
+
+    const room = roomStore.convertToBot(roomId, playerId);
+    if (room) {
+      handleBotTakeover(io, roomId, playerId);
+      broadcastRoomState(io, room);
+    } else {
+      closeRoom(roomId);
+    }
+  }, DISCONNECT_GRACE_MS);
+  takeoverTimers.set(key, timer);
+}
+
+/** Oda kapandı — devam eden açık artırma / turnuva timer'larını temizle. */
+function closeRoom(roomId: string): void {
+  cancelAuction(roomId);
+  cancelTournament(roomId);
+  for (const key of [...takeoverTimers.keys()]) {
+    if (key.startsWith(`${roomId}:`)) {
+      clearTimeout(takeoverTimers.get(key)!);
+      takeoverTimers.delete(key);
+    }
+  }
 }
 
 function handleLeave(io: TypedServer, socket: TypedSocket): void {
   const { roomId, playerId } = socket.data;
   if (!roomId || !playerId) return;
+
+  // Lobide katılımcı silinir; oyun başladıysa yerine bot geçer.
+  const wasInGame = roomStore.getRoom(roomId)?.phase !== 'lobby';
   const room = roomStore.leaveRoom(roomId, playerId);
+
+  cancelBotTakeover(roomId, playerId);
   void socket.leave(roomId);
   socket.data.roomId = undefined;
   socket.data.playerId = undefined;
+
   if (room) {
-    dropBidderIfLeading(io, room.roomId, playerId);
+    if (wasInGame) {
+      // Katılımcı duruyor (artık bot): teklifi geçerli kalır, sırayı devralır.
+      handleBotTakeover(io, room.roomId, playerId);
+    } else {
+      dropBidderIfLeading(io, room.roomId, playerId);
+    }
     io.to(room.roomId).emit('room:playerLeft', { playerId });
     broadcastRoomState(io, room);
   } else {
-    // Oda kapandı — devam eden açık artırma / turnuva timer'larını temizle.
-    cancelAuction(roomId);
-    cancelTournament(roomId);
+    closeRoom(roomId);
   }
 }

@@ -1,7 +1,7 @@
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { handleBid } from './engine.js';
 
-export { beginDraft, cancelAuction, dropBidderIfLeading } from './engine.js';
+export { beginDraft, cancelAuction, dropBidderIfLeading, handleBotTakeover } from './engine.js';
 export { loadFootballers } from './pool.js';
 export { buildTurnOrders } from './turnOrder.js';
 

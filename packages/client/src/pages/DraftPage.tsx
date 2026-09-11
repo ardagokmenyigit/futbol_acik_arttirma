@@ -8,6 +8,8 @@ import {
 } from '@fal/shared';
 import { PositionBadge } from '../components/PositionBadge.js';
 import { placeBid } from '../lib/auctionClient.js';
+import { leaveRoom } from '../lib/roomClient.js';
+import { clearSession } from '../lib/session.js';
 import { selectYou, useRoomStore } from '../store.js';
 
 interface Props {
@@ -18,6 +20,8 @@ const POSITIONS: Position[] = ['GK', 'DEF', 'MID', 'FWD'];
 
 export function DraftPage({ room }: Props) {
   const you = useRoomStore(selectYou);
+  const exitRoom = useRoomStore((s) => s.exitRoom);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const remainingMs = useRoomStore((s) => s.remainingMs);
   const lastWon = useRoomStore((s) => s.lastWon);
 
@@ -94,6 +98,14 @@ export function DraftPage({ room }: Props) {
     } catch (err) {
       setBidError(err instanceof Error ? err.message : 'Teklif reddedildi');
     }
+  }
+
+  // Oyun sırasında çıkış: sunucu yerine bot geçirir, kadro ve bütçe korunur.
+  // Oturum temizlenir çünkü artık geri dönülemez (sunucu rejoin'i reddeder).
+  function handleLeave() {
+    leaveRoom();
+    clearSession();
+    exitRoom();
   }
 
   return (
@@ -408,6 +420,38 @@ export function DraftPage({ room }: Props) {
               </div>
             );
           })}
+      </div>
+
+      <div className="panel">
+        <div className="section-label">Odadan çık</div>
+        {confirmLeave ? (
+          <>
+            <p className="footnote" style={{ marginTop: 0 }}>
+              Yerine bir bot geçecek ve kadronla oynamaya devam edecek.{' '}
+              <strong>Bu oyuna geri dönemezsin.</strong>
+            </p>
+            <div className="btn-row">
+              <button className="btn-outline" onClick={() => setConfirmLeave(false)}>
+                Vazgeç
+              </button>
+              <button className="btn-primary" onClick={handleLeave}>
+                Evet, çık
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="footnote" style={{ marginTop: 0 }}>
+              Açık artırma devam ederken çıkabilirsin — yerine bot geçer, diğer oyuncular oynamaya
+              devam eder.
+            </p>
+            <div className="btn-row">
+              <button className="btn-outline" onClick={() => setConfirmLeave(true)}>
+                Odadan çık
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
