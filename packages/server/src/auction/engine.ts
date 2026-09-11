@@ -522,6 +522,36 @@ function endRound(io: TypedServer, roomId: string): void {
 }
 
 /** Ayrılan oyuncu açılışı tıkamasın / lider değilse teklifi düşür. */
+/**
+ * Oyun sırasında bir insan bot'a çevrildiğinde çağrılır (odadan çıktı ya da
+ * bağlantısı kalıcı koptu). Amaç: devrin ORTASINDA kalan sırayı bot'a
+ * devrettirmek.
+ *
+ * `dropBidderIfLeading`in tersi — orada katılımcı odadan tamamen silindiği
+ * için teklifi iptal edilir ve açılış asgariden yapılır. Burada katılımcı
+ * duruyor, bütçesi ve kadrosu da öyle: mevcut teklifi GEÇERLİ kalır (bot
+ * devraldı) ve açılışı bot kendi değerlemesiyle yapar.
+ */
+export function handleBotTakeover(io: TypedServer, roomId: string, playerId: string): void {
+  const room = roomStore.getRoom(roomId);
+  const rt = runtimes.get(roomId);
+  if (!room?.auction || !rt) return;
+
+  if (room.auction.phase === 'opening' && room.auction.openerId === playerId) {
+    // Aksi halde süre dolana kadar beklenir, sonra autoOpen asgariden açardı.
+    const remainingMs = room.auction.endsAt - Date.now();
+    const handle = setTimeout(
+      () => runBotOpening(io, roomId, playerId),
+      botBidDelayMs(remainingMs),
+    );
+    rt.timers.bots.push(handle);
+    return;
+  }
+
+  // Serbest evre: yeni bot da teklif yarışına girebilsin.
+  if (room.auction.phase === 'bidding') scheduleBotBids(io, roomId);
+}
+
 export function dropBidderIfLeading(io: TypedServer, roomId: string, playerId: string): void {
   const room = roomStore.getRoom(roomId);
   if (!room?.auction) return;

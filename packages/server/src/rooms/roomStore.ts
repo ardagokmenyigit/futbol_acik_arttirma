@@ -12,6 +12,12 @@ import { generateUniqueRoomCode } from './roomCode.js';
 
 const NICKNAME_MAX = 20;
 
+/** Oyun sırasında ayrılan oyuncunun takma adına eklenen işaret. */
+const BOT_SUFFIX = '(bot)';
+
+/** Oyuncu bağlantısı koptuktan sonra yerine bot geçene kadar tanınan süre. */
+export const DISCONNECT_GRACE_MS = 60_000;
+
 /** Alan bazlı hata — handler bunu ack.error'a çevirir. */
 export class RoomError extends Error {}
 
@@ -88,6 +94,11 @@ class RoomStore {
     if (!room) throw new RoomError('Oda artık mevcut değil');
     const participant = room.participants.find((p) => p.id === playerId);
     if (!participant) throw new RoomError('Bu odada kayıtlı değilsin');
+    // Yerine bot geçtiyse geri dönemez: aksi halde aynı takımı hem bot hem
+    // insan oynatır (motor `isBot` bayrağına bakarak teklif vermeye devam eder).
+    if (participant.isBot) {
+      throw new RoomError('Yerine bot geçti, bu oyuna geri dönemezsin');
+    }
     participant.connected = true;
     return { room, you: participant };
   }
@@ -119,10 +130,23 @@ class RoomStore {
     return room;
   }
 
-  /** Oyuncu odadan ayrılır. Host ayrılırsa sıradaki bağlı oyuncu host olur. */
+  /**
+   * Oyuncu odadan ayrılır.
+   *
+   * LOBİDE katılımcı diziden çıkarılır — oyun henüz kurulmadı, sorun yok.
+   *
+   * OYUN BAŞLADIKTAN SONRA katılımcı ASLA silinmez; yerine bot geçer
+   * (`convertToBot`). Silmek sıra düzenini (`buildTurnOrders` katılımcı
+   * id'lerinden üretilir), açık artırma motorunu ve turnuva kurulumunu
+   * bozardı — turnuva her zaman tam `tournamentSize` takım bekler.
+   *
+   * `undefined` dönerse oda kapandı; çağıran taraf timer'ları temizlemeli.
+   */
   leaveRoom(roomId: string, playerId: string): RoomState | undefined {
     const room = this.rooms.get(roomId);
     if (!room) return undefined;
+
+    if (room.phase !== 'lobby') return this.convertToBot(roomId, playerId);
 
     room.participants = room.participants.filter((p) => p.id !== playerId);
 
@@ -136,6 +160,50 @@ class RoomStore {
       nextHost.isHost = true;
       nextHost.isReady = true;
       room.hostId = nextHost.id;
+    }
+    return room;
+  }
+
+  /**
+   * Oyun sırasında ayrılan (ya da bağlantısı kalıcı kopan) oyuncunun yerine
+   * bot geçirir. KİMLİK KORUNUR: id, bütçe ve kadro aynı kalır, yalnızca
+   * `isBot` açılır. Motor bot davranışını çalışma anında bu bayrağa bakarak
+   * seçtiği için (bkz. auction/engine.ts) oyun kaldığı yerden devam eder.
+   *
+   * Takma ada "(bot)" eklenir: diğer oyuncular kimin ayrıldığını görür,
+   * turnuva ağacı tanıdık kalır.
+   *
+   * Odada hiç insan kalmazsa oda kapatılır ve `undefined` döner.
+   */
+  convertToBot(roomId: string, playerId: string): RoomState | undefined {
+    const room = this.rooms.get(roomId);
+    if (!room) return undefined;
+
+    const participant = room.participants.find((p) => p.id === playerId);
+    if (participant && !participant.isBot) {
+      participant.isBot = true;
+      participant.connected = true;
+      participant.isReady = true;
+      participant.nickname = `${participant.nickname} ${BOT_SUFFIX}`;
+    }
+
+    // Hiç insan kalmadıysa oyunu sürdürmenin anlamı yok.
+    if (!room.participants.some((p) => !p.isBot)) {
+      this.deleteRoom(room);
+      return undefined;
+    }
+
+    // Hostluk kalan bir insana geçsin — bot host olursa kimse yönetemez.
+    if (room.hostId === playerId) {
+      const nextHost =
+        room.participants.find((p) => !p.isBot && p.connected) ??
+        room.participants.find((p) => !p.isBot);
+      if (nextHost) {
+        if (participant) participant.isHost = false;
+        nextHost.isHost = true;
+        nextHost.isReady = true;
+        room.hostId = nextHost.id;
+      }
     }
     return room;
   }
