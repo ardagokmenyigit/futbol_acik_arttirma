@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { HowToPlay } from '../components/HowToPlay.js';
 import { createRoom, joinRoom } from '../lib/roomClient.js';
 import { saveSession } from '../lib/session.js';
 import { useRoomStore } from '../store.js';
@@ -13,6 +14,7 @@ export function HomePage() {
   const [code, setCode] = useState('');
   const [hiddenBudgets, setHiddenBudgets] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit = connected && nickname.trim().length > 0 && !busy;
@@ -43,6 +45,14 @@ export function HomePage() {
         artırmayla kur
       </h1>
       <p className="lede">Yeni bir oda kur ya da bir oda koduyla arkadaşlarına katıl.</p>
+
+      <button type="button" className="htp-open" onClick={() => setShowHelp(true)}>
+        <span className="htp-open-icon">?</span>
+        <span className="htp-open-text">
+          <strong>Nasıl oynanır?</strong>
+          <span>Kurallar, açık artırma düzeni ve ipuçları — 1 dakika</span>
+        </span>
+      </button>
 
       <div className="field-block">
         <label className="field-label" htmlFor="nick">
@@ -115,6 +125,8 @@ export function HomePage() {
 
       {!connected && <p className="footnote">Sunucuya bağlanılıyor…</p>}
       {error && <p className="error">{error}</p>}
+
+      {showHelp && <HowToPlay onClose={() => setShowHelp(false)} />}
     </div>
   );
 }
