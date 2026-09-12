@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   calculateTeamStats,
-  footballerPowerContribution,
   isBudgetHidden,
   type Footballer,
   type Position,
@@ -69,7 +68,6 @@ export function DraftPage({ room }: Props) {
   }
 
   const f = auction.footballer;
-  const powerAdd = footballerPowerContribution(f, room.config.squad);
   const secs = Math.max(0, Math.ceil(remainingMs / 1000));
   const isOpening = auction.phase === 'opening';
   const totalMs = Math.max(
@@ -183,21 +181,6 @@ export function DraftPage({ room }: Props) {
             <StatItem label="GEN" value={f.overall} />
             <StatItem label="HÜC" value={f.attack} />
             <StatItem label="DEF" value={f.defense} />
-          </div>
-
-          {/* Maçı belirleyen sayı bu: katkıların toplamı = takım gücü. */}
-          <div
-            className="power-add"
-            title="Bu futbolcu kadrona girerse takım gücün bu kadar artar — maç sonucunu belirleyen sayı budur"
-          >
-            takımına <strong>+{powerAdd.toFixed(1)} GÜÇ</strong> katar
-            <span className="power-add-note">
-              {f.position === 'GK' || f.position === 'DEF'
-                ? 'savunma ağırlıklı'
-                : f.position === 'FWD'
-                  ? 'hücum ağırlıklı'
-                  : 'dengeli'}
-            </span>
           </div>
 
           <div className="top-bid-row">

@@ -265,42 +265,6 @@ export function calculateTeamPower(players: Footballer[]): number {
   return Math.round((attack + defense) / 2);
 }
 
-/**
- * Bir futbolcunun TAKIM GÜCÜNE KATKISI — açık artırmada "+X güç" olarak gösterilir.
- *
- * Kadro dizilişi sabit olduğu için ağırlık toplamları da sabittir (1-2-2-2'de
- * hücum 3.7, savunma 4.7). Bu sayede takım gücü, oyuncu başına bir toplama
- * ayrıştırılabilir:
- *
- *   güç = Σ [ hücum × aw/(2·Σaw) + savunma × dw/(2·Σdw) ]
- *
- * Yani bu fonksiyonun kadro üzerindeki TOPLAMI, `calculateTeamPower` ile
- * (yuvarlama dışında) birebir aynıdır. Oyuncunun gördüğü sayı ile maçı
- * belirleyen sayı böylece aynı şey olur.
- *
- * NEDEN `overall` DEĞİL: genel reyting mevkiden bağımsız bir kalite ölçüsüdür;
- * 88'lik bir kaleci ile 88'lik bir forvet takıma aynı katkıyı yapmaz. Ölçüm:
- * 2670 gerçek draft'ta `overall` ortalamasına göre en iyi takım, gerçek güce
- * göre en iyi takımdan %21.4 oranında farklı çıkıyordu.
- */
-export function footballerPowerContribution(
-  player: Footballer,
-  squad: Record<Position, number>,
-): number {
-  let sumAttackWeight = 0;
-  let sumDefenseWeight = 0;
-  for (const pos of Object.keys(squad) as Position[]) {
-    const n = squad[pos];
-    sumAttackWeight += ATTACK_WEIGHT[pos] * n;
-    sumDefenseWeight += DEFENSE_WEIGHT[pos] * n;
-  }
-  if (sumAttackWeight <= 0 || sumDefenseWeight <= 0) return 0;
-
-  const attackPart = (player.attack * ATTACK_WEIGHT[player.position]) / (2 * sumAttackWeight);
-  const defensePart = (player.defense * DEFENSE_WEIGHT[player.position]) / (2 * sumDefenseWeight);
-  return attackPart + defensePart;
-}
-
 /** Maç içindeki bir olay (gol). */
 export interface MatchEvent {
   minute: number;

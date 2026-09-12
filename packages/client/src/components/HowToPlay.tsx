@@ -144,10 +144,10 @@ export function HowToPlay({ onClose }: Props) {
                 <strong>nereye</strong> harcadığın, ne kadar harcadığın kadar önemli.
               </p>
               <p>
-                Bu yüzden açık artırmada her futbolcunun kartında{' '}
-                <strong>"takımına +X GÜÇ katar"</strong> yazar. Kadrondaki yedi oyuncunun bu
-                sayılarının toplamı, tam olarak takım gücündür — yani teklif verirken gördüğün sayı,
-                maçı belirleyen sayının ta kendisidir.
+                Pratik kural: <strong>genel reyting artık iyi bir pusuladır.</strong> Aynı mevkide
+                daha yüksek reytingli futbolcu, neredeyse her zaman takımına daha çok katar. Ama
+                mevkiler arasında karşılaştırma yapma — 88'lik bir kaleci ile 88'lik bir forvet
+                takımına aynı şeyi katmaz.
               </p>
             </div>
           </section>
