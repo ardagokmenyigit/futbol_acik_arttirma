@@ -85,9 +85,9 @@
       "id": "fc26-gk-011",
       "name": "E. Martínez",
       "position": "GK",
-      "attack": 31,
-      "defense": 90,
-      "overall": 91
+      "attack": 30,
+      "defense": 87,
+      "overall": 88
     },
     {
       "id": "fc26-gk-012",
@@ -150,8 +150,8 @@
       "name": "Gabriel",
       "position": "DEF",
       "attack": 41,
-      "defense": 90,
-      "overall": 90
+      "defense": 89,
+      "overall": 89
     },
     {
       "id": "fc26-def-020",
@@ -461,9 +461,9 @@
       "id": "fc26-mid-058",
       "name": "Pedri",
       "position": "MID",
-      "attack": 85,
-      "defense": 83,
-      "overall": 95
+      "attack": 84,
+      "defense": 82,
+      "overall": 94
     },
     {
       "id": "fc26-mid-059",
@@ -637,9 +637,9 @@
       "id": "fc26-mid-080",
       "name": "S. McTominay",
       "position": "MID",
-      "attack": 86,
-      "defense": 86,
-      "overall": 91
+      "attack": 85,
+      "defense": 85,
+      "overall": 90
     },
     {
       "id": "fc26-mid-081",
@@ -837,9 +837,9 @@
       "id": "fc26-fwd-105",
       "name": "P. Foden",
       "position": "FWD",
-      "attack": 87,
-      "defense": 25,
-      "overall": 91
+      "attack": 85,
+      "defense": 24,
+      "overall": 89
     },
     {
       "id": "fc26-fwd-106",
