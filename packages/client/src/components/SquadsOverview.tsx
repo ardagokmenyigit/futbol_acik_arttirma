@@ -1,4 +1,10 @@
-import { calculateTeamStats, type Participant, type Position, type RoomState } from '@fal/shared';
+import {
+  calculateTeamPower,
+  calculateTeamStats,
+  type Participant,
+  type Position,
+  type RoomState,
+} from '@fal/shared';
 import { PositionBadge } from './PositionBadge.js';
 import { useRoomStore } from '../store.js';
 
@@ -90,6 +96,7 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
 
   const genAvg = count > 0 ? Math.round(squad.reduce((s, x) => s + x.overall, 0) / count) : 0;
   const teamStats = calculateTeamStats(squad);
+  const teamPower = calculateTeamPower(squad);
 
   return (
     <div
@@ -141,8 +148,9 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
             borderRadius: 4,
           }}
         >
-          <span>
-            GEN Ort: <strong style={{ color: 'var(--gold-bright)' }}>{genAvg}</strong>
+          {/* Maçı belirleyen sayı GÜÇ'tür; GEN yalnızca bilgi amaçlı. */}
+          <span title="Maç sonucunu belirleyen güç (mevki ağırlıklı hücum + savunma)">
+            GÜÇ: <strong style={{ color: 'var(--gold-bright)', fontSize: 15 }}>{teamPower}</strong>
           </span>
           <span>·</span>
           <span>
@@ -151,6 +159,12 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
           <span>·</span>
           <span>
             DEF: <strong style={{ color: 'var(--chalk)' }}>{teamStats.defense}</strong>
+          </span>
+          <span
+            style={{ color: 'var(--chalk-faint)', opacity: 0.7 }}
+            title="Kadrodaki oyuncuların genel reyting ortalaması — maç sonucunu BELİRLEMEZ"
+          >
+            · kadro ort. {genAvg}
           </span>
         </div>
       )}

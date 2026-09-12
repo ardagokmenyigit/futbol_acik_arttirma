@@ -1,6 +1,7 @@
 import type { TournamentState } from '@fal/shared';
 import { roomStore } from '../rooms/roomStore.js';
 import { emitRoomState } from '../rooms/broadcast.js';
+import { createPRNG } from '../simulation/random.js';
 import type { TypedServer } from '../socketTypes.js';
 import {
   advanceTournament,
@@ -51,9 +52,24 @@ export function startTournamentImmediately(roomId: string): void {
 }
 
 /**
- * Draft bitince (phase === 'simulation') turnuva formatı seçiliyse çağrılır.
- * Ağacı kurar, tüm maçları simüle eder ve sonuçları tur tur yayınlar.
- * Bitince phase 'finished' olur.
+ * Fisher-Yates — tohumla belirlenir, böylece kura tekrar üretilebilir kalır.
+ * Dizi kopyalanır; `room.participants` sırası bozulmaz (açık artırma sıra
+ * düzeni ve yeniden bağlanma ona bağlı).
+ */
+function shuffleWithSeed<T>(items: readonly T[], seed: number): T[] {
+  const prng = createPRNG(seed);
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(prng() * (i + 1));
+    [out[i], out[j]] = [out[j]!, out[i]!];
+  }
+  return out;
+}
+
+/**
+ * Draft bitince (phase === 'simulation') çağrılır. Kurayı çeker, ağacı kurar,
+ * tüm maçları simüle eder ve sonuçları tur tur yayınlar. Bitince phase
+ * 'finished' olur.
  */
 export function runTournament(io: TypedServer, roomId: string): void {
   const room = roomStore.getRoom(roomId);
@@ -62,12 +78,26 @@ export function runTournament(io: TypedServer, roomId: string): void {
   const size = room.config.tournamentSize;
   if (!size) return;
 
-  const teams: ParticipantTeamInfo[] = room.participants.map((p) => ({
+  const roster: ParticipantTeamInfo[] = room.participants.map((p) => ({
     id: p.id,
     nickname: p.nickname,
     squad: p.squad,
     isBot: p.isBot ?? false,
   }));
+
+  /**
+   * BRACKET KURASI. `createTournament` eşleşmeleri dizi sırasına göre kurar
+   * (yarı final 1 = teams[0] vs teams[1]). Katılımcı sırası da odaya giriş
+   * sırası olduğu için, karıştırılmazsa AYNI GRUP HER TURNUVADA AYNI RAKİPLE
+   * eşleşir — aynı iki kişi hep finalde karşılaşır, kimse diğer rakipleri
+   * hiç görmez. (Oyuncu bildirdi, ölçümle doğrulandı.)
+   *
+   * Kura her turnuvada yeniden çekilir ve maç tohumlarıyla AYNI `drawSeed`'ten
+   * türetilir; yani turnuvanın tamamı tek bir tohumdan tekrar üretilebilir
+   * (CLAUDE.md §3.2).
+   */
+  const drawSeed = Math.floor(Math.random() * 1000000000);
+  const teams = shuffleWithSeed(roster, drawSeed);
 
   // Botlarla zaten `size` takıma tamamlanmış olmalı; yine de güvene al.
   if (teams.length < 2) {
@@ -79,8 +109,7 @@ export function runTournament(io: TypedServer, roomId: string): void {
     return;
   }
 
-  const randomSeed = Math.floor(Math.random() * 1000000000);
-  const { results } = simulateFullTournament(teams, size, randomSeed);
+  const { results } = simulateFullTournament(teams, size, drawSeed);
 
   // Ağacı hemen (sonuçsuz) yayınla — oyuncular eşleşmeleri ve kadroları görsün.
   let live: TournamentState = createTournament(teams, size);
