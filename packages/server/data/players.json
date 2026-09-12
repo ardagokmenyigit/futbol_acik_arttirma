@@ -1,5 +1,5 @@
 {
-  "_comment": "EA SPORTS FC 26 Veri Tabanından derlenmiş 504 futbolcu (72 GK, 144 DEF, 144 MID, 144 FWD). 1:2:2:2 pozisyon dengesi.",
+  "_comment": "EA SPORTS FC 26 Veri Tabanından derlenmiş 504 futbolcu (72 GK, 144 DEF, 119 MID, 169 FWD). Kanat ve ofansif orta saha oyuncuları (savunma < 70) FWD olarak sınıflandırılmıştır: oyunun güç modelinde MID mevkisinde savunma da hücum kadar sayılır, bu yüzden savunma yapmayan bir oyuncu MID olarak modellenemez.",
   "players": [
     {
       "id": "fc26-gk-001",
@@ -402,9 +402,9 @@
       "overall": 83
     },
     {
-      "id": "fc26-mid-051",
+      "id": "fc26-fwd-051",
       "name": "M. Salah",
-      "position": "MID",
+      "position": "FWD",
       "attack": 93,
       "defense": 48,
       "overall": 97
@@ -450,9 +450,9 @@
       "overall": 95
     },
     {
-      "id": "fc26-mid-057",
+      "id": "fc26-fwd-057",
       "name": "Raphinha",
-      "position": "MID",
+      "position": "FWD",
       "attack": 91,
       "defense": 57,
       "overall": 95
@@ -466,17 +466,17 @@
       "overall": 95
     },
     {
-      "id": "fc26-mid-059",
+      "id": "fc26-fwd-059",
       "name": "F. Wirtz",
-      "position": "MID",
+      "position": "FWD",
       "attack": 91,
       "defense": 58,
       "overall": 95
     },
     {
-      "id": "fc26-mid-060",
+      "id": "fc26-fwd-060",
       "name": "Lamine Yamal",
-      "position": "MID",
+      "position": "FWD",
       "attack": 90,
       "defense": 25,
       "overall": 95
@@ -554,9 +554,9 @@
       "overall": 93
     },
     {
-      "id": "fc26-mid-070",
+      "id": "fc26-fwd-070",
       "name": "C. Palmer",
-      "position": "MID",
+      "position": "FWD",
       "attack": 91,
       "defense": 54,
       "overall": 93
@@ -594,25 +594,25 @@
       "overall": 92
     },
     {
-      "id": "fc26-mid-075",
+      "id": "fc26-fwd-075",
       "name": "P. Dybala",
-      "position": "MID",
+      "position": "FWD",
       "attack": 91,
       "defense": 44,
       "overall": 92
     },
     {
-      "id": "fc26-mid-076",
+      "id": "fc26-fwd-076",
       "name": "M. Olise",
-      "position": "MID",
+      "position": "FWD",
       "attack": 88,
       "defense": 54,
       "overall": 92
     },
     {
-      "id": "fc26-mid-077",
+      "id": "fc26-fwd-077",
       "name": "Nico Williams",
-      "position": "MID",
+      "position": "FWD",
       "attack": 83,
       "defense": 39,
       "overall": 92
@@ -898,9 +898,9 @@
       "overall": 82
     },
     {
-      "id": "fc26-mid-113",
+      "id": "fc26-fwd-113",
       "name": "Rafa Silva",
-      "position": "MID",
+      "position": "FWD",
       "attack": 83,
       "defense": 48,
       "overall": 83
@@ -1114,9 +1114,9 @@
       "overall": 83
     },
     {
-      "id": "fc26-mid-140",
+      "id": "fc26-fwd-140",
       "name": "D. Tadic",
-      "position": "MID",
+      "position": "FWD",
       "attack": 82,
       "defense": 42,
       "overall": 81
@@ -1226,9 +1226,9 @@
       "overall": 79
     },
     {
-      "id": "fc26-mid-154",
+      "id": "fc26-fwd-154",
       "name": "S. Szymanski",
-      "position": "MID",
+      "position": "FWD",
       "attack": 79,
       "defense": 65,
       "overall": 80
@@ -1450,9 +1450,9 @@
       "overall": 84
     },
     {
-      "id": "fc26-mid-182",
+      "id": "fc26-fwd-182",
       "name": "J. Maddison",
-      "position": "MID",
+      "position": "FWD",
       "attack": 83,
       "defense": 55,
       "overall": 84
@@ -1514,9 +1514,9 @@
       "overall": 82
     },
     {
-      "id": "fc26-mid-190",
+      "id": "fc26-fwd-190",
       "name": "İ. C. Kahveci",
-      "position": "MID",
+      "position": "FWD",
       "attack": 80,
       "defense": 52,
       "overall": 80
@@ -1570,9 +1570,9 @@
       "overall": 83
     },
     {
-      "id": "fc26-mid-197",
+      "id": "fc26-fwd-197",
       "name": "L. Pellegrini",
-      "position": "MID",
+      "position": "FWD",
       "attack": 80,
       "defense": 68,
       "overall": 81
@@ -1730,17 +1730,17 @@
       "overall": 83
     },
     {
-      "id": "fc26-mid-217",
+      "id": "fc26-fwd-217",
       "name": "K. Coman",
-      "position": "MID",
+      "position": "FWD",
       "attack": 82,
       "defense": 30,
       "overall": 83
     },
     {
-      "id": "fc26-mid-218",
+      "id": "fc26-fwd-218",
       "name": "L. Sané",
-      "position": "MID",
+      "position": "FWD",
       "attack": 83,
       "defense": 32,
       "overall": 84
@@ -2290,9 +2290,9 @@
       "overall": 81
     },
     {
-      "id": "fc26-mid-287",
+      "id": "fc26-fwd-287",
       "name": "J. Brandt",
-      "position": "MID",
+      "position": "FWD",
       "attack": 83,
       "defense": 62,
       "overall": 83
@@ -2354,9 +2354,9 @@
       "overall": 80
     },
     {
-      "id": "fc26-mid-295",
+      "id": "fc26-fwd-295",
       "name": "E. Eze",
-      "position": "MID",
+      "position": "FWD",
       "attack": 82,
       "defense": 58,
       "overall": 82
@@ -2578,9 +2578,9 @@
       "overall": 80
     },
     {
-      "id": "fc26-mid-323",
+      "id": "fc26-fwd-323",
       "name": "M. Damsgaard",
-      "position": "MID",
+      "position": "FWD",
       "attack": 78,
       "defense": 65,
       "overall": 79
@@ -2746,9 +2746,9 @@
       "overall": 79
     },
     {
-      "id": "fc26-mid-344",
+      "id": "fc26-fwd-344",
       "name": "H. Wilson",
-      "position": "MID",
+      "position": "FWD",
       "attack": 79,
       "defense": 60,
       "overall": 79
@@ -2794,9 +2794,9 @@
       "overall": 80
     },
     {
-      "id": "fc26-mid-350",
+      "id": "fc26-fwd-350",
       "name": "A. Iwobi",
-      "position": "MID",
+      "position": "FWD",
       "attack": 79,
       "defense": 68,
       "overall": 80
@@ -3082,9 +3082,9 @@
       "overall": 78
     },
     {
-      "id": "fc26-mid-386",
+      "id": "fc26-fwd-386",
       "name": "T. Savanier",
-      "position": "MID",
+      "position": "FWD",
       "attack": 81,
       "defense": 65,
       "overall": 80
@@ -3138,9 +3138,9 @@
       "overall": 79
     },
     {
-      "id": "fc26-mid-393",
+      "id": "fc26-fwd-393",
       "name": "M. Gibbs-White",
-      "position": "MID",
+      "position": "FWD",
       "attack": 81,
       "defense": 68,
       "overall": 81
@@ -3298,9 +3298,9 @@
       "overall": 78
     },
     {
-      "id": "fc26-mid-413",
+      "id": "fc26-fwd-413",
       "name": "N. Amiri",
-      "position": "MID",
+      "position": "FWD",
       "attack": 80,
       "defense": 68,
       "overall": 80
@@ -3354,9 +3354,9 @@
       "overall": 78
     },
     {
-      "id": "fc26-mid-420",
+      "id": "fc26-fwd-420",
       "name": "D. Pelkas",
-      "position": "MID",
+      "position": "FWD",
       "attack": 78,
       "defense": 64,
       "overall": 78
