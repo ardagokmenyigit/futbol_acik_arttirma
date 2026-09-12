@@ -27,12 +27,12 @@ export interface SimulateMatchOptions {
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
   /**
-   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.104).
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.108).
    *
    * MAÇ BAŞINA GOL bu değere neredeyse doğrusal bağlı — heyecan kolu budur.
    * Hedef maç başı ~3.48 gol; `strengthSensitivity` ya da `FORM_SPREAD`
    * değişirse gol sayısı kayar ve bu değerle geri kalibre edilmelidir.
-   * Sens 3.2 + form ±%8 için kalibre edilmiş karşılığı 0.104.
+   * Sens 3.2 + form ±%4 için kalibre edilmiş karşılığı 0.108.
    *
    * Ölçüm (12.000 turnuva, gerçek bot draft'ları; sens 2.5 + form ±%12 iken):
    *
@@ -60,7 +60,7 @@ export interface SimulateMatchOptions {
    *
    * Yani 2.5'ten 4.0'a çıkmak yalnızca ~3 puan kazandırıyor. Duyarlılığı
    * artırmanın asıl kolu `FORM_SPREAD` (bkz. oradaki not) — ikisi birlikte
-   * ayarlanmalı. Şu anki çift: sens 3.2 + form ±%8 → 5 puan farkta %73.4.
+   * ayarlanmalı. Şu anki çift: sens 3.2 + form ±%4 → 5 puan farkta %76.8.
    *
    * ⚠️ ASIL TAVAN MOTOR DEĞİL, DRAFT. Gerçek draft'larda takımlar arası güç
    * farkı ortalama sadece ~5.2 puan (ölçüm: 3000 gerçek bot draft'ı; medyan
@@ -68,7 +68,7 @@ export interface SimulateMatchOptions {
    * kuruyor. Gücü gerçekten baskın kılmak isteyen motoru değil DRAFT'ı
    * (havuz genişliği / bot değerleme dağılımı) değiştirmeli.
    *
-   * Tekdüzelik kontrolü: 30k maçta 78 farklı skor, en sık skor (1-1) %9.8.
+   * Tekdüzelik kontrolü: 60k maçta 84 farklı skor, en sık skor (1-1) %10.8.
    */
   strengthSensitivity?: number;
   /** Turnuva eleme maçı mı? Beraberlikte penaltı atışlarına gider. */
@@ -78,21 +78,26 @@ export interface SimulateMatchOptions {
 /* ------------------------------ ayarlar ------------------------------ */
 
 /**
- * Maç günü formu — aynı takım her maç aynı oynamasın diye (±%8).
+ * Maç günü formu — aynı takım her maç aynı oynamasın diye (±%4).
  *
- * NEDEN ±%8 — bu, motordaki EN BÜYÜK rastgelelik kaynağı ve doğrudan güç
- * duyarlılığıyla yarışır. Gerçek draft'larda takımlar arası tipik güç farkı
+ * NEDEN BU KADAR DAR — bu, motordaki EN BÜYÜK rastgelelik kaynağı ve doğrudan
+ * güç duyarlılığıyla yarışır. Gerçek draft'larda takımlar arası tipik güç farkı
  * ~5 puan, yani oransal olarak yalnızca ~%6.6. Form ±%12 iken güç farkının
  * neredeyse iki katı gürültü enjekte ediyor ve iyi kadro kurmayı gölgeliyordu.
  *
- * Ölçüm (gol ortalaması her satırda 3.48'e sabitlenerek, 30k maç):
- *   form ±%12, sens 2.5 → 5 puan farkta güçlü %68.2 turu geçer   (eski)
- *   form ±%8,  sens 3.2 → 5 puan farkta güçlü %73.4 turu geçer   (şu anki)
+ * Ölçüm (gol ortalaması her satırda 3.48'e sabitlenerek, 5 puan güç farkında
+ * güçlü takımın turu geçme oranı):
+ *   form ±%12, sens 2.5 → %68.2   (eski)
+ *   form ±%8,  sens 3.2 → %73.4
+ *   form ±%4,  sens 3.2 → %76.8   (şu anki)
  *
- * Daha da daraltılmamalı: ±%4'te skor çeşitliliği düşmeye başlıyor
- * (78 → 71 farklı skor) ve maçlar tekdüzeleşiyor.
+ * ⚠️ BURADAN DAHA DARA İNMEYİN. ±%4 zaten bilinçli olarak kabul edilmiş bir
+ * ödünleşmedir: skor çeşitliliği ±%8'e kıyasla düşer ve aynı iki takım her
+ * karşılaşmada birbirine benzer maçlar üretmeye başlar. Ayrıca denk takımlar
+ * denk kaldığı için beraberlik — dolayısıyla seri penaltı — sıklığı artar.
+ * Daha da daraltmak maçları tekdüzeleştirir.
  */
-const FORM_SPREAD = 0.16;
+const FORM_SPREAD = 0.08;
 const FORM_MIN = 1 - FORM_SPREAD / 2;
 
 /** Geride kalan takım öne çıkar: hücumu artar, arkası açılır. */
@@ -159,7 +164,7 @@ function pickScorer(team: Team, prng: () => number): Footballer | undefined {
  * Motorun mantığı (eski "her dakika bağımsız yazı-tura" yaklaşımının
  * aksine gerçek maç dinamiklerini taşır):
  *
- *  1. MAÇ GÜNÜ FORMU — her takım maça ±%8 bir formla çıkar. Aynı iki
+ *  1. MAÇ GÜNÜ FORMU — her takım maça ±%4 bir formla çıkar. Aynı iki
  *     takım farklı maçlarda farklı senaryolar üretir.
  *  2. POZİSYON ÜRETİMİ — her dakika bir pozisyon doğabilir. Pozisyonun
  *     kime ait olduğu, takımın hücumunun rakip savunmasına oranıyla
@@ -181,7 +186,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.0,
     chanceRate = 0.3,
-    baseConversion = 0.104,
+    baseConversion = 0.108,
     strengthSensitivity = 3.2,
     isTournament = true,
   } = options;
