@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
+  calculateTeamPower,
   getTopScorer,
   type RoomState,
   type TournamentMatch,
@@ -24,6 +25,13 @@ export function TournamentPage({ room, tournament }: Props) {
   const liveMatch = useRoomStore((s) => s.liveMatch);
   const { socket } = useSocket();
   const [showSquads, setShowSquads] = useState(true);
+
+  // Maçı belirleyen güç bracket'te de görünsün: sonuç "hak edilmiş" okunsun.
+  const powerOf = (id: string | null): number | null => {
+    if (!id) return null;
+    const p = room.participants.find((x) => x.id === id);
+    return p && p.squad.length > 0 ? calculateTeamPower(p.squad) : null;
+  };
 
   const nameOf = (id: string | null, placeholder?: string) => {
     if (!id) return placeholder ?? 'Bekleniyor';
@@ -151,6 +159,7 @@ export function TournamentPage({ room, tournament }: Props) {
                 match={m}
                 live={m.matchId === tournament.currentMatchId}
                 nameOf={nameOf}
+                powerOf={powerOf}
                 isBot={isBot}
                 youId={youId}
               />
@@ -167,10 +176,11 @@ interface MatchProps {
   live: boolean;
   youId: string | null;
   nameOf: (id: string | null, placeholder?: string) => string;
+  powerOf: (id: string | null) => number | null;
   isBot: (id: string | null) => boolean;
 }
 
-function BracketMatch({ match, live, youId, nameOf, isBot }: MatchProps) {
+function BracketMatch({ match, live, youId, nameOf, powerOf, isBot }: MatchProps) {
   const res = match.result;
   const homeWon = res ? res.winnerId === match.homeId : false;
   const awayWon = res ? res.winnerId === match.awayId : false;
@@ -185,6 +195,11 @@ function BracketMatch({ match, live, youId, nameOf, isBot }: MatchProps) {
       <span className="bm-name">
         {nameOf(id, placeholder)}
         {isBot(id) && <span className="bm-bot">bot</span>}
+        {powerOf(id) !== null && (
+          <span className="bm-power" title="Maç sonucunu belirleyen takım gücü">
+            {powerOf(id)}
+          </span>
+        )}
       </span>
       <span className="bm-score">{score ?? '–'}</span>
     </div>

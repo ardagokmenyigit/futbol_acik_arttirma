@@ -1683,3 +1683,43 @@ div[style*='text-align: left'] .penalty-dots-row {
     padding-right: 15px;
   }
 }
+
+/* Bracket'te takım gücü — maçı belirleyen sayı (bkz. calculateTeamPower) */
+.bracket-match .bm-power {
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(201, 151, 74, 0.16);
+  border: 1px solid rgba(201, 151, 74, 0.3);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--gold-bright, #e3b978);
+  vertical-align: middle;
+}
+
+/* Açık artırma kartında "+X GÜÇ" — maçı belirleyen katkı */
+.power-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  background: rgba(201, 151, 74, 0.12);
+  border: 1px solid rgba(201, 151, 74, 0.28);
+  font-size: 12.5px;
+  color: var(--chalk-dim, #b9c2c9);
+}
+.power-add strong {
+  font-size: 15px;
+  color: var(--gold-bright, #e3b978);
+}
+.power-add .power-add-note {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(242, 239, 230, 0.08);
+  font-size: 10.5px;
+  color: var(--chalk-faint);
+}

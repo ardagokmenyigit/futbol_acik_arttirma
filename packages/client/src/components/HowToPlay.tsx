@@ -133,10 +133,21 @@ export function HowToPlay({ onClose }: Props) {
                 <strong>bir insanın oynadığı maçlar canlı</strong> akar, bot–bot maçlar anında
                 sonuçlanır. Beraberlikte <strong>seri penaltı</strong> vardır.
               </p>
+              <p className="htp-note">
+                <strong>Maçı belirleyen sayı GÜÇ'tür.</strong> Mevkiye göre ağırlıklı hesaplanır:
+                hücumu <strong>forvet ve orta saha</strong>, savunmayı{' '}
+                <strong>defans ve kaleci</strong> belirler. Kadro ekranındaki{' '}
+                <em>kadro ortalaması</em> sadece bilgidir — maç sonucunu <strong>etkilemez</strong>.
+              </p>
               <p>
-                Takım gücü mevkiye göre ağırlıklı hesaplanır:{' '}
-                <strong>forvet ve orta saha hücumu</strong>,{' '}
-                <strong>defans ve kaleci savunmayı</strong> belirler.
+                Yani 88'lik bir kaleci almakla 88'lik bir forvet almak aynı şey değildir. Parayı{' '}
+                <strong>nereye</strong> harcadığın, ne kadar harcadığın kadar önemli.
+              </p>
+              <p>
+                Bu yüzden açık artırmada her futbolcunun kartında{' '}
+                <strong>"takımına +X GÜÇ katar"</strong> yazar. Kadrondaki yedi oyuncunun bu
+                sayılarının toplamı, tam olarak takım gücündür — yani teklif verirken gördüğün sayı,
+                maçı belirleyen sayının ta kendisidir.
               </p>
             </div>
           </section>
