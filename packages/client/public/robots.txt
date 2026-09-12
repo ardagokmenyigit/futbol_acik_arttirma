@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Paskalya yumurtası sayfası aramada çıkmasın.
+Disallow: /easter-egg.html
+
+Sitemap: https://futbol-acik-arttirma.vercel.app/sitemap.xml
