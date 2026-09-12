@@ -131,7 +131,7 @@ Takım gücü `calculateTeamStats()` ile mevkisel ağırlıklı hesaplanır
 
 90 dakika döngüsü, "her dakika bağımsız yazı-tura" değil:
 
-1. **Maç günü formu** — her takım ±%12 formla çıkar.
+1. **Maç günü formu** — her takım ±%8 formla çıkar (`FORM_SPREAD`).
 2. **Pozisyon üretimi** — `chanceRate` ile pozisyon doğar; kime ait olduğu
    `hücum / rakip savunma` tehdit oranıyla paylaştırılır.
 3. **Pozisyon kalitesi** — gole dönme oranı da tehdit oranına bağlı, yani
@@ -156,24 +156,58 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 (12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
 (rastgele olsa %25):
 
-| ayar                                 | en güçlü  | en zayıf  | oran     | gol/maç  |
-| ------------------------------------ | --------- | --------- | -------- | -------- |
-| sens 1.6 + saha av. 1.05 (eski)      | %34.6     | %17.1     | 2.0x     | 2.77     |
-| **sens 2.5 + saha av. yok (güncel)** | **%37.7** | **%15.0** | **2.5x** | **2.92** |
+| ayar                                     | en güçlü  | en zayıf  | oran     | gol/maç  |
+| ---------------------------------------- | --------- | --------- | -------- | -------- |
+| sens 1.6 + saha av. 1.05 (eski)          | %34.6     | %17.1     | 2.0x     | 2.77     |
+| sens 2.5 + saha av. yok                  | %37.7     | %15.0     | 2.5x     | 2.92     |
+| sens 2.5 + form ±%12 + baseConv 0.100    | %39.1     | %13.2     | 3.0x     | 3.48     |
+| **sens 3.2 + form ±%8 + baseConv 0.104** | **%42.9** | **%11.1** | **3.9x** | **3.53** |
+
+(Son iki satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
+ayarla en güçlü %33.2, en zayıf %2.1 — oran 15.8x.)
+
+**İki kolun birlikte ayarlanması gerekir.** `strengthSensitivity` tek başına
+zayıftır: yükseltmek gol sayısını da şişirir (`threat ** sens` dışbükey),
+`baseConversion` ile geri dengelenince etkinin çoğu kaybolur. Gol ortalaması
+3.48'e sabitlenerek ölçüldüğünde 5 puan güç farkında güçlünün turu geçme
+oranı — sens 2.5 → %68.3, sens 4.0 → yalnızca %71.1.
+
+Asıl kol **`FORM_SPREAD`**: gerçek draft'larda tipik güç farkı ~5 puan, yani
+oransal olarak yalnızca ~%6.6. Form ±%12 iken güç farkının neredeyse iki katı
+gürültü enjekte ediyordu. Gol sabitken 5 puan farkta güçlünün turu geçmesi:
+
+| form | sens 2.5 | sens 3.2 |
+| ---- | -------- | -------- |
+| ±%12 | %68.2    | %70.0    |
+| ±%8  | %70.6    | %73.4    |
+| ±%4  | %72.6    | %76.8    |
+
+±%4'ten sonrası tekdüzeleştiriyor (farklı skor sayısı 78 → 71), o yüzden
+±%8'de durduk.
+
+⚠️ **ÖDÜNLEŞME:** form daralınca eşit takımlar eşit kalır, yani **berabere
+bitme ihtimali artar**. Penaltıya gitme oranı güç farkı 0'da %22.9 → %25.0
+yükseldi, buna karşılık farkın açıldığı maçlarda düştü (fark 12'de
+%15.3 → %11.1). Gerçekçi fark olan 5 puanda pratikte değişmedi (%21.3 → %21.6).
 
 - **Saha avantajı KAPATILDI** (`homeAdvantage` varsayılan 1.0). Eleme
   ağacında ev sahipliği keyfî bir koltuktur; 1.05 maç başına ~3 güç puanı
   değerindeydi — ortalama draft güç farkının (~5.2) %60'ı kadar bedava
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
-- `baseConversion` 0.088 → **0.084**: sens 2.5 gol ortalamasını şişiriyordu
-  (`threat ** sens` dışbükey), bu onu geri alıyor ve güç ayrımına dokunmuyor.
-- **ASIL TAVAN ARTIK MOTOR DEĞİL, DRAFT.** `sens` 5'e çekilse bile en güçlü
-  takım ancak %41.5 şampiyon olur; çünkü gerçek draft'larda takımlar arası
-  güç farkı ortalama sadece **~5.2 puan**. Havuz tam denk (§3.1) olduğu için
-  herkes benzer kalitede kadro kuruyor. Gücü daha baskın kılmak isteyen
-  motoru değil havuz genişliğini / bot değerleme dağılımını değiştirmeli.
-- Maçların ~%25'i penaltıya gidiyor; orada güç farkı 8 olan takım yalnızca
-  %56 kazanıyor (normal sürede %71). Seyrelmenin ikinci kaynağı bu.
+- `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
+  ~3.48 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
+  kayar ve bununla geri kalibre edilmelidir (güncel çift için 0.104).
+- **ASIL TAVAN MOTOR DEĞİL, DRAFT.** Gerçek draft'larda takımlar arası güç
+  farkı ortalama yalnızca **5.25 puan** (medyan 5.0, p10 3.0, p90 8.0, max 13;
+  ölçüm: 3000 gerçek bot draft'ı). Havuz tam denk (§3.1) olduğu için herkes
+  benzer kalitede kadro kuruyor — motor ne kadar duyarlı olursa olsun ayırt
+  edecek fark yok. Gücü daha baskın kılmak isteyen motoru değil havuz
+  genişliğini / bot değerleme dağılımını değiştirmeli.
+- **MOTOR KİMLİĞE BAKMAZ — doğrulandı.** `participantId` simülatörde yalnızca
+  etikettir (skorer, kazanan, ev/deplasman alanları); turnuvada seed'i motor
+  üretir (`actualSeed + seedCount*777`), kimlik oraya girmez. Ölçüm (50k maç,
+  eşit kadro): tüm kimlik permütasyonlarında sonuç %49.97 — dört hane aynı.
+  Ev sahibi koltuğu da avantaj değil (%49.97 / %50.03).
 
 Dengeyi ayarlarken izole script ile binlerce draft+turnuva koşturun; tek
 maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon oluyor mu".
