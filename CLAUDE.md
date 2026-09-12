@@ -131,7 +131,7 @@ Takım gücü `calculateTeamStats()` ile mevkisel ağırlıklı hesaplanır
 
 90 dakika döngüsü, "her dakika bağımsız yazı-tura" değil:
 
-1. **Maç günü formu** — her takım ±%8 formla çıkar (`FORM_SPREAD`).
+1. **Maç günü formu** — her takım ±%4 formla çıkar (`FORM_SPREAD`).
 2. **Pozisyon üretimi** — `chanceRate` ile pozisyon doğar; kime ait olduğu
    `hücum / rakip savunma` tehdit oranıyla paylaştırılır.
 3. **Pozisyon kalitesi** — gole dönme oranı da tehdit oranına bağlı, yani
@@ -156,15 +156,16 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 (12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
 (rastgele olsa %25):
 
-| ayar                                     | en güçlü  | en zayıf  | oran     | gol/maç  |
-| ---------------------------------------- | --------- | --------- | -------- | -------- |
-| sens 1.6 + saha av. 1.05 (eski)          | %34.6     | %17.1     | 2.0x     | 2.77     |
-| sens 2.5 + saha av. yok                  | %37.7     | %15.0     | 2.5x     | 2.92     |
-| sens 2.5 + form ±%12 + baseConv 0.100    | %39.1     | %13.2     | 3.0x     | 3.48     |
-| **sens 3.2 + form ±%8 + baseConv 0.104** | **%42.9** | **%11.1** | **3.9x** | **3.53** |
+| ayar                                     | en güçlü  | en zayıf | oran     | gol/maç  |
+| ---------------------------------------- | --------- | -------- | -------- | -------- |
+| sens 1.6 + saha av. 1.05 (eski)          | %34.6     | %17.1    | 2.0x     | 2.77     |
+| sens 2.5 + saha av. yok                  | %37.7     | %15.0    | 2.5x     | 2.92     |
+| sens 2.5 + form ±%12 + baseConv 0.100    | %39.1     | %13.2    | 3.0x     | 3.48     |
+| sens 3.2 + form ±%8 + baseConv 0.104     | %42.7     | %10.7    | 4.0x     | 3.53     |
+| **sens 3.2 + form ±%4 + baseConv 0.108** | **%46.3** | **%8.3** | **5.6x** | **3.54** |
 
-(Son iki satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
-ayarla en güçlü %33.2, en zayıf %2.1 — oran 15.8x.)
+(Son üç satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
+ayarla en güçlü %36.6, en zayıf %1.8 — oran 20.3x.)
 
 **İki kolun birlikte ayarlanması gerekir.** `strengthSensitivity` tek başına
 zayıftır: yükseltmek gol sayısını da şişirir (`threat ** sens` dışbükey),
@@ -180,15 +181,28 @@ gürültü enjekte ediyordu. Gol sabitken 5 puan farkta güçlünün turu geçme
 | ---- | -------- | -------- |
 | ±%12 | %68.2    | %70.0    |
 | ±%8  | %70.6    | %73.4    |
-| ±%4  | %72.6    | %76.8    |
+| ±%4  | %72.6    | %76.8    | ← güncel |
 
-±%4'ten sonrası tekdüzeleştiriyor (farklı skor sayısı 78 → 71), o yüzden
-±%8'de durduk.
+⚠️ **±%4 alt sınırdır, daha aşağı inmeyin.** Burası zaten bilinçli kabul
+edilmiş bir ödünleşme: çeşitlilik ±%8'e göre düştü (88 → 84 farklı skor,
+en sık skor %9.9 → %10.8) ve penaltı sıklığı arttı (aşağıya bkz.). Daha
+dar bir form aralığı aynı iki takımın her karşılaşmada birbirine benzer
+maçlar üretmesine yol açar.
 
-⚠️ **ÖDÜNLEŞME:** form daralınca eşit takımlar eşit kalır, yani **berabere
-bitme ihtimali artar**. Penaltıya gitme oranı güç farkı 0'da %22.9 → %25.0
-yükseldi, buna karşılık farkın açıldığı maçlarda düştü (fark 12'de
-%15.3 → %11.1). Gerçekçi fark olan 5 puanda pratikte değişmedi (%21.3 → %21.6).
+⚠️ **ÖDÜNLEŞME — PENALTI SIKLIĞI.** Form daralınca denk takımlar denk kalır,
+yani **berabere bitme ihtimali artar**. Maçın penaltıya gitme oranı:
+
+| güç farkı | form ±%12 | form ±%8 | form ±%4 (güncel) |
+| --------- | --------- | -------- | ----------------- |
+| 0         | %22.9     | %25.0    | **%28.6**         |
+| 5         | %21.3     | %21.6    | **%23.4**         |
+| 12        | %15.3     | %11.1    | **%8.8**          |
+
+Yani denk maçlarda daha çok, farkın açıldığı maçlarda daha az penaltı.
+Bu bilinçli bir tercihtir: penaltıya giden maçlar artık gerçekten denk
+takımlar arasında oluyor, güçlü takım haksızca penaltıya sürüklenmiyor.
+Kullanıcı "çok penaltı görüyorum" derse çözüm formu genişletmek DEĞİL,
+`baseConversion`ı yükseltmektir (daha çok gol → daha az beraberlik).
 
 - **Saha avantajı KAPATILDI** (`homeAdvantage` varsayılan 1.0). Eleme
   ağacında ev sahipliği keyfî bir koltuktur; 1.05 maç başına ~3 güç puanı
