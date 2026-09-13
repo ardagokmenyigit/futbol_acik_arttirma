@@ -40,10 +40,9 @@ export function shuffled<T>(input: readonly T[]): T[] {
 
 /**
  * Üst seviye oyuncu eşik değeri:
- * Orijinal veri setinde 87+ GEN olan 49 süperstar (%9.72'lik grup), %7 istatistik
- * artışından sonra >= 93 GEN olmuştur.
+ * 90+ GEN olan süperstar futbolcuları belirler.
  */
-export const TOP_TIER_OVR_THRESHOLD = 93;
+export const TOP_TIER_OVR_THRESHOLD = 90;
 
 /**
  * Draft havuzundaki üst seviye oyuncu oranı (%25).
