@@ -1,5 +1,5 @@
 {
-  "_comment": "EA SPORTS FC 26 Veri Tabanından derlenmiş 504 futbolcu (72 GK, 144 DEF, 144 MID, 144 FWD). 1:2:2:2 pozisyon dengesi.",
+  "_comment": "EA SPORTS FC 26 ve Base Icons - 539 futbolcu (77 GK, 154 DEF, 154 MID, 154 FWD). Dengeli 1:2:2:2 dağılımı.",
   "players": [
     {
       "id": "fc26-gk-001",
@@ -404,9 +404,9 @@
     {
       "id": "fc26-mid-051",
       "name": "M. Salah",
-      "position": "MID",
+      "position": "FWD",
       "attack": 88,
-      "defense": 46,
+      "defense": 20,
       "overall": 92
     },
     {
@@ -452,9 +452,9 @@
     {
       "id": "fc26-mid-057",
       "name": "Raphinha",
-      "position": "MID",
+      "position": "FWD",
       "attack": 91,
-      "defense": 57,
+      "defense": 22,
       "overall": 95
     },
     {
@@ -476,9 +476,9 @@
     {
       "id": "fc26-mid-060",
       "name": "Lamine Yamal",
-      "position": "MID",
+      "position": "FWD",
       "attack": 90,
-      "defense": 25,
+      "defense": 16,
       "overall": 95
     },
     {
@@ -596,9 +596,9 @@
     {
       "id": "fc26-mid-075",
       "name": "P. Dybala",
-      "position": "MID",
+      "position": "FWD",
       "attack": 84,
-      "defense": 41,
+      "defense": 18,
       "overall": 85
     },
     {
@@ -900,9 +900,9 @@
     {
       "id": "fc26-mid-113",
       "name": "Rafa Silva",
-      "position": "MID",
+      "position": "FWD",
       "attack": 83,
-      "defense": 48,
+      "defense": 22,
       "overall": 83
     },
     {
@@ -1116,9 +1116,9 @@
     {
       "id": "fc26-mid-140",
       "name": "D. Tadic",
-      "position": "MID",
-      "attack": 82,
-      "defense": 42,
+      "position": "FWD",
+      "attack": 81,
+      "defense": 24,
       "overall": 81
     },
     {
@@ -1701,9 +1701,9 @@
       "id": "fc26-fwd-213",
       "name": "M. Rashford",
       "position": "FWD",
-      "attack": 81,
-      "defense": 22,
-      "overall": 81
+      "attack": 84,
+      "defense": 23,
+      "overall": 84
     },
     {
       "id": "fc26-gk-214",
@@ -1732,17 +1732,17 @@
     {
       "id": "fc26-mid-217",
       "name": "K. Coman",
-      "position": "MID",
+      "position": "FWD",
       "attack": 82,
-      "defense": 30,
+      "defense": 24,
       "overall": 83
     },
     {
       "id": "fc26-mid-218",
       "name": "L. Sané",
-      "position": "MID",
+      "position": "FWD",
       "attack": 83,
-      "defense": 32,
+      "defense": 20,
       "overall": 84
     },
     {
@@ -4032,6 +4032,286 @@
       "attack": 78,
       "defense": 22,
       "overall": 78
+    },
+    {
+      "id": "icon-gk-001",
+      "name": "L. Yashin",
+      "position": "GK",
+      "attack": 30,
+      "defense": 93,
+      "overall": 92
+    },
+    {
+      "id": "icon-gk-002",
+      "name": "G. Buffon",
+      "position": "GK",
+      "attack": 30,
+      "defense": 91,
+      "overall": 91
+    },
+    {
+      "id": "icon-gk-003",
+      "name": "I. Casillas",
+      "position": "GK",
+      "attack": 30,
+      "defense": 90,
+      "overall": 90
+    },
+    {
+      "id": "icon-gk-004",
+      "name": "P. Schmeichel",
+      "position": "GK",
+      "attack": 30,
+      "defense": 89,
+      "overall": 89
+    },
+    {
+      "id": "icon-gk-005",
+      "name": "E. van der Sar",
+      "position": "GK",
+      "attack": 30,
+      "defense": 88,
+      "overall": 88
+    },
+    {
+      "id": "icon-def-001",
+      "name": "P. Maldini",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 93,
+      "overall": 92
+    },
+    {
+      "id": "icon-def-002",
+      "name": "F. Baresi",
+      "position": "DEF",
+      "attack": 45,
+      "defense": 92,
+      "overall": 91
+    },
+    {
+      "id": "icon-def-003",
+      "name": "Cafu",
+      "position": "DEF",
+      "attack": 60,
+      "defense": 88,
+      "overall": 91
+    },
+    {
+      "id": "icon-def-004",
+      "name": "Carlos Alberto",
+      "position": "DEF",
+      "attack": 58,
+      "defense": 87,
+      "overall": 90
+    },
+    {
+      "id": "icon-def-005",
+      "name": "A. Nesta",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 90,
+      "overall": 89
+    },
+    {
+      "id": "icon-def-006",
+      "name": "F. Cannavaro",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 90,
+      "overall": 89
+    },
+    {
+      "id": "icon-def-007",
+      "name": "C. Puyol",
+      "position": "DEF",
+      "attack": 45,
+      "defense": 89,
+      "overall": 89
+    },
+    {
+      "id": "icon-def-008",
+      "name": "Roberto Carlos",
+      "position": "DEF",
+      "attack": 65,
+      "defense": 83,
+      "overall": 88
+    },
+    {
+      "id": "icon-def-009",
+      "name": "R. Ferdinand",
+      "position": "DEF",
+      "attack": 46,
+      "defense": 88,
+      "overall": 88
+    },
+    {
+      "id": "icon-def-010",
+      "name": "L. Blanc",
+      "position": "DEF",
+      "attack": 48,
+      "defense": 87,
+      "overall": 88
+    },
+    {
+      "id": "icon-mid-001",
+      "name": "Z. Zidane",
+      "position": "MID",
+      "attack": 91,
+      "defense": 78,
+      "overall": 94
+    },
+    {
+      "id": "icon-mid-002",
+      "name": "Ronaldinho",
+      "position": "MID",
+      "attack": 93,
+      "defense": 45,
+      "overall": 93
+    },
+    {
+      "id": "icon-mid-003",
+      "name": "Zico",
+      "position": "MID",
+      "attack": 91,
+      "defense": 58,
+      "overall": 91
+    },
+    {
+      "id": "icon-mid-004",
+      "name": "R. Gullit",
+      "position": "MID",
+      "attack": 88,
+      "defense": 84,
+      "overall": 90
+    },
+    {
+      "id": "icon-mid-005",
+      "name": "L. Matthäus",
+      "position": "MID",
+      "attack": 87,
+      "defense": 85,
+      "overall": 90
+    },
+    {
+      "id": "icon-mid-006",
+      "name": "Xavi",
+      "position": "MID",
+      "attack": 86,
+      "defense": 75,
+      "overall": 90
+    },
+    {
+      "id": "icon-mid-007",
+      "name": "A. Pirlo",
+      "position": "MID",
+      "attack": 86,
+      "defense": 72,
+      "overall": 89
+    },
+    {
+      "id": "icon-mid-008",
+      "name": "Kaká",
+      "position": "MID",
+      "attack": 89,
+      "defense": 52,
+      "overall": 89
+    },
+    {
+      "id": "icon-mid-009",
+      "name": "P. Vieira",
+      "position": "MID",
+      "attack": 81,
+      "defense": 88,
+      "overall": 88
+    },
+    {
+      "id": "icon-mid-010",
+      "name": "D. Beckham",
+      "position": "MID",
+      "attack": 87,
+      "defense": 72,
+      "overall": 88
+    },
+    {
+      "id": "icon-fwd-001",
+      "name": "Pelé",
+      "position": "FWD",
+      "attack": 96,
+      "defense": 20,
+      "overall": 95
+    },
+    {
+      "id": "icon-fwd-002",
+      "name": "Ronaldo Nazário",
+      "position": "FWD",
+      "attack": 95,
+      "defense": 18,
+      "overall": 94
+    },
+    {
+      "id": "icon-fwd-003",
+      "name": "J. Cruyff",
+      "position": "FWD",
+      "attack": 93,
+      "defense": 22,
+      "overall": 93
+    },
+    {
+      "id": "icon-fwd-004",
+      "name": "F. Puskás",
+      "position": "FWD",
+      "attack": 93,
+      "defense": 18,
+      "overall": 92
+    },
+    {
+      "id": "icon-fwd-005",
+      "name": "Garrincha",
+      "position": "FWD",
+      "attack": 92,
+      "defense": 18,
+      "overall": 92
+    },
+    {
+      "id": "icon-fwd-006",
+      "name": "Eusébio",
+      "position": "FWD",
+      "attack": 92,
+      "defense": 18,
+      "overall": 91
+    },
+    {
+      "id": "icon-fwd-007",
+      "name": "T. Henry",
+      "position": "FWD",
+      "attack": 92,
+      "defense": 20,
+      "overall": 91
+    },
+    {
+      "id": "icon-fwd-008",
+      "name": "M. van Basten",
+      "position": "FWD",
+      "attack": 92,
+      "defense": 18,
+      "overall": 91
+    },
+    {
+      "id": "icon-fwd-009",
+      "name": "G. Best",
+      "position": "FWD",
+      "attack": 90,
+      "defense": 20,
+      "overall": 90
+    },
+    {
+      "id": "icon-fwd-010",
+      "name": "D. Drogba",
+      "position": "FWD",
+      "attack": 89,
+      "defense": 22,
+      "overall": 89
     }
   ]
 }
