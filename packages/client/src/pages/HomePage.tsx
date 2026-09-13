@@ -42,7 +42,7 @@ export function HomePage() {
       <h1 className="headline">
         Kadronu
         <br />
-        artırmayla kur
+        açık artırmayla kur
       </h1>
       <p className="lede">Yeni bir oda kur ya da bir oda koduyla arkadaşlarına katıl.</p>
 
