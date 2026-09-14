@@ -48,3 +48,31 @@ export function setFormat(tournamentSize: TournamentSize): Promise<{ roomState: 
 export function leaveRoom(): void {
   socket.emit('room:leave');
 }
+
+/* ------------------------------ rövanş ------------------------------ */
+
+export function proposeRematch(): Promise<{ roomState: RoomState }> {
+  return new Promise((resolve, reject) => {
+    socket.emit('room:rematchPropose', unwrap(resolve, reject));
+  });
+}
+
+export function respondRematch(accept: boolean): Promise<{ roomState: RoomState }> {
+  return new Promise((resolve, reject) => {
+    socket.emit('room:rematchRespond', { accept }, unwrap(resolve, reject));
+  });
+}
+
+/** Sadece teklif eden: bekleyenleri beklemeden kabul edenlerle başla. */
+export function startRematchNow(): Promise<{ roomState: RoomState }> {
+  return new Promise((resolve, reject) => {
+    socket.emit('room:rematchStart', unwrap(resolve, reject));
+  });
+}
+
+/** Sadece teklif eden: daveti geri çek. */
+export function cancelRematch(): Promise<{ roomState: RoomState }> {
+  return new Promise((resolve, reject) => {
+    socket.emit('room:rematchCancel', unwrap(resolve, reject));
+  });
+}

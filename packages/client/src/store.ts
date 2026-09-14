@@ -27,6 +27,8 @@ interface RoomStoreState {
   /** Bu istemcinin katılımcı kimliği. */
   youId: string | null;
   error: string | null;
+  /** Oda dışında gösterilecek bilgi (örn. "rövanş sensiz başladı"). */
+  notice: string | null;
 
   /** auction:tick'ten gelen, sunucu-otoriteli kalan süre. */
   remainingMs: number;
@@ -42,8 +44,10 @@ interface RoomStoreState {
   setConnected: (connected: boolean) => void;
   enterRoom: (roomState: RoomState, youId: string) => void;
   updateRoom: (roomState: RoomState) => void;
-  exitRoom: () => void;
+  /** Odadan çık; `notice` verilirse ana ekranda gösterilir. */
+  exitRoom: (notice?: string) => void;
   setError: (error: string | null) => void;
+  setNotice: (notice: string | null) => void;
 
   setRemainingMs: (ms: number) => void;
   roundStarted: (remainingMs: number) => void;
@@ -58,6 +62,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   roomState: null,
   youId: null,
   error: null,
+  notice: null,
   remainingMs: 0,
   lastWon: null,
   league: null,
@@ -65,12 +70,30 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   liveMatch: null,
 
   setConnected: (connected) => set({ connected }),
-  enterRoom: (roomState, youId) => set({ roomState, youId, error: null }),
-  updateRoom: (roomState) => set({ roomState }),
-  exitRoom: () =>
+  enterRoom: (roomState, youId) => set({ roomState, youId, error: null, notice: null }),
+  updateRoom: (roomState) =>
+    set((s) => {
+      // Oda lobiye döndüyse (rövanş) önceki oyunun turnuva/draft izleri silinsin;
+      // yoksa yeni oyunun 'simulation' fazında bir an eski bracket görünür.
+      if (roomState.phase === 'lobby' && s.roomState?.phase !== 'lobby') {
+        return {
+          roomState,
+          tournament: null,
+          liveMatch: null,
+          lastWon: null,
+          league: null,
+          remainingMs: 0,
+          error: null,
+        };
+      }
+      return { roomState };
+    }),
+  exitRoom: (notice) =>
     set({
       roomState: null,
       youId: null,
+      error: null,
+      notice: notice ?? null,
       remainingMs: 0,
       lastWon: null,
       league: null,
@@ -78,6 +101,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
       liveMatch: null,
     }),
   setError: (error) => set({ error }),
+  setNotice: (notice) => set({ notice }),
 
   setRemainingMs: (remainingMs) => set({ remainingMs }),
   roundStarted: (remainingMs) => set({ remainingMs, lastWon: null }),

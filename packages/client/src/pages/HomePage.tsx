@@ -9,6 +9,8 @@ const NICK_KEY = 'fal:nickname';
 export function HomePage() {
   const enterRoom = useRoomStore((s) => s.enterRoom);
   const connected = useRoomStore((s) => s.connected);
+  const notice = useRoomStore((s) => s.notice);
+  const setNotice = useRoomStore((s) => s.setNotice);
 
   const [nickname, setNickname] = useState(() => localStorage.getItem(NICK_KEY) ?? '');
   const [code, setCode] = useState('');
@@ -45,6 +47,20 @@ export function HomePage() {
         açık artırmayla kur
       </h1>
       <p className="lede">Yeni bir oda kur ya da bir oda koduyla arkadaşlarına katıl.</p>
+
+      {notice && (
+        <div className="panel cobalt" style={{ marginBottom: 16 }}>
+          <p style={{ margin: 0 }}>{notice}</p>
+          <button
+            type="button"
+            className="btn-outline"
+            style={{ marginTop: 10, padding: '6px 12px', fontSize: 13 }}
+            onClick={() => setNotice(null)}
+          >
+            Tamam
+          </button>
+        </div>
+      )}
 
       <button type="button" className="htp-open" onClick={() => setShowHelp(true)}>
         <span className="htp-open-icon">?</span>

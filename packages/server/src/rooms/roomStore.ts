@@ -4,6 +4,7 @@ import {
   DEFAULT_ROOM_CONFIG,
   type Participant,
   type Position,
+  type RematchState,
   type RoomConfig,
   type RoomState,
   type TournamentSize,
@@ -57,6 +58,8 @@ class RoomStore {
       hostId: host.id,
       config,
       participants: [host],
+      gameNumber: 1,
+      rematch: null,
       auction: null,
       remainingPoolIds: [],
       league: null,
@@ -185,6 +188,7 @@ class RoomStore {
       participant.connected = true;
       participant.isReady = true;
       participant.nickname = `${participant.nickname} ${BOT_SUFFIX}`;
+      this.dropFromRematch(room, playerId);
     }
 
     // Hiç insan kalmadıysa oyunu sürdürmenin anlamı yok.
@@ -291,6 +295,132 @@ class RoomStore {
 
     room.phase = 'draft';
     return room;
+  }
+
+  /* ------------------------------ rövanş ------------------------------ */
+
+  /** Odadaki insanlar (bota dönüşenler hariç). Rövanş yalnız onları bekler. */
+  humans(room: RoomState): Participant[] {
+    return room.participants.filter((p) => !p.isBot);
+  }
+
+  /** Teklife henüz kabul vermemiş insanlar. */
+  rematchPending(room: RoomState): Participant[] {
+    if (!room.rematch) return [];
+    const accepted = new Set(room.rematch.acceptedIds);
+    return this.humans(room).filter((p) => !accepted.has(p.id));
+  }
+
+  /** Tüm insanlar kabul etti mi? (`rematch` yoksa false) */
+  isRematchComplete(room: RoomState): boolean {
+    return !!room.rematch && this.rematchPending(room).length === 0;
+  }
+
+  proposeRematch(roomId: string, playerId: string): RoomState {
+    const room = this.requireRoom(roomId);
+    if (room.phase !== 'finished') throw new RoomError('Rövanş ancak oyun bitince teklif edilir');
+    const p = room.participants.find((x) => x.id === playerId);
+    if (!p || p.isBot) throw new RoomError('Bu odada oyuncu değilsin');
+    if (room.rematch) {
+      // Aynı anda iki kişi bastıysa ikincisi kabul sayılır — teklif çakışmaz.
+      if (!room.rematch.acceptedIds.includes(playerId)) room.rematch.acceptedIds.push(playerId);
+      return room;
+    }
+    room.rematch = { proposerId: playerId, acceptedIds: [playerId] };
+    return room;
+  }
+
+  respondRematch(roomId: string, playerId: string, accept: boolean): RoomState {
+    const room = this.requireRoom(roomId);
+    const rematch = this.requireRematch(room);
+    const p = room.participants.find((x) => x.id === playerId);
+    if (!p || p.isBot) throw new RoomError('Bu odada oyuncu değilsin');
+    if (playerId === rematch.proposerId && !accept) {
+      throw new RoomError('Teklif eden kabulünü geri çekemez — daveti iptal et');
+    }
+    const has = rematch.acceptedIds.includes(playerId);
+    if (accept && !has) rematch.acceptedIds.push(playerId);
+    if (!accept && has) rematch.acceptedIds = rematch.acceptedIds.filter((id) => id !== playerId);
+    return room;
+  }
+
+  cancelRematch(roomId: string, playerId: string): RoomState {
+    const room = this.requireRoom(roomId);
+    const rematch = this.requireRematch(room);
+    if (rematch.proposerId !== playerId)
+      throw new RoomError('Daveti sadece teklif eden iptal edebilir');
+    room.rematch = null;
+    return room;
+  }
+
+  /**
+   * Rövanşı başlat: kabul edenler kalır, diğer herkes (kabul etmeyen insanlar
+   * ve TÜM botlar) çıkarılır; oda aynı kod ve ayarlarla lobiye döner.
+   * Çıkarılan İNSANLARIN id'leri döner — çağıran soketlerine `room:kicked`
+   * göndermeli. `requesterId` verilirse yalnız teklif eden başlatabilir
+   * (zorla başlatma); verilmezse otomatik başlatmadır (herkes kabul etti).
+   */
+  startRematch(roomId: string, requesterId?: string): { room: RoomState; kickedIds: string[] } {
+    const room = this.requireRoom(roomId);
+    const rematch = this.requireRematch(room);
+    if (requesterId !== undefined && rematch.proposerId !== requesterId) {
+      throw new RoomError('Rövanşı sadece teklif eden başlatabilir');
+    }
+    const accepted = new Set(rematch.acceptedIds);
+    const keep = room.participants.filter((p) => !p.isBot && accepted.has(p.id));
+    if (keep.length === 0) throw new RoomError('Rövanş için kabul eden kimse yok');
+    const kickedIds = room.participants
+      .filter((p) => !p.isBot && !accepted.has(p.id))
+      .map((p) => p.id);
+
+    for (const p of keep) {
+      p.budget = room.config.startingBudget;
+      p.squad = [];
+      p.isHost = false;
+      p.isReady = false;
+    }
+    // Host kaldıysa host kalır; çıktıysa hostluk teklif edene geçer.
+    const host =
+      keep.find((p) => p.id === room.hostId) ??
+      keep.find((p) => p.id === rematch.proposerId) ??
+      keep[0]!;
+    host.isHost = true;
+    host.isReady = true;
+    room.hostId = host.id;
+
+    room.participants = keep;
+    room.phase = 'lobby';
+    room.gameNumber += 1;
+    room.rematch = null;
+    room.auction = null;
+    room.remainingPoolIds = [];
+    room.league = null;
+    room.tournament = null;
+    return { room, kickedIds };
+  }
+
+  /**
+   * Bir insan odadan gidince (çıktı ya da bota dönüştü) rövanş defterini
+   * düzelt: kabulü düşer; teklif edense teklif kabul etmiş birine devrolur,
+   * kimse yoksa teklif iptal olur.
+   */
+  private dropFromRematch(room: RoomState, playerId: string): void {
+    const rematch = room.rematch;
+    if (!rematch) return;
+    rematch.acceptedIds = rematch.acceptedIds.filter((id) => id !== playerId);
+    if (rematch.proposerId === playerId) {
+      const next = rematch.acceptedIds.find((id) =>
+        room.participants.some((p) => p.id === id && !p.isBot),
+      );
+      if (next) rematch.proposerId = next;
+      else room.rematch = null;
+    }
+  }
+
+  private requireRematch(room: RoomState): RematchState {
+    if (room.phase !== 'finished' || !room.rematch)
+      throw new RoomError('Aktif bir rövanş teklifi yok');
+    return room.rematch;
   }
 
   private requireRoom(roomId: string): RoomState {

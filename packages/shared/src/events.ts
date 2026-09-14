@@ -42,6 +42,18 @@ export interface ClientToServerEvents {
   'room:start': (ack: (res: AckResult<{ roomState: RoomState }>) => void) => void;
   'room:startSimulation': () => void;
 
+  /** Oyun bitince (`finished`) rövanş teklif et — herhangi bir insan katılımcı. */
+  'room:rematchPropose': (ack: (res: AckResult<{ roomState: RoomState }>) => void) => void;
+  /** Teklife yanıt: `accept: true` kabul, `false` kabulü geri çek. */
+  'room:rematchRespond': (
+    payload: { accept: boolean },
+    ack: (res: AckResult<{ roomState: RoomState }>) => void,
+  ) => void;
+  /** Sadece teklif eden: yanıt vermeyenleri beklemeden kabul edenlerle başla. */
+  'room:rematchStart': (ack: (res: AckResult<{ roomState: RoomState }>) => void) => void;
+  /** Sadece teklif eden: teklifi geri çek (kimse çıkarılmaz). */
+  'room:rematchCancel': (ack: (res: AckResult<{ roomState: RoomState }>) => void) => void;
+
   'auction:bid': (
     payload: { amount: number },
     ack: (res: AckResult<{ highestBid: Bid }>) => void,
@@ -54,6 +66,12 @@ export interface ServerToClientEvents {
   'room:playerJoined': (participant: Participant) => void;
   'room:playerLeft': (payload: { playerId: string }) => void;
   'room:error': (payload: { message: string }) => void;
+  /**
+   * Sunucu bu soketi odadan çıkardı (örn. rövanş sensiz başladı). İstemci
+   * oturumu silip ana ekrana döner ve `reason`ı gösterir; oda lobideyse
+   * kodla yeniden katılabilir.
+   */
+  'room:kicked': (payload: { reason: string }) => void;
 
   'auction:started': (auction: AuctionState) => void;
   /**

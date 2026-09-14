@@ -163,6 +163,24 @@ export interface AuctionState {
   history: Bid[];
 }
 
+/**
+ * RÖVANŞ TEKLİFİ — yalnız `phase === 'finished'` iken dolu.
+ *
+ * Herhangi bir insan katılımcı teklif edebilir (host olmak şart değil).
+ * Odadaki TÜM insanlar (`!isBot`) kabul edince sunucu odayı aynı kod ve aynı
+ * katılımcılarla lobiye sıfırlar (`gameNumber` artar). Teklif eden,
+ * yanıt vermeyenleri beklemeden "kabul edenlerle başla" diyebilir; o zaman
+ * kabul etmeyenler odadan çıkarılır (`room:kicked`). Kabul eden geri
+ * çekilebilir, teklif eden iptal edebilir, çıkan (`room:leave`) ana ekrana
+ * döner. Teklif eden çıkarsa teklif kabul etmiş birine devrolur; kimse
+ * yoksa iptal olur.
+ */
+export interface RematchState {
+  proposerId: string;
+  /** Kabul edenler — teklif eden baştan dahildir. */
+  acceptedIds: string[];
+}
+
 /** Sunucudaki tek doğruluk kaynağı — bir odanın tam durumu. */
 export interface RoomState {
   /** Dahili benzersiz oda kimliği. */
@@ -173,6 +191,10 @@ export interface RoomState {
   hostId: string;
   config: RoomConfig;
   participants: Participant[];
+  /** Bu odada kaçıncı oyun (1'den başlar; her rövanşta artar). */
+  gameNumber: number;
+  /** Aktif rövanş teklifi — yalnız `finished` fazında. */
+  rematch: RematchState | null;
   /** phase === 'draft' iken dolu. */
   auction: AuctionState | null;
   /** Draft'ta henüz artırmaya çıkmamış futbolcu id'leri. */
