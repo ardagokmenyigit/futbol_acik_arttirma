@@ -129,6 +129,40 @@ kopyayı değiştirir.**
 Takım gücü `calculateTeamStats()` ile mevkisel ağırlıklı hesaplanır
 (`ATTACK_WEIGHT` / `DEFENSE_WEIGHT`, bkz. `shared/src/types.ts`).
 
+**TAKIM GÜCÜ ↔ GEN SÖZLEŞMESİ (veri seti kuralı).** GEN (`overall`) elle
+ayarlanmış, dokunulmaz değerdir; att/def onun altında kalibre edilir. Kural:
+**aynı mevkideki iki oyuncudan GEN'i yüksek olanın tam kadroya güç katkısı
+her zaman daha yüksektir** (eşit GEN → eşit katkı). Doğrulama:
+`npx tsx packages/server/src/scripts/checkPowerMonotonic.ts` — ağırlık ya da
+veri seti değişince sıfır ihlal görmeden birleştirmeyin.
+
+- **Neden gerekti:** GEN–güç korelasyonu GK 0.985, DEF 0.935, FWD 0.953 ama
+  **MID 0.586** idi. Simetrik 0.6/0.6 orta saha ağırlığı hücumcu (Olise 94 GEN
+  90/55 → güç sırası 136'da 120.) ve defansif orta sahayı cezalandırıp iki
+  tarafı 77 olan sıradan oyuncuyu ödüllendiriyordu; oyuncu "94'lük aldım,
+  78'lik beni geçti" diye okuyordu.
+- **Çözüm 1 — MID rol ağırlığı (`positionWeights`)**: uzmanlaşma
+  `t = clamp((att − def) / 25, −1, 1)`, ağırlık `0.6 ± 0.2·t` (toplam 1.2
+  sabit). SÜREKLİ olmak zorunda: ikili `att >= def` seçimi paydalar farklı
+  olduğu için 88/87 ile 87/88 arasında ~0.9 güç (≈8 GEN) sıçratıyordu.
+  Rol ağırlığı yalnız PAYA girer, payda mevki sabitidir — böylece bir
+  oyuncunun katkısı kadrodan bağımsız doğrusal bir sayıdır; sözleşme ancak
+  bu sayede kesin doğrulanabilir.
+- **Çözüm 2 — veri seti kalibrasyonu**: mevki başına GEN→katkı doğrusu
+  uydurulup her oyuncunun att/def'i **att−def farkı (karakteri) korunarak**
+  o doğruya oturtuldu. 504 oyuncunun 443'ü değişti, %87'si ≤2 puan, mevki
+  başına net kayma ≈ 0 (en büyük: Nico Williams 77/36 → 89/46; 85 GEN için
+  zaten tutarsızdı). Yeni oyuncu eklerken: att/def'i mevkinin doğrusuna
+  göre verin, sonra kontrolü çalıştırın.
+- **Yan etki ve kalibrasyon**: rol ağırlığı hücum ölçeğini yükseltti
+  (gol/maç 3.64 → 3.98); `baseConversion` 0.108 → 0.099 ile geri alındı.
+  1500 bot draft × 4 bracket ölçümü (eski → yeni): en güçlü şampiyon %44.8
+  → %43.8, en zayıf %10.6 → %10.9, gol/maç 3.64 → 3.66, penaltı %26.9 →
+  %27.0, ort fiyat 19.9M → 19.9M. Denge korundu.
+- Sözleşme MEVKİ İÇİ'dir. Mevkiler arası (85 GEN FWD vs 85 GEN MID) katkı
+  ölçekleri farklı kalır — açık artırma mevki slotu başına yarıştığı için
+  adalet için gereken mevki içi tutarlılıktır.
+
 90 dakika döngüsü, "her dakika bağımsız yazı-tura" değil:
 
 1. **Maç günü formu** — her takım ±%4 formla çıkar (`FORM_SPREAD`).
@@ -156,13 +190,14 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 (12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
 (rastgele olsa %25):
 
-| ayar                                     | en güçlü  | en zayıf | oran     | gol/maç  |
-| ---------------------------------------- | --------- | -------- | -------- | -------- |
-| sens 1.6 + saha av. 1.05 (eski)          | %34.6     | %17.1    | 2.0x     | 2.77     |
-| sens 2.5 + saha av. yok                  | %37.7     | %15.0    | 2.5x     | 2.92     |
-| sens 2.5 + form ±%12 + baseConv 0.100    | %39.1     | %13.2    | 3.0x     | 3.48     |
-| sens 3.2 + form ±%8 + baseConv 0.104     | %42.7     | %10.7    | 4.0x     | 3.53     |
-| **sens 3.2 + form ±%4 + baseConv 0.108** | **%46.3** | **%8.3** | **5.6x** | **3.54** |
+| ayar                                                    | en güçlü  | en zayıf | oran     | gol/maç  |
+| ------------------------------------------------------- | --------- | -------- | -------- | -------- |
+| sens 1.6 + saha av. 1.05 (eski)                         | %34.6     | %17.1    | 2.0x     | 2.77     |
+| sens 2.5 + saha av. yok                                 | %37.7     | %15.0    | 2.5x     | 2.92     |
+| sens 2.5 + form ±%12 + baseConv 0.100                   | %39.1     | %13.2    | 3.0x     | 3.48     |
+| sens 3.2 + form ±%8 + baseConv 0.104                    | %42.7     | %10.7    | 4.0x     | 3.53     |
+| **sens 3.2 + form ±%4 + baseConv 0.108**                | **%46.3** | **%8.3** | **5.6x** | **3.54** |
+| sens 3.2 + form ±%4 + MID rol + baseConv 0.099 (güncel) | %43.8     | %10.9    | 4.0x     | 3.66     |
 
 (Son üç satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
 ayarla en güçlü %36.6, en zayıf %1.8 — oran 20.3x.)
@@ -210,7 +245,7 @@ Kullanıcı "çok penaltı görüyorum" derse çözüm formu genişletmek DEĞİ
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
 - `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
   ~3.48 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
-  kayar ve bununla geri kalibre edilmelidir (güncel çift için 0.104).
+  kayar ve bununla geri kalibre edilmelidir (güncel: 0.099, MID rol ağırlığı sonrası).
 - **ASIL TAVAN MOTOR DEĞİL, DRAFT.** Gerçek draft'larda takımlar arası güç
   farkı ortalama yalnızca **5.25 puan** (medyan 5.0, p10 3.0, p90 8.0, max 13;
   ölçüm: 3000 gerçek bot draft'ı). Havuz tam denk (§3.1) olduğu için herkes

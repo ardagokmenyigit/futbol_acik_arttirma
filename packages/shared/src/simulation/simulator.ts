@@ -27,12 +27,15 @@ export interface SimulateMatchOptions {
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
   /**
-   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.108).
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.099).
    *
    * MAÇ BAŞINA GOL bu değere neredeyse doğrusal bağlı — heyecan kolu budur.
-   * Hedef maç başı ~3.48 gol; `strengthSensitivity` ya da `FORM_SPREAD`
-   * değişirse gol sayısı kayar ve bu değerle geri kalibre edilmelidir.
-   * Sens 3.2 + form ±%4 için kalibre edilmiş karşılığı 0.108.
+   * Hedef maç başı ~3.5 gol; `strengthSensitivity`, `FORM_SPREAD` ya da
+   * TAKIM GÜCÜ AĞIRLIKLARI (`positionWeights`) değişirse gol sayısı kayar ve
+   * bu değerle geri kalibre edilmelidir. Sens 3.2 + form ±%4 için 0.108'di;
+   * MID rol ağırlığı hücum ölçeğini yükselttiği için (gol/maç 3.64 → 3.98)
+   * 0.099'a çekildi — aynı bot draft ölçümünde 3.66'ya geri döndü, şampiyon
+   * oranları değişmedi.
    *
    * Ölçüm (12.000 turnuva, gerçek bot draft'ları; sens 2.5 + form ±%12 iken):
    *
@@ -186,7 +189,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.0,
     chanceRate = 0.3,
-    baseConversion = 0.108,
+    baseConversion = 0.099,
     strengthSensitivity = 3.2,
     isTournament = true,
   } = options;
