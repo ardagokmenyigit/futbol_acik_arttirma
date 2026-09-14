@@ -149,19 +149,25 @@ veri seti değişince sıfır ihlal görmeden birleştirmeyin.
   oyuncunun katkısı kadrodan bağımsız doğrusal bir sayıdır; sözleşme ancak
   bu sayede kesin doğrulanabilir.
 - **Çözüm 2 — veri seti kalibrasyonu**: mevki başına GEN→katkı doğrusu
-  uydurulup her oyuncunun att/def'i **att−def farkı (karakteri) korunarak**
-  o doğruya oturtuldu. 504 oyuncunun 443'ü değişti, %87'si ≤2 puan, mevki
-  başına net kayma ≈ 0 (en büyük: Nico Williams 77/36 → 89/46; 85 GEN için
-  zaten tutarsızdı). Yeni oyuncu eklerken: att/def'i mevkinin doğrusuna
-  göre verin, sonra kontrolü çalıştırın.
+  belirlenip her oyuncunun att/def'i **att−def farkı (karakteri) korunarak**
+  o doğruya oturtuldu. Mevki ortalaması korunur (gol kalibrasyonu kaymaz).
+  504 oyuncunun 443'ü değişti, %87'si ≤2 puan, mevki başına net kayma ≈ 0
+  (en büyük: Nico Williams 77/36 → 89/46; 85 GEN için zaten tutarsızdı).
+  Yeni oyuncu eklerken: att/def'i mevkinin doğrusuna göre verin, sonra
+  kontrolü çalıştırın.
+- **MEVKİLER ARASI ADALET — ORTAK EĞİM 0.105.** Mevkiler arası fark ikiye
+  ayrılır: _seviye_ (85 GEN FWD 11.8 katkı, 85 GEN GK 10.3) adalet sorunu
+  DEĞİLDİR — kadro dizilişi sabit (1-2-2-2) olduğu için herkese eşit ofset.
+  _Eğim_ (1 GEN puanının güç karşılığı) ise gerçek adaletsizlikti: GK 0.109,
+  DEF 0.107, FWD 0.102, **MID 0.093** — yıldız orta sahaya para basan, yıldız
+  kaleciye basana göre ~%15 az karşılık alıyordu. Doğruların eğimi tüm
+  mevkilerde 0.105'e sabitlendi, yalnız kesişim mevkiye özgü; kontrol
+  scripti eğimleri ±%3 toleransla doğrular (ölçülen 0.104–0.106).
 - **Yan etki ve kalibrasyon**: rol ağırlığı hücum ölçeğini yükseltti
   (gol/maç 3.64 → 3.98); `baseConversion` 0.108 → 0.099 ile geri alındı.
   1500 bot draft × 4 bracket ölçümü (eski → yeni): en güçlü şampiyon %44.8
-  → %43.8, en zayıf %10.6 → %10.9, gol/maç 3.64 → 3.66, penaltı %26.9 →
-  %27.0, ort fiyat 19.9M → 19.9M. Denge korundu.
-- Sözleşme MEVKİ İÇİ'dir. Mevkiler arası (85 GEN FWD vs 85 GEN MID) katkı
-  ölçekleri farklı kalır — açık artırma mevki slotu başına yarıştığı için
-  adalet için gereken mevki içi tutarlılıktır.
+  → %44.4, en zayıf %10.6 → %10.3, gol/maç 3.64 → 3.64, penaltı %26.9 →
+  %27.1, ort fiyat 19.9M → 19.9M. Denge birebir korundu.
 
 90 dakika döngüsü, "her dakika bağımsız yazı-tura" değil:
 

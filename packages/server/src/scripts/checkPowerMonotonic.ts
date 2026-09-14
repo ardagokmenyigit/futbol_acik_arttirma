@@ -29,11 +29,40 @@ export function powerContribution(f: Footballer): number {
   return (attack * f.attack) / attackTotal / 2 + (defense * f.defense) / defenseTotal / 2;
 }
 
+/**
+ * MEVKİLER ARASI ADALET: 1 GEN puanı her mevkide aynı güç değerinde olmalı
+ * (GEN→katkı doğrusunun eğimi). Seviye (kesişim) mevkiye göre farklı
+ * kalabilir — sabit kadro dizilişinde herkese eşit ofsettir. Veri seti
+ * ortak eğim 0.105'e kalibre edildi; tam sayı stat'larla ±%3 tolerans.
+ */
+const TARGET_SLOPE = 0.105;
+const SLOPE_TOLERANCE = 0.03;
+
+function slope(fs: Footballer[]): number {
+  const n = fs.length;
+  const mx = fs.reduce((s, f) => s + f.overall, 0) / n;
+  const my = fs.reduce((s, f) => s + powerContribution(f), 0) / n;
+  let num = 0;
+  let den = 0;
+  for (const f of fs) {
+    num += (f.overall - mx) * (powerContribution(f) - my);
+    den += (f.overall - mx) ** 2;
+  }
+  return num / den;
+}
+
 const players = loadFootballers();
 let violations = 0;
 
 for (const pos of POSITIONS) {
   const sorted = players.filter((f) => f.position === pos).sort((a, b) => a.overall - b.overall);
+  const s = slope(sorted);
+  if (Math.abs(s - TARGET_SLOPE) / TARGET_SLOPE > SLOPE_TOLERANCE) {
+    violations++;
+    console.log(
+      `İHLAL ${pos}: GEN→güç eğimi ${s.toFixed(4)}, hedef ${TARGET_SLOPE} ±%${SLOPE_TOLERANCE * 100}`,
+    );
+  }
   let below: Footballer | null = null;
   let belowMax = -Infinity;
   let groupOvr: number | null = null;
@@ -63,11 +92,11 @@ for (const pos of POSITIONS) {
       groupBest = f;
     }
   }
-  console.log(`${pos}: ${sorted.length} oyuncu kontrol edildi`);
+  console.log(`${pos}: ${sorted.length} oyuncu kontrol edildi, eğim ${s.toFixed(4)}`);
 }
 
 if (violations > 0) {
   console.error(`\n${violations} ihlal — veri seti sözleşmeyi karşılamıyor.`);
   process.exit(1);
 }
-console.log('\nTAMAM — her mevkide GEN sırası = güç sırası.');
+console.log('\nTAMAM — her mevkide GEN sırası = güç sırası, eğimler mevkiler arası eşit.');
