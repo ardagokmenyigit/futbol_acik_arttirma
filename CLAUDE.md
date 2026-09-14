@@ -285,6 +285,46 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
   kod tabanında DURUYOR ama hiçbir yerden çağrılmıyor — ileride geri açmak
   isteyen olursa diye. `config.tournamentSize` artık `null` olamaz.
 
+### 3.4 Rövanş (aynı odada yeni oyun)
+
+Oyun bitince (`phase === 'finished'`) `RematchPanel` (client) →
+`room:rematch*` eventleri → `roomStore` (server). Tek doğruluk kaynağı
+`RoomState.rematch = { proposerId, acceptedIds }`; istemci yalnız render eder.
+
+- **Herkes teklif edebilir**, host şart değil. Teklif eden baştan kabul
+  sayılır. Aynı anda ikinci "teklif" gelirse kabul sayılır, çakışma yok.
+- **Otomatik başlatma**: odadaki TÜM insanlar (`!isBot`) kabul edince
+  `startRematch()` odayı **aynı kod, aynı ayarlar, aynı roomId** ile lobiye
+  sıfırlar: kabul edenler kalır (bütçe/kadro sıfır, `isReady=false`),
+  botlar (asıl botlar + bota dönüşmüş çıkanlar) atılır, `gameNumber` artar,
+  `auction/tournament/rematch` null. `maybeStartRematch()` insan sayısı her
+  değiştiğinde çağrılır (kabul, `room:leave`, 60 sn bot devri) — "son
+  bekleyen çıktı" durumunda da tamamlanır.
+- **Host kabul etmek zorunda değil.** Host çıkarsa (`room:leave` → finished
+  fazında `convertToBot`) hostluk sırayla: mevcut host kaldıysa o → teklif
+  eden → ilk kabul eden. Lobide de bağlı bir insana geçer.
+- **Yanıt vermeyenler**: teklif eden `room:rematchStart` ile "kabul edenlerle
+  başla" diyebilir; kabul etmeyen insanlar `room:kicked { reason }` alır
+  (istemci oturumu siler, ana ekrana döner, mesajı `store.notice` ile
+  gösterir; oda lobide olduğu için kodla geri katılabilirler).
+- **Vazgeçme**: kabul eden `rematchRespond { accept:false }` ile geri
+  çeker; teklif eden geri çekemez, `rematchCancel` ile daveti iptal eder
+  (kimse çıkarılmaz). Teklif eden çıkarsa teklif kabul etmiş birine
+  devrolur, kimse yoksa iptal. "Çık" her durumda `room:leave` + oturum
+  silme → ana ekran.
+- **Bağlantı kopması**: finished'ta kopan insan 60 sn beklenir (pending
+  sayılır), sonra bota dönüşür → beklenmez. Bot devri timer'ı oda bu arada
+  lobiye döndüyse bot EKLEMEZ, lobi kuralıyla katılımcıyı siler.
+- **İstemci**: `updateRoom` faz `lobby`'ye dönünce `tournament/liveMatch/
+lastWon` temizler — yoksa yeni oyunun `simulation` fazında bir an eski
+  bracket görünür. Oturum (`roomId/playerId`) değişmediği için reconnect
+  rövanş lobisinde de çalışır.
+- **Doğrulama**: gerçek Socket.io istemcileriyle uçtan uca senaryo (aynı
+  odada art arda 5 oyun: kabul/geri çek/iptal → otomatik lobi → zorla
+  başlat + kick → kodla geri katılma → host reddedip çıkınca devir →
+  teklif edenin çıkışında devir → lobide teklif reddi) `bidDurationSec:1,
+turnDurationSec:1, tournamentSize:2` ile koşuldu; hepsi geçti.
+
 ---
 
 ## 4. Görev Dağılımı (Kişi 1 & Kişi 2)

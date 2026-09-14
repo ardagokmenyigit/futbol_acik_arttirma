@@ -8,10 +8,9 @@ import {
 } from '@fal/shared';
 import { LiveMatchTicker } from '../components/LiveMatchTicker.js';
 import { PositionBadge } from '../components/PositionBadge.js';
+import { RematchPanel } from '../components/RematchPanel.js';
 import { SquadsOverview } from '../components/SquadsOverview.js';
 import { useSocket } from '../hooks/useSocket.js';
-import { leaveRoom } from '../lib/roomClient.js';
-import { clearSession } from '../lib/session.js';
 import { useRoomStore } from '../store.js';
 
 interface Props {
@@ -20,7 +19,6 @@ interface Props {
 }
 
 export function TournamentPage({ room, tournament }: Props) {
-  const exitRoom = useRoomStore((s) => s.exitRoom);
   const youId = useRoomStore((s) => s.youId);
   const liveMatch = useRoomStore((s) => s.liveMatch);
   const { socket } = useSocket();
@@ -56,12 +54,6 @@ export function TournamentPage({ room, tournament }: Props) {
 
   const played = tournament.rounds.flatMap((r) => r.matches).filter((m) => m.result).length;
   const total = tournament.rounds.reduce((s, r) => s + r.matches.length, 0);
-
-  function newGame() {
-    leaveRoom();
-    clearSession();
-    exitRoom();
-  }
 
   return (
     <div className="stack">
@@ -104,9 +96,7 @@ export function TournamentPage({ room, tournament }: Props) {
             </div>
           )}
 
-          <button className="btn-primary" onClick={newGame}>
-            Yeni oyun
-          </button>
+          {room.phase === 'finished' && <RematchPanel room={room} youId={youId} />}
         </div>
       ) : (
         <div>

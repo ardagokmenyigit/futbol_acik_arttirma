@@ -62,7 +62,7 @@ export function LobbyPage({ room }: Props) {
   return (
     <div className="panel cobalt">
       <h1 className="headline" style={{ fontSize: 30 }}>
-        Lobi
+        {room.gameNumber > 1 ? `Rövanş #${room.gameNumber} lobisi` : 'Lobi'}
       </h1>
       <p className="lede" style={{ marginBottom: 22 }}>
         {connectedPlayers.length}/{format} oyuncu bağlandı
