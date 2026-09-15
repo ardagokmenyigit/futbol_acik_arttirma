@@ -129,7 +129,8 @@ export function App() {
             alignItems: 'center',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img className="brand-logo" src="/icon-192.png" alt="Açık Artırma Ligi" />
             <span className={`dot ${connected ? '' : 'off'}`} />
             {connected ? 'Sunucuya bağlı' : 'Bağlanıyor…'}
           </div>
