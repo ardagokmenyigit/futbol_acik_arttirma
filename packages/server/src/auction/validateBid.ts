@@ -40,6 +40,9 @@ export function validateBid(
   if (auction.phase !== 'bidding') {
     return { ok: false, error: 'Açılış teklifi bekleniyor' };
   }
+  if (auction.passedIds.includes(bidder.id)) {
+    return { ok: false, error: 'Bu turda pas geçtin, teklif veremezsin' };
+  }
   if (!auction.eligibleIds.includes(bidder.id)) {
     return { ok: false, error: 'Bu futbolcuya teklif veremezsin' };
   }

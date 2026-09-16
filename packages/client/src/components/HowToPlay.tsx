@@ -108,8 +108,16 @@ export function HowToPlay({ onClose }: Props) {
               <ul>
                 <li>
                   <strong>Açılış ({turnDurationSec} sn)</strong> — sıradaki kişi açılışı yapmak{' '}
-                  <em>zorundadır</em>, en az {minBidIncrement}M. <strong>Pas hakkı yok.</strong>{' '}
-                  Süre dolarsa sunucu onun adına asgari teklifle açar.
+                  <em>zorundadır</em>, en az {minBidIncrement}M. Süre dolarsa sunucu onun adına
+                  asgari teklifle açar.
+                </li>
+                <li>
+                  <strong>Pas hakkı</strong> — oyun boyunca 2 takımda <strong>1</strong>, 4 ve 8
+                  takımda <strong>2</strong> kez, açılış sırası sendeyken istemediğin futbolcuya
+                  "pas" diyebilirsin. Futbolcu masada kalır, açılış <em>pas demeyenlerden</em>{' '}
+                  rastgele birine geçer; sen o turda teklif veremezsin. Tur sınırı yok — herkes pas
+                  derse sıra (son pas diyen hariç) rastgele birine geri döner; hakkı kalmayan açmak
+                  zorunda kalır.
                 </li>
                 <li>
                   <strong>Serbest teklif ({bidDurationSec} sn)</strong> — o pozisyona hâlâ ihtiyacı

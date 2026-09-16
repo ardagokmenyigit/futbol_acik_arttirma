@@ -316,6 +316,46 @@ export function decideBotBid(
 }
 
 /**
+ * Bot açılış sırası gelince PAS geçsin mi?
+ *
+ * Pas, sonlu bir kaynak (oyun başına 1-2). Botun mantığı: "bu futbolcu, bu
+ * mevkide havuzda kalanların ALT diliminde ve yerine daha iyisi gelecek kadar
+ * aday var" ise pas. Ölçü havuzdaki yüzdelik dilim (`qualityPct`); eşik
+ * kişiliğe bağlı — yıldız avcısı sıradan oyuncuya daha kolay pas der,
+ * "yayıcı" bot daha az seçicidir. Kıtlıkta (ihtiyaçtan az/eşit aday) asla
+ * pas geçmez: kadro tamamlamak kişilikten önce gelir.
+ *
+ * Deterministik: aynı (bot, futbolcu) çifti hep aynı karar (tur içinde
+ * sıra ona geri gelirse — herkes pas dediyse — yine tutarlı davranır).
+ */
+export function botShouldPass(
+  bot: Participant,
+  footballer: Footballer,
+  config: RoomConfig,
+  pool: Footballer[],
+): boolean {
+  if (bot.passesLeft <= 0) return false;
+  const pos = footballer.position;
+  const need = config.squad[pos] - positionCount(bot, pos);
+  if (need <= 0) return false;
+
+  // Havuzda (masadaki hariç) bu mevkiden kalanlar — pas geçince yerine
+  // gelecek adaylar. İhtiyaçtan en az 2 fazla yoksa pas riskli.
+  const samePos = pool.filter((f) => f.position === pos);
+  if (samePos.length < need + 2) return false;
+
+  const worse = samePos.filter((f) => f.overall < footballer.overall).length;
+  const qualityPct = worse / samePos.length; // 0 = en kötü, 1 = en iyi
+
+  const persona = botPersona(bot.id);
+  // Yıldız avcısı ~%50 dilimin altına, yayıcı bot ~%25'in altına pas der.
+  const threshold = 0.25 + persona.starHunter * 0.25;
+  // Kişisel sapma (±0.05) — botlar aynı eşikte kilitlenmesin.
+  const noise = (hash(`${bot.id}:${footballer.id}:pass`) - 0.5) * 0.1;
+  return qualityPct < threshold + noise;
+}
+
+/**
  * Botun AÇILIŞ teklifi. Açılış zorunludur, bu yüzden `null` dönmez.
  *
  * Bot ilgilenmiyorsa asgari açılışı yapar (mecburiyet). İlgileniyorsa

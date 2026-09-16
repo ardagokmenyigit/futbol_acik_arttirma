@@ -7,7 +7,7 @@ import {
   type RoomState,
 } from '@fal/shared';
 import { PositionBadge } from '../components/PositionBadge.js';
-import { placeBid } from '../lib/auctionClient.js';
+import { passOpening, placeBid } from '../lib/auctionClient.js';
 import { leaveRoom } from '../lib/roomClient.js';
 import { clearSession } from '../lib/session.js';
 import { selectYou, useRoomStore } from '../store.js';
@@ -24,6 +24,7 @@ export function DraftPage({ room }: Props) {
   const [confirmLeave, setConfirmLeave] = useState(false);
   const remainingMs = useRoomStore((s) => s.remainingMs);
   const lastWon = useRoomStore((s) => s.lastWon);
+  const lastPass = useRoomStore((s) => s.lastPass);
 
   const lastWonFootballer = useMemo(() => {
     if (!lastWon) return null;
@@ -86,6 +87,10 @@ export function DraftPage({ room }: Props) {
   const eligible = auction.eligibleIds.includes(you.id);
   const youOpen = isOpening && auction.openerId === you.id;
   const openerNick = room.participants.find((p) => p.id === auction.openerId)?.nickname ?? null;
+  const youPassed = auction.passedIds.includes(you.id);
+  // Pas: açılış sırası bende, hakkım var ve bu futbolcuyu alabilecek başka
+  // biri var (yoksa sunucu zaten otomatik atar, pas anlamsız).
+  const canPass = youOpen && you.passesLeft > 0 && secs > 0;
 
   const canBid = isOpening
     ? youOpen && !budgetShort && secs > 0
@@ -97,6 +102,15 @@ export function DraftPage({ room }: Props) {
       await placeBid(amount);
     } catch (err) {
       setBidError(err instanceof Error ? err.message : 'Teklif reddedildi');
+    }
+  }
+
+  async function submitPass() {
+    setBidError(null);
+    try {
+      await passOpening();
+    } catch (err) {
+      setBidError(err instanceof Error ? err.message : 'Pas reddedildi');
     }
   }
 
@@ -131,6 +145,11 @@ export function DraftPage({ room }: Props) {
         </div>
 
         {lastWon && <Ticker text={wonText(lastWon, lastWonFootballer)} />}
+        {lastPass && (
+          <Ticker
+            text={`${lastPass.passerNickname} pas geçti — açılış ${lastPass.nextOpenerNickname}'e geçti.`}
+          />
+        )}
 
         <div className="player-card">
           <div className="player-top">
@@ -157,6 +176,7 @@ export function DraftPage({ room }: Props) {
             {auction.turnOrder.map((id, i) => {
               const p = room.participants.find((x) => x.id === id);
               const isOpener = auction.openerId === id;
+              const passed = auction.passedIds.includes(id);
               const out = !auction.eligibleIds.includes(id);
               const leads = auction.highestBid?.playerId === id;
               const budget = p ? (isBudgetHidden(p.budget) ? '🔒' : `${p.budget}M`) : null;
@@ -165,11 +185,18 @@ export function DraftPage({ room }: Props) {
                   key={id}
                   className={`turn-chip${isOpener ? ' now' : ''}${out ? ' out' : ''}${leads ? ' leads' : ''}`}
                   title={
-                    out ? 'kadrosu bu pozisyonda dolu' : isOpener ? 'açılışı yapıyor' : undefined
+                    passed
+                      ? 'bu turda pas geçti'
+                      : out
+                        ? 'kadrosu bu pozisyonda dolu'
+                        : isOpener
+                          ? 'açılışı yapıyor'
+                          : undefined
                   }
                 >
                   <span className="turn-no">{i + 1}</span>
                   {p?.nickname ?? '—'}
+                  {passed && <span className="turn-pass">pas</span>}
                   {budget && <span className="turn-budget">{budget}</span>}
                   {id === you.id && <span className="turn-you">sen</span>}
                 </span>
@@ -199,6 +226,8 @@ export function DraftPage({ room }: Props) {
         <div className="budget-strip">
           <span className="lbl">Kalan bütçe</span>
           <span className="amt">{you.budget}M</span>
+          <span className="lbl pass-lbl">Pas hakkı</span>
+          <span className="amt pass-amt">{you.passesLeft}</span>
         </div>
         <div className="bid-input-row">
           <input
@@ -226,13 +255,30 @@ export function DraftPage({ room }: Props) {
             +5
           </button>
         </div>
-        <button
-          className="btn-primary"
-          disabled={!canBid || amount < floor}
-          onClick={() => void submitBid()}
-        >
-          {isOpening ? 'Açılış teklifi ver' : 'Teklif ver'}
-        </button>
+        <div className="btn-row" style={{ marginTop: 0 }}>
+          <button
+            className="btn-primary"
+            style={{ flex: 1 }}
+            disabled={!canBid || amount < floor}
+            onClick={() => void submitBid()}
+          >
+            {isOpening ? 'Açılış teklifi ver' : 'Teklif ver'}
+          </button>
+          {youOpen && (
+            <button
+              className="btn-outline"
+              disabled={!canPass}
+              title={
+                you.passesLeft > 0
+                  ? 'Bu futbolcuyu istemiyorsan açılışı rastgele birine devret'
+                  : 'Pas hakkın kalmadı'
+              }
+              onClick={() => void submitPass()}
+            >
+              Pas geç ({you.passesLeft})
+            </button>
+          )}
+        </div>
 
         {auction.eligibleIds.length === 1 ? (
           <p className="footnote" style={{ color: 'var(--accent-gold, #f59e0b)', fontWeight: 600 }}>
@@ -245,12 +291,19 @@ export function DraftPage({ room }: Props) {
             {youOpen && (
               <p className="footnote turn-alert">
                 Açılış sırası sende — vermezsen süre sonunda {minInc}M ile senin adına açılır.
+                {you.passesLeft > 0 &&
+                  ' Bu futbolcuyu istemiyorsan pas geç: açılış rastgele başka birine geçer, sen bu turda teklif veremezsin.'}
               </p>
             )}
             {isOpening && !youOpen && openerNick && (
               <p className="footnote">Açılışı {openerNick} yapıyor…</p>
             )}
-            {!eligible && <p className="footnote">{f.position} kadron dolu — teklif veremezsin.</p>}
+            {youPassed && (
+              <p className="footnote">Bu turda pas geçtin — bu futbolcuya teklif veremezsin.</p>
+            )}
+            {!eligible && !youPassed && (
+              <p className="footnote">{f.position} kadron dolu — teklif veremezsin.</p>
+            )}
             {youAreLeading && <p className="footnote">En yüksek teklif sende.</p>}
             {budgetShort && eligible && <p className="footnote">Bütçen bu teklif için yetmiyor.</p>}
           </>
@@ -388,7 +441,7 @@ export function DraftPage({ room }: Props) {
                 {p.isBot && <span className="tag bot">bot</span>}
               </span>
               <span className="mono" style={{ color: 'var(--chalk-faint)' }}>
-                {p.squad.length}/{room.config.squadSize} kadro
+                {p.squad.length}/{room.config.squadSize} kadro · {p.passesLeft} pas
               </span>
             </div>
           ))}

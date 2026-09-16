@@ -106,9 +106,9 @@ export function LobbyPage({ room }: Props) {
       <div className="format-row">
         {(
           [
-            { key: 't2', size: 2, title: '2 Takım', sub: 'Büyük Final' },
-            { key: 't4', size: 4, title: '4 Takım', sub: 'Yarı final' },
-            { key: 't8', size: 8, title: '8 Takım', sub: 'Çeyrek final' },
+            { key: 't2', size: 2, title: '2 Takım', sub: 'Büyük Final · 1 pas' },
+            { key: 't4', size: 4, title: '4 Takım', sub: 'Yarı final · 2 pas' },
+            { key: 't8', size: 8, title: '8 Takım', sub: 'Çeyrek final · 2 pas' },
           ] as const
         ).map((opt) => (
           <button
