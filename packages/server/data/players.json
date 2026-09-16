@@ -269,9 +269,9 @@
       "id": "fc26-def-034",
       "name": "Iñigo Martínez",
       "position": "DEF",
-      "attack": 47,
-      "defense": 85,
-      "overall": 85
+      "attack": 46,
+      "defense": 84,
+      "overall": 84
     },
     {
       "id": "fc26-def-035",
@@ -1060,10 +1060,10 @@
     {
       "id": "fc26-mid-134",
       "name": "K. Laimer",
-      "position": "MID",
-      "attack": 76,
-      "defense": 81,
-      "overall": 82
+      "position": "DEF",
+      "attack": 55,
+      "defense": 82,
+      "overall": 86
     },
     {
       "id": "fc26-fwd-135",
@@ -3824,6 +3824,262 @@
       "attack": 78,
       "defense": 22,
       "overall": 78
+    },
+    {
+      "id": "fc26-def-510",
+      "name": "Eric García",
+      "position": "DEF",
+      "attack": 45,
+      "defense": 86,
+      "overall": 86
+    },
+    {
+      "id": "fc26-def-511",
+      "name": "Reece James",
+      "position": "DEF",
+      "attack": 56,
+      "defense": 81,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-512",
+      "name": "N. O'Reilly",
+      "position": "DEF",
+      "attack": 53,
+      "defense": 81,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-513",
+      "name": "M. Nunes",
+      "position": "DEF",
+      "attack": 57,
+      "defense": 79,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-514",
+      "name": "D. Raum",
+      "position": "DEF",
+      "attack": 57,
+      "defense": 78,
+      "overall": 85
+    },
+    {
+      "id": "fc26-def-515",
+      "name": "L. Hall",
+      "position": "DEF",
+      "attack": 54,
+      "defense": 79,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-516",
+      "name": "M. Mittelstädt",
+      "position": "DEF",
+      "attack": 53,
+      "defense": 80,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-517",
+      "name": "E. Ndicka",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 85,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-518",
+      "name": "R. Ibañez",
+      "position": "DEF",
+      "attack": 41,
+      "defense": 84,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-519",
+      "name": "M. Ginter",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-520",
+      "name": "D. Muñoz",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 80,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-521",
+      "name": "J. Ryerson",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 81,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-522",
+      "name": "R. Calafiori",
+      "position": "DEF",
+      "attack": 50,
+      "defense": 83,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-523",
+      "name": "A. Balde",
+      "position": "DEF",
+      "attack": 55,
+      "defense": 77,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-524",
+      "name": "M. Lacroix",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-525",
+      "name": "M. Simakan",
+      "position": "DEF",
+      "attack": 43,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-526",
+      "name": "A. Khusanov",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 85,
+      "overall": 84
+    },
+    {
+      "id": "fc26-def-527",
+      "name": "H. Maguire",
+      "position": "DEF",
+      "attack": 38,
+      "defense": 84,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-528",
+      "name": "Á. Carreras",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 79,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-529",
+      "name": "M. Kerkez",
+      "position": "DEF",
+      "attack": 52,
+      "defense": 79,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-530",
+      "name": "D. Huijsen",
+      "position": "DEF",
+      "attack": 44,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-531",
+      "name": "L. Hernández",
+      "position": "DEF",
+      "attack": 44,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-532",
+      "name": "F. Mendy",
+      "position": "DEF",
+      "attack": 51,
+      "defense": 80,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-533",
+      "name": "L. Digne",
+      "position": "DEF",
+      "attack": 53,
+      "defense": 78,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-534",
+      "name": "A. Robertson",
+      "position": "DEF",
+      "attack": 54,
+      "defense": 79,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-535",
+      "name": "G. Inácio",
+      "position": "DEF",
+      "attack": 43,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-def-536",
+      "name": "R. Araújo",
+      "position": "DEF",
+      "attack": 40,
+      "defense": 85,
+      "overall": 83
+    },
+    {
+      "id": "fc26-def-537",
+      "name": "C. Bradley",
+      "position": "DEF",
+      "attack": 51,
+      "defense": 78,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-538",
+      "name": "W. Fofana",
+      "position": "DEF",
+      "attack": 41,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-539",
+      "name": "A. Christensen",
+      "position": "DEF",
+      "attack": 42,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-def-540",
+      "name": "J. Gomez",
+      "position": "DEF",
+      "attack": 43,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-def-541",
+      "name": "W. Singo",
+      "position": "DEF",
+      "attack": 49,
+      "defense": 79,
+      "overall": 80
     }
   ]
 }
