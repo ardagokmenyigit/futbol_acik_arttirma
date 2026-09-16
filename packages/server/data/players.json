@@ -3976,6 +3976,190 @@
       "attack": 49,
       "defense": 79,
       "overall": 80
+    },
+    {
+      "id": "fc26-gk-550",
+      "name": "Joan García",
+      "position": "GK",
+      "attack": 30,
+      "defense": 88,
+      "overall": 88
+    },
+    {
+      "id": "fc26-gk-551",
+      "name": "Diogo Costa",
+      "position": "GK",
+      "attack": 31,
+      "defense": 87,
+      "overall": 87
+    },
+    {
+      "id": "fc26-gk-552",
+      "name": "M. Svilar",
+      "position": "GK",
+      "attack": 29,
+      "defense": 86,
+      "overall": 86
+    },
+    {
+      "id": "fc26-gk-553",
+      "name": "M. Safonov",
+      "position": "GK",
+      "attack": 30,
+      "defense": 85,
+      "overall": 85
+    },
+    {
+      "id": "fc26-gk-554",
+      "name": "S. Lammens",
+      "position": "GK",
+      "attack": 29,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-gk-555",
+      "name": "J. Musso",
+      "position": "GK",
+      "attack": 29,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-gk-556",
+      "name": "Y. Bounou",
+      "position": "GK",
+      "attack": 30,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-gk-557",
+      "name": "B. Verbruggen",
+      "position": "GK",
+      "attack": 32,
+      "defense": 83,
+      "overall": 83
+    },
+    {
+      "id": "fc26-gk-558",
+      "name": "E. Mendy",
+      "position": "GK",
+      "attack": 29,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-559",
+      "name": "K. Navas",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-560",
+      "name": "A. Nübel",
+      "position": "GK",
+      "attack": 31,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-561",
+      "name": "A. Trubin",
+      "position": "GK",
+      "attack": 30,
+      "defense": 82,
+      "overall": 82
+    },
+    {
+      "id": "fc26-gk-562",
+      "name": "J. Trafford",
+      "position": "GK",
+      "attack": 30,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-563",
+      "name": "Berke Özer",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-564",
+      "name": "J. Urbig",
+      "position": "GK",
+      "attack": 29,
+      "defense": 81,
+      "overall": 81
+    },
+    {
+      "id": "fc26-gk-565",
+      "name": "M. Vandevoordt",
+      "position": "GK",
+      "attack": 30,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-566",
+      "name": "André Onana",
+      "position": "GK",
+      "attack": 33,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-567",
+      "name": "S. Ortega",
+      "position": "GK",
+      "attack": 32,
+      "defense": 80,
+      "overall": 80
+    },
+    {
+      "id": "fc26-gk-568",
+      "name": "A. Ramsdale",
+      "position": "GK",
+      "attack": 31,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-569",
+      "name": "M. Dúbravka",
+      "position": "GK",
+      "attack": 29,
+      "defense": 79,
+      "overall": 79
+    },
+    {
+      "id": "fc26-gk-570",
+      "name": "H. Lloris",
+      "position": "GK",
+      "attack": 28,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-571",
+      "name": "Iñaki Peña",
+      "position": "GK",
+      "attack": 30,
+      "defense": 78,
+      "overall": 78
+    },
+    {
+      "id": "fc26-gk-572",
+      "name": "R. Bürki",
+      "position": "GK",
+      "attack": 29,
+      "defense": 78,
+      "overall": 78
     }
   ]
 }
