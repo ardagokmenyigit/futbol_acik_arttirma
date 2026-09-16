@@ -133,25 +133,25 @@
       "id": "fc26-def-017",
       "name": "V. van Dijk",
       "position": "DEF",
-      "attack": 50,
-      "defense": 95,
-      "overall": 96
+      "attack": 49,
+      "defense": 93,
+      "overall": 94
     },
     {
       "id": "fc26-def-018",
       "name": "A. Hakimi",
       "position": "DEF",
-      "attack": 59,
-      "defense": 85,
-      "overall": 92
+      "attack": 58,
+      "defense": 84,
+      "overall": 91
     },
     {
       "id": "fc26-def-019",
       "name": "Gabriel",
       "position": "DEF",
-      "attack": 41,
-      "defense": 89,
-      "overall": 89
+      "attack": 42,
+      "defense": 91,
+      "overall": 91
     },
     {
       "id": "fc26-def-020",
@@ -173,17 +173,17 @@
       "id": "fc26-def-022",
       "name": "A. Bastoni",
       "position": "DEF",
-      "attack": 44,
-      "defense": 86,
-      "overall": 85
+      "attack": 45,
+      "defense": 88,
+      "overall": 87
     },
     {
       "id": "fc26-def-023",
       "name": "W. Saliba",
       "position": "DEF",
-      "attack": 42,
-      "defense": 90,
-      "overall": 90
+      "attack": 43,
+      "defense": 92,
+      "overall": 92
     },
     {
       "id": "fc26-def-024",
@@ -197,9 +197,9 @@
       "id": "fc26-def-025",
       "name": "T. Alexander-Arnold",
       "position": "DEF",
-      "attack": 59,
-      "defense": 82,
-      "overall": 88
+      "attack": 58,
+      "defense": 80,
+      "overall": 86
     },
     {
       "id": "fc26-def-026",
@@ -213,57 +213,57 @@
       "id": "fc26-def-027",
       "name": "A. Rüdiger",
       "position": "DEF",
-      "attack": 47,
-      "defense": 86,
-      "overall": 88
+      "attack": 46,
+      "defense": 84,
+      "overall": 86
     },
     {
       "id": "fc26-def-028",
       "name": "Rúben Dias",
       "position": "DEF",
-      "attack": 42,
-      "defense": 87,
-      "overall": 87
+      "attack": 43,
+      "defense": 89,
+      "overall": 89
     },
     {
       "id": "fc26-def-029",
       "name": "W. Pacho",
       "position": "DEF",
-      "attack": 37,
-      "defense": 87,
-      "overall": 87
+      "attack": 39,
+      "defense": 91,
+      "overall": 91
     },
     {
       "id": "fc26-def-030",
       "name": "I. Konaté",
       "position": "DEF",
       "attack": 38,
-      "defense": 88,
-      "overall": 88
+      "defense": 87,
+      "overall": 87
     },
     {
       "id": "fc26-def-031",
       "name": "F. Dimarco",
       "position": "DEF",
-      "attack": 59,
-      "defense": 82,
-      "overall": 88
+      "attack": 60,
+      "defense": 83,
+      "overall": 89
     },
     {
       "id": "fc26-def-032",
       "name": "Carvajal",
       "position": "DEF",
-      "attack": 51,
-      "defense": 82,
-      "overall": 86
+      "attack": 50,
+      "defense": 80,
+      "overall": 84
     },
     {
       "id": "fc26-def-033",
       "name": "N. Schlotterbeck",
       "position": "DEF",
-      "attack": 49,
-      "defense": 86,
-      "overall": 86
+      "attack": 50,
+      "defense": 88,
+      "overall": 88
     },
     {
       "id": "fc26-def-034",
@@ -278,16 +278,16 @@
       "name": "D. Upamecano",
       "position": "DEF",
       "attack": 41,
-      "defense": 86,
-      "overall": 87
+      "defense": 87,
+      "overall": 88
     },
     {
       "id": "fc26-def-036",
       "name": "Bremer",
       "position": "DEF",
-      "attack": 39,
-      "defense": 86,
-      "overall": 85
+      "attack": 40,
+      "defense": 88,
+      "overall": 87
     },
     {
       "id": "fc26-def-037",
@@ -301,81 +301,81 @@
       "id": "fc26-def-038",
       "name": "Marcos Llorente",
       "position": "DEF",
-      "attack": 55,
-      "defense": 78,
-      "overall": 84
+      "attack": 56,
+      "defense": 80,
+      "overall": 86
     },
     {
       "id": "fc26-def-039",
       "name": "João Cancelo",
       "position": "DEF",
-      "attack": 56,
-      "defense": 78,
-      "overall": 84
+      "attack": 57,
+      "defense": 79,
+      "overall": 85
     },
     {
       "id": "fc26-def-040",
       "name": "Marc Cucurella",
       "position": "DEF",
-      "attack": 52,
-      "defense": 82,
-      "overall": 84
+      "attack": 54,
+      "defense": 86,
+      "overall": 88
     },
     {
       "id": "fc26-def-041",
       "name": "A. Davies",
       "position": "DEF",
-      "attack": 52,
-      "defense": 74,
-      "overall": 84
+      "attack": 53,
+      "defense": 75,
+      "overall": 85
     },
     {
       "id": "fc26-def-042",
       "name": "J. Gvardiol",
       "position": "DEF",
-      "attack": 52,
-      "defense": 84,
-      "overall": 84
+      "attack": 54,
+      "defense": 87,
+      "overall": 87
     },
     {
       "id": "fc26-def-043",
       "name": "B. Pavard",
       "position": "DEF",
-      "attack": 51,
-      "defense": 86,
-      "overall": 84
+      "attack": 50,
+      "defense": 85,
+      "overall": 83
     },
     {
       "id": "fc26-def-044",
       "name": "D. Dumfries",
       "position": "DEF",
-      "attack": 51,
-      "defense": 79,
-      "overall": 84
+      "attack": 52,
+      "defense": 81,
+      "overall": 86
     },
     {
       "id": "fc26-def-045",
       "name": "Éder Militão",
       "position": "DEF",
-      "attack": 44,
-      "defense": 85,
-      "overall": 84
+      "attack": 45,
+      "defense": 87,
+      "overall": 86
     },
     {
       "id": "fc26-def-046",
       "name": "Vivian",
       "position": "DEF",
       "attack": 41,
-      "defense": 84,
-      "overall": 84
+      "defense": 83,
+      "overall": 83
     },
     {
       "id": "fc26-def-047",
       "name": "F. Acerbi",
       "position": "DEF",
-      "attack": 42,
-      "defense": 87,
-      "overall": 84
+      "attack": 41,
+      "defense": 85,
+      "overall": 82
     },
     {
       "id": "fc26-def-048",
@@ -390,16 +390,16 @@
       "name": "W. Orban",
       "position": "DEF",
       "attack": 35,
-      "defense": 86,
-      "overall": 84
+      "defense": 87,
+      "overall": 85
     },
     {
       "id": "fc26-def-050",
       "name": "G. Di Lorenzo",
       "position": "DEF",
-      "attack": 51,
-      "defense": 79,
-      "overall": 83
+      "attack": 52,
+      "defense": 80,
+      "overall": 84
     },
     {
       "id": "fc26-mid-051",
@@ -878,16 +878,16 @@
       "name": "D. Sánchez",
       "position": "DEF",
       "attack": 41,
-      "defense": 82,
-      "overall": 82
+      "defense": 81,
+      "overall": 81
     },
     {
       "id": "fc26-def-111",
       "name": "Ferdi Kadıoğlu",
       "position": "DEF",
-      "attack": 56,
-      "defense": 78,
-      "overall": 81
+      "attack": 57,
+      "defense": 79,
+      "overall": 82
     },
     {
       "id": "fc26-mid-112",
@@ -933,9 +933,9 @@
       "id": "fc26-def-117",
       "name": "A. Laporte",
       "position": "DEF",
-      "attack": 43,
-      "defense": 84,
-      "overall": 83
+      "attack": 45,
+      "defense": 87,
+      "overall": 86
     },
     {
       "id": "fc26-def-118",
@@ -989,17 +989,17 @@
       "id": "fc26-def-124",
       "name": "C. Romero",
       "position": "DEF",
-      "attack": 44,
-      "defense": 84,
-      "overall": 84
+      "attack": 45,
+      "defense": 85,
+      "overall": 85
     },
     {
       "id": "fc26-def-125",
       "name": "M. Akanji",
       "position": "DEF",
-      "attack": 44,
-      "defense": 84,
-      "overall": 84
+      "attack": 45,
+      "defense": 85,
+      "overall": 85
     },
     {
       "id": "fc26-mid-126",
@@ -1053,9 +1053,9 @@
       "id": "fc26-def-132",
       "name": "P. Torres",
       "position": "DEF",
-      "attack": 45,
-      "defense": 83,
-      "overall": 83
+      "attack": 46,
+      "defense": 84,
+      "overall": 84
     },
     {
       "id": "fc26-mid-133",
@@ -1101,17 +1101,17 @@
       "id": "fc26-def-138",
       "name": "Pedro Porro",
       "position": "DEF",
-      "attack": 58,
-      "defense": 79,
-      "overall": 83
+      "attack": 59,
+      "defense": 81,
+      "overall": 85
     },
     {
       "id": "fc26-def-139",
       "name": "E. Konsa",
       "position": "DEF",
-      "attack": 40,
-      "defense": 83,
-      "overall": 83
+      "attack": 41,
+      "defense": 85,
+      "overall": 85
     },
     {
       "id": "fc26-mid-140",
@@ -1157,17 +1157,17 @@
       "id": "fc26-def-145",
       "name": "Destiny Udogie",
       "position": "DEF",
-      "attack": 52,
-      "defense": 78,
-      "overall": 82
+      "attack": 51,
+      "defense": 76,
+      "overall": 80
     },
     {
       "id": "fc26-def-146",
       "name": "J. Timber",
       "position": "DEF",
-      "attack": 48,
-      "defense": 82,
-      "overall": 82
+      "attack": 50,
+      "defense": 85,
+      "overall": 85
     },
     {
       "id": "fc26-mid-147",
@@ -1221,9 +1221,9 @@
       "id": "fc26-def-153",
       "name": "A. Bardakcı",
       "position": "DEF",
-      "attack": 42,
-      "defense": 79,
-      "overall": 79
+      "attack": 43,
+      "defense": 80,
+      "overall": 80
     },
     {
       "id": "fc26-mid-154",
@@ -1269,17 +1269,17 @@
       "id": "fc26-def-159",
       "name": "M. Guéhi",
       "position": "DEF",
-      "attack": 38,
-      "defense": 81,
-      "overall": 81
+      "attack": 40,
+      "defense": 86,
+      "overall": 86
     },
     {
       "id": "fc26-def-160",
       "name": "L. Dunk",
       "position": "DEF",
-      "attack": 38,
-      "defense": 82,
-      "overall": 82
+      "attack": 37,
+      "defense": 79,
+      "overall": 79
     },
     {
       "id": "fc26-mid-161",
@@ -1381,17 +1381,17 @@
       "id": "fc26-def-173",
       "name": "S. Savic",
       "position": "DEF",
-      "attack": 38,
-      "defense": 81,
-      "overall": 81
+      "attack": 37,
+      "defense": 79,
+      "overall": 79
     },
     {
       "id": "fc26-def-174",
       "name": "I. Zubeldia",
       "position": "DEF",
-      "attack": 40,
-      "defense": 81,
-      "overall": 81
+      "attack": 39,
+      "defense": 79,
+      "overall": 79
     },
     {
       "id": "fc26-mid-175",
@@ -1437,9 +1437,9 @@
       "id": "fc26-def-180",
       "name": "M. van de Ven",
       "position": "DEF",
-      "attack": 42,
-      "defense": 82,
-      "overall": 82
+      "attack": 43,
+      "defense": 83,
+      "overall": 83
     },
     {
       "id": "fc26-def-181",
@@ -1493,17 +1493,17 @@
       "id": "fc26-def-187",
       "name": "J. Foyth",
       "position": "DEF",
-      "attack": 44,
-      "defense": 80,
-      "overall": 80
+      "attack": 45,
+      "defense": 81,
+      "overall": 81
     },
     {
       "id": "fc26-def-188",
       "name": "M. Hermoso",
       "position": "DEF",
-      "attack": 45,
-      "defense": 81,
-      "overall": 81
+      "attack": 46,
+      "defense": 82,
+      "overall": 82
     },
     {
       "id": "fc26-mid-189",
@@ -1549,9 +1549,9 @@
       "id": "fc26-def-194",
       "name": "A. Rrahmani",
       "position": "DEF",
-      "attack": 38,
-      "defense": 81,
-      "overall": 81
+      "attack": 39,
+      "defense": 84,
+      "overall": 84
     },
     {
       "id": "fc26-def-195",
@@ -1661,9 +1661,9 @@
       "id": "fc26-def-208",
       "name": "K. Walker",
       "position": "DEF",
-      "attack": 49,
-      "defense": 80,
-      "overall": 82
+      "attack": 47,
+      "defense": 77,
+      "overall": 79
     },
     {
       "id": "fc26-def-209",
@@ -1725,9 +1725,9 @@
       "id": "fc26-def-216",
       "name": "Kim Min Jae",
       "position": "DEF",
-      "attack": 40,
-      "defense": 83,
-      "overall": 83
+      "attack": 41,
+      "defense": 85,
+      "overall": 85
     },
     {
       "id": "fc26-mid-217",
@@ -1829,9 +1829,9 @@
       "id": "fc26-def-229",
       "name": "G. Mancini",
       "position": "DEF",
-      "attack": 40,
-      "defense": 81,
-      "overall": 81
+      "attack": 42,
+      "defense": 85,
+      "overall": 85
     },
     {
       "id": "fc26-def-230",
@@ -1893,9 +1893,9 @@
       "id": "fc26-def-237",
       "name": "K. Trippier",
       "position": "DEF",
-      "attack": 55,
-      "defense": 78,
-      "overall": 82
+      "attack": 54,
+      "defense": 76,
+      "overall": 80
     },
     {
       "id": "fc26-mid-238",
@@ -1997,17 +1997,17 @@
       "id": "fc26-def-250",
       "name": "W. Anton",
       "position": "DEF",
-      "attack": 40,
-      "defense": 82,
-      "overall": 82
+      "attack": 41,
+      "defense": 84,
+      "overall": 84
     },
     {
       "id": "fc26-def-251",
       "name": "N. Mazraoui",
       "position": "DEF",
-      "attack": 52,
-      "defense": 78,
-      "overall": 81
+      "attack": 53,
+      "defense": 79,
+      "overall": 82
     },
     {
       "id": "fc26-mid-252",
@@ -2053,17 +2053,17 @@
       "id": "fc26-def-257",
       "name": "Pau Cubarsí",
       "position": "DEF",
-      "attack": 42,
-      "defense": 80,
-      "overall": 80
+      "attack": 46,
+      "defense": 88,
+      "overall": 88
     },
     {
       "id": "fc26-def-258",
       "name": "M. Senesi",
       "position": "DEF",
-      "attack": 41,
-      "defense": 79,
-      "overall": 80
+      "attack": 43,
+      "defense": 82,
+      "overall": 83
     },
     {
       "id": "fc26-mid-259",
@@ -2110,16 +2110,16 @@
       "name": "D. Burn",
       "position": "DEF",
       "attack": 38,
-      "defense": 80,
-      "overall": 80
+      "defense": 81,
+      "overall": 81
     },
     {
       "id": "fc26-def-265",
       "name": "F. Schär",
       "position": "DEF",
-      "attack": 44,
-      "defense": 82,
-      "overall": 82
+      "attack": 45,
+      "defense": 83,
+      "overall": 83
     },
     {
       "id": "fc26-mid-266",
@@ -2229,9 +2229,9 @@
       "id": "fc26-def-279",
       "name": "M. Lazzari",
       "position": "DEF",
-      "attack": 50,
-      "defense": 77,
-      "overall": 79
+      "attack": 49,
+      "defense": 76,
+      "overall": 78
     },
     {
       "id": "fc26-mid-280",
@@ -2277,17 +2277,17 @@
       "id": "fc26-def-285",
       "name": "Edmond Tapsoba",
       "position": "DEF",
-      "attack": 44,
-      "defense": 82,
-      "overall": 82
+      "attack": 45,
+      "defense": 83,
+      "overall": 83
     },
     {
       "id": "fc26-def-286",
       "name": "P. Hincapié",
       "position": "DEF",
-      "attack": 42,
-      "defense": 81,
-      "overall": 81
+      "attack": 44,
+      "defense": 85,
+      "overall": 85
     },
     {
       "id": "fc26-mid-287",
@@ -2398,8 +2398,8 @@
       "name": "B. Brassier",
       "position": "DEF",
       "attack": 36,
-      "defense": 79,
-      "overall": 79
+      "defense": 78,
+      "overall": 78
     },
     {
       "id": "fc26-mid-301",
@@ -2566,8 +2566,8 @@
       "name": "E. Pinnock",
       "position": "DEF",
       "attack": 36,
-      "defense": 79,
-      "overall": 79
+      "defense": 78,
+      "overall": 78
     },
     {
       "id": "fc26-mid-322",
@@ -2726,16 +2726,16 @@
       "name": "T. Adarabioyo",
       "position": "DEF",
       "attack": 40,
-      "defense": 80,
-      "overall": 80
+      "defense": 79,
+      "overall": 79
     },
     {
       "id": "fc26-def-342",
       "name": "T. Chalobah",
       "position": "DEF",
-      "attack": 42,
-      "defense": 79,
-      "overall": 79
+      "attack": 43,
+      "defense": 81,
+      "overall": 81
     },
     {
       "id": "fc26-mid-343",
@@ -2781,17 +2781,17 @@
       "id": "fc26-def-348",
       "name": "T. Castagne",
       "position": "DEF",
-      "attack": 50,
-      "defense": 78,
-      "overall": 79
+      "attack": 49,
+      "defense": 77,
+      "overall": 78
     },
     {
       "id": "fc26-def-349",
       "name": "A. Robinson",
       "position": "DEF",
-      "attack": 54,
-      "defense": 78,
-      "overall": 80
+      "attack": 55,
+      "defense": 79,
+      "overall": 81
     },
     {
       "id": "fc26-mid-350",
@@ -2837,9 +2837,9 @@
       "id": "fc26-def-355",
       "name": "O. Alderete",
       "position": "DEF",
-      "attack": 36,
-      "defense": 80,
-      "overall": 80
+      "attack": 37,
+      "defense": 82,
+      "overall": 82
     },
     {
       "id": "fc26-def-356",
@@ -2894,8 +2894,8 @@
       "name": "P. Schuurs",
       "position": "DEF",
       "attack": 38,
-      "defense": 79,
-      "overall": 79
+      "defense": 78,
+      "overall": 78
     },
     {
       "id": "fc26-def-363",
@@ -2949,9 +2949,9 @@
       "id": "fc26-def-369",
       "name": "K. Schlotterbeck",
       "position": "DEF",
-      "attack": 40,
-      "defense": 79,
-      "overall": 79
+      "attack": 39,
+      "defense": 78,
+      "overall": 78
     },
     {
       "id": "fc26-def-370",
@@ -3117,17 +3117,17 @@
       "id": "fc26-def-390",
       "name": "Murillo",
       "position": "DEF",
-      "attack": 42,
-      "defense": 81,
-      "overall": 81
+      "attack": 43,
+      "defense": 83,
+      "overall": 83
     },
     {
       "id": "fc26-def-391",
       "name": "Neco Williams",
       "position": "DEF",
-      "attack": 50,
-      "defense": 76,
-      "overall": 78
+      "attack": 52,
+      "defense": 79,
+      "overall": 81
     },
     {
       "id": "fc26-mid-392",
@@ -3229,17 +3229,17 @@
       "id": "fc26-def-404",
       "name": "F. Gatti",
       "position": "DEF",
-      "attack": 42,
-      "defense": 82,
-      "overall": 82
+      "attack": 41,
+      "defense": 81,
+      "overall": 81
     },
     {
       "id": "fc26-def-405",
       "name": "P. Kalulu",
       "position": "DEF",
-      "attack": 46,
-      "defense": 80,
-      "overall": 80
+      "attack": 47,
+      "defense": 82,
+      "overall": 82
     },
     {
       "id": "fc26-mid-406",
@@ -3454,16 +3454,16 @@
       "name": "N. Aguerd",
       "position": "DEF",
       "attack": 38,
-      "defense": 80,
-      "overall": 80
+      "defense": 81,
+      "overall": 81
     },
     {
       "id": "fc26-def-433",
       "name": "L. Badé",
       "position": "DEF",
       "attack": 40,
-      "defense": 80,
-      "overall": 80
+      "defense": 79,
+      "overall": 79
     },
     {
       "id": "fc26-mid-434",
@@ -3517,9 +3517,9 @@
       "id": "fc26-def-440",
       "name": "A. Truffert",
       "position": "DEF",
-      "attack": 50,
-      "defense": 77,
-      "overall": 78
+      "attack": 52,
+      "defense": 80,
+      "overall": 81
     },
     {
       "id": "fc26-def-441",
@@ -3581,9 +3581,9 @@
       "id": "fc26-def-448",
       "name": "D. Hancko",
       "position": "DEF",
-      "attack": 44,
-      "defense": 81,
-      "overall": 81
+      "attack": 46,
+      "defense": 84,
+      "overall": 84
     },
     {
       "id": "fc26-def-449",
@@ -3710,8 +3710,8 @@
       "name": "J. Lucumí",
       "position": "DEF",
       "attack": 38,
-      "defense": 79,
-      "overall": 79
+      "defense": 78,
+      "overall": 78
     },
     {
       "id": "fc26-def-465",
@@ -3773,9 +3773,9 @@
       "id": "fc26-def-472",
       "name": "R. Bellanova",
       "position": "DEF",
-      "attack": 54,
-      "defense": 76,
-      "overall": 79
+      "attack": 55,
+      "defense": 77,
+      "overall": 80
     },
     {
       "id": "fc26-def-473",
@@ -3837,9 +3837,9 @@
       "id": "fc26-def-480",
       "name": "M. Kayode",
       "position": "DEF",
-      "attack": 50,
-      "defense": 76,
-      "overall": 78
+      "attack": 53,
+      "defense": 80,
+      "overall": 82
     },
     {
       "id": "fc26-def-481",
