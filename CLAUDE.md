@@ -206,8 +206,16 @@ veri seti değişince sıfır ihlal görmeden birleştirmeyin.
    önde olan oyunu yönetir. Geri dönüşler buradan doğar.
 5. **Tempo** — son 20 dakikada pozisyon üretimi artar.
 
-Beraberlikte (`isTournament`) seri penaltı: atıcılar hücuma göre sıralanır,
-başarı oranı atıcının hücumu ile rakip kalecinin savunmasından türer.
+Beraberlikte (`isTournament`) seri penaltı. **Atıcı becerisi HÜC ağırlıklı:**
+`0.7·attack + 0.3·overall` (`penaltySkill`); atıcılar buna göre iyiden kötüye
+sıralanır (forvetler önce, kaleci en son — kartta görünen HÜC ile tutarlı),
+başarı oranı aynı beceri ile rakip kalecinin savunmasından türer. Eski model
+GEN + mevki payıydı ve 92 GEN kaleci 87 GEN defanstan önce atıyordu (kullanıcı
+"iyiden kötüye görünmüyor" dedi). Yeni ölçek daha geniş (ilk 5 atıcı ort. 76 /
+sd 10, eski 84 / 5) olduğu için formül yeniden merkezlendi (merkez 74, eğim
+0.0035). Ölçüm (6000 rastgele kadro maçı): gol oranı %71.8 (eski ~%72), sıra
+1738/1738 seride tutarlı, mevki bazında FWD %74.5 · MID %73.3 · DEF %64.6 ·
+GK %61.8; penaltıya giden maç %29, ani ölüme giden seri %29.
 
 **Saf ve deterministik.** Aynı girdi + aynı seed → aynı sonuç.
 `simulateFullTournament` seed'i katılımcı id'lerinden türetir: her oda kendi
@@ -302,10 +310,15 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
 - **CANLI MAÇ EKRANI** (`server/src/tournament/runTournament.ts` +
   client `LiveMatchTicker`): bir maçın iki tarafından biri bile **insan**sa
   sunucu önce `tournament:matchLive { matchId, result }` yayınlar, istemci
-  maçı dakika dakika oynatır (~14 sn, atlanabilir), sonra sunucu
+  maçı dakika dakika oynatır (~14 sn; "Sonuca git" atlama butonu kullanıcı
+  isteğiyle KALDIRILDI — herkes aynı anı yaşasın), sonra sunucu
   `tournament:matchResult` ile ağaca işler ve sıradaki maça geçer. **Bot–bot**
   maçlarda `matchLive` gönderilmez, sonuç anında düşer. Sunucu tempolu →
   tüm oyuncular aynı anı görür, bracket her zaman otoriter.
+  **Penaltı noktaları sonucu ele vermez:** `LiveMatchTicker` baştan yalnız
+  klasik 5 nokta gösterir; ani ölüm turları ancak sırası gelince eklenir
+  (`revealedRound`). Eskiden tüm seri uzunluğu baştan çiziliyor, uzayıp
+  uzamayacağı belli oluyordu.
 - **Lig formatı akıştan kaldırıldı** (kullanıcı isteği). `server/src/league/`,
   client `ResultsPage.tsx` ve shared `LeagueState` / `league:*` eventleri
   kod tabanında DURUYOR ama hiçbir yerden çağrılmıyor — ileride geri açmak

@@ -83,37 +83,6 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   const resultRef = useRef(result);
   resultRef.current = result;
 
-  // Hızlı atlama
-  const handleSkip = () => {
-    if (shootoutTimerRef.current) {
-      clearTimeout(shootoutTimerRef.current);
-    }
-    setMinute(90);
-    setLiveHomeScore(result.scoreHome);
-    setLiveAwayScore(result.scoreAway);
-
-    if (result.penaltyShootout && result.penaltyShootout.length > 0) {
-      setShootoutHomeScore(result.penaltiesHome ?? 0);
-      setShootoutAwayScore(result.penaltiesAway ?? 0);
-      setCompletedAttempts(result.penaltyShootout);
-      setCurrentKickIndex(result.penaltyShootout.length - 1);
-      setKickState('revealed');
-      const winnerName = result.winnerId === result.homeId ? homeName : awayName;
-      setTickerLogs((prev) => [
-        `🏆 SERİ PENALTILAR SONUCU: ${homeName} ${result.penaltiesHome} - ${result.penaltiesAway} ${awayName}! (${winnerName} kazandı)`,
-        `90' 🏁 90 Dakika Berabere: ${homeName} ${result.scoreHome} - ${result.scoreAway} ${awayName}`,
-        ...prev,
-      ]);
-    } else {
-      setTickerLogs((prev) => [
-        `90' 🏁 Maç Bitti: ${homeName} ${result.scoreHome} - ${result.scoreAway} ${awayName}`,
-        ...prev,
-      ]);
-    }
-    setPhase('finished');
-    setIsFinished(true);
-  };
-
   // 90 dakikalık normal süre simülasyonu
   useEffect(() => {
     setPhase('regular');
@@ -286,10 +255,18 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   const progressPct = Math.min(100, Math.round((minute / 90) * 100));
 
   const hasShootout = Boolean(result.penaltyShootout && result.penaltyShootout.length > 0);
-  const maxShootoutRound = hasShootout
-    ? Math.max(5, ...result.penaltyShootout!.map((a) => a.round))
-    : 5;
-  const shootoutRounds = Array.from({ length: maxShootoutRound }, (_, i) => i + 1);
+  // Nokta sayısı serinin uzayıp uzamayacağını ELE VERMEMELİ: baştan yalnız
+  // klasik 5 gösterilir; ani ölüm turları ancak sıra geldikçe eklenir.
+  const activeShootoutKick =
+    phase === 'shootout' && currentKickIndex >= 0
+      ? result.penaltyShootout?.[currentKickIndex]
+      : undefined;
+  const revealedRound = Math.max(
+    5,
+    ...completedAttempts.map((a) => a.round),
+    activeShootoutKick?.round ?? 0,
+  );
+  const shootoutRounds = Array.from({ length: revealedRound }, (_, i) => i + 1);
 
   const renderPenaltyDots = (teamId: string) => {
     if (!hasShootout || phase === 'regular') return null;
@@ -403,23 +380,6 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             '● CANLI MAÇ OYNANIYOR'
           )}
         </span>
-
-        {!isFinished && (
-          <button
-            onClick={handleSkip}
-            style={{
-              backgroundColor: 'var(--bg-tertiary)',
-              color: 'var(--text-secondary)',
-              padding: '4px 12px',
-              fontSize: '0.8rem',
-              border: '1px solid var(--border-color)',
-              cursor: 'pointer',
-              borderRadius: 6,
-            }}
-          >
-            ⏩ Sonuca Git
-          </button>
-        )}
       </div>
 
       {/* Büyük Canlı Skor Tabelası */}
