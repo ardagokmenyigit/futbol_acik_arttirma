@@ -1730,14 +1730,6 @@
       "overall": 82
     },
     {
-      "id": "fc26-gk-221",
-      "name": "M. Günok",
-      "position": "GK",
-      "attack": 29,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-def-223",
       "name": "M. Müldür",
       "position": "DEF",
@@ -2242,14 +2234,6 @@
       "overall": 81
     },
     {
-      "id": "fc26-gk-291",
-      "name": "E. Destanoğlu",
-      "position": "GK",
-      "attack": 29,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-def-293",
       "name": "J. Andersen",
       "position": "DEF",
@@ -2344,14 +2328,6 @@
       "attack": 79,
       "defense": 22,
       "overall": 79
-    },
-    {
-      "id": "fc26-gk-305",
-      "name": "A. Vural",
-      "position": "GK",
-      "attack": 29,
-      "defense": 78,
-      "overall": 78
     },
     {
       "id": "fc26-def-306",
@@ -2554,14 +2530,6 @@
       "overall": 81
     },
     {
-      "id": "fc26-gk-333",
-      "name": "G. Güvenç",
-      "position": "GK",
-      "attack": 29,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-336",
       "name": "B. Mendy",
       "position": "MID",
@@ -2647,14 +2615,6 @@
       "position": "FWD",
       "attack": 80,
       "defense": 24,
-      "overall": 79
-    },
-    {
-      "id": "fc26-gk-347",
-      "name": "S. Johnstone",
-      "position": "GK",
-      "attack": 29,
-      "defense": 79,
       "overall": 79
     },
     {
@@ -2874,14 +2834,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-gk-375",
-      "name": "Bilal Bayazit",
-      "position": "GK",
-      "attack": 29,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-378",
       "name": "B. Mensah",
       "position": "MID",
@@ -2912,14 +2864,6 @@
       "attack": 78,
       "defense": 20,
       "overall": 78
-    },
-    {
-      "id": "fc26-gk-382",
-      "name": "B. Lecomte",
-      "position": "GK",
-      "attack": 29,
-      "defense": 79,
-      "overall": 79
     },
     {
       "id": "fc26-mid-385",
@@ -3162,14 +3106,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-gk-417",
-      "name": "E. Kardeşler",
-      "position": "GK",
-      "attack": 29,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-420",
       "name": "D. Pelkas",
       "position": "MID",
@@ -3322,14 +3258,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-gk-439",
-      "name": "Neto",
-      "position": "GK",
-      "attack": 29,
-      "defense": 79,
-      "overall": 79
-    },
-    {
       "id": "fc26-def-440",
       "name": "A. Truffert",
       "position": "DEF",
@@ -3384,14 +3312,6 @@
       "attack": 78,
       "defense": 22,
       "overall": 78
-    },
-    {
-      "id": "fc26-gk-447",
-      "name": "J. Cillessen",
-      "position": "GK",
-      "attack": 29,
-      "defense": 79,
-      "overall": 79
     },
     {
       "id": "fc26-def-448",
@@ -3504,14 +3424,6 @@
       "attack": 82,
       "defense": 26,
       "overall": 81
-    },
-    {
-      "id": "fc26-gk-463",
-      "name": "A. Cragno",
-      "position": "GK",
-      "attack": 29,
-      "defense": 78,
-      "overall": 78
     },
     {
       "id": "fc26-def-464",
@@ -3632,14 +3544,6 @@
       "attack": 81,
       "defense": 28,
       "overall": 81
-    },
-    {
-      "id": "fc26-gk-479",
-      "name": "O. Blaswich",
-      "position": "GK",
-      "attack": 29,
-      "defense": 79,
-      "overall": 79
     },
     {
       "id": "fc26-def-480",
@@ -3791,14 +3695,6 @@
       "position": "FWD",
       "attack": 78,
       "defense": 18,
-      "overall": 78
-    },
-    {
-      "id": "fc26-gk-500",
-      "name": "P. Pentz",
-      "position": "GK",
-      "attack": 29,
-      "defense": 78,
       "overall": 78
     },
     {
