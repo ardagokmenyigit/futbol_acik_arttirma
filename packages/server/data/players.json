@@ -604,7 +604,7 @@
     {
       "id": "fc26-mid-076",
       "name": "M. Olise",
-      "position": "MID",
+      "position": "FWD",
       "attack": 90,
       "defense": 55,
       "overall": 94
@@ -612,10 +612,10 @@
     {
       "id": "fc26-mid-077",
       "name": "Nico Williams",
-      "position": "MID",
-      "attack": 77,
+      "position": "FWD",
+      "attack": 78,
       "defense": 36,
-      "overall": 85
+      "overall": 86
     },
     {
       "id": "fc26-mid-078",
