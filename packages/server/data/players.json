@@ -938,14 +938,6 @@
       "overall": 86
     },
     {
-      "id": "fc26-def-118",
-      "name": "A. Djiku",
-      "position": "DEF",
-      "attack": 40,
-      "defense": 80,
-      "overall": 80
-    },
-    {
       "id": "fc26-mid-119",
       "name": "Fred",
       "position": "MID",
@@ -1210,14 +1202,6 @@
       "overall": 81
     },
     {
-      "id": "fc26-def-152",
-      "name": "Gabriel Paulista",
-      "position": "DEF",
-      "attack": 38,
-      "defense": 80,
-      "overall": 80
-    },
-    {
       "id": "fc26-def-153",
       "name": "A. Bardakcı",
       "position": "DEF",
@@ -1328,14 +1312,6 @@
       "attack": 40,
       "defense": 83,
       "overall": 83
-    },
-    {
-      "id": "fc26-def-167",
-      "name": "Danilo",
-      "position": "DEF",
-      "attack": 48,
-      "defense": 81,
-      "overall": 81
     },
     {
       "id": "fc26-mid-168",
@@ -1554,14 +1530,6 @@
       "overall": 84
     },
     {
-      "id": "fc26-def-195",
-      "name": "M. Darmian",
-      "position": "DEF",
-      "attack": 46,
-      "defense": 81,
-      "overall": 81
-    },
-    {
       "id": "fc26-mid-196",
       "name": "T. Koopmeiners",
       "position": "MID",
@@ -1770,14 +1738,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-def-222",
-      "name": "E. Bailly",
-      "position": "DEF",
-      "attack": 38,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-def-223",
       "name": "M. Müldür",
       "position": "DEF",
@@ -1832,14 +1792,6 @@
       "attack": 42,
       "defense": 85,
       "overall": 85
-    },
-    {
-      "id": "fc26-def-230",
-      "name": "Tiago Djaló",
-      "position": "DEF",
-      "attack": 38,
-      "defense": 79,
-      "overall": 79
     },
     {
       "id": "fc26-mid-231",
@@ -1936,22 +1888,6 @@
       "attack": 29,
       "defense": 79,
       "overall": 79
-    },
-    {
-      "id": "fc26-def-243",
-      "name": "C. Söyüncü",
-      "position": "DEF",
-      "attack": 38,
-      "defense": 78,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-244",
-      "name": "J. Nelsson",
-      "position": "DEF",
-      "attack": 36,
-      "defense": 78,
-      "overall": 78
     },
     {
       "id": "fc26-mid-245",
@@ -2162,22 +2098,6 @@
       "overall": 80
     },
     {
-      "id": "fc26-def-271",
-      "name": "D. Carmo",
-      "position": "DEF",
-      "attack": 36,
-      "defense": 78,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-272",
-      "name": "K. Ayhan",
-      "position": "DEF",
-      "attack": 46,
-      "defense": 78,
-      "overall": 79
-    },
-    {
       "id": "fc26-mid-273",
       "name": "O. Kökçü",
       "position": "MID",
@@ -2328,14 +2248,6 @@
       "attack": 29,
       "defense": 78,
       "overall": 78
-    },
-    {
-      "id": "fc26-def-292",
-      "name": "J. Matip",
-      "position": "DEF",
-      "attack": 38,
-      "defense": 80,
-      "overall": 80
     },
     {
       "id": "fc26-def-293",
@@ -2498,14 +2410,6 @@
       "overall": 80
     },
     {
-      "id": "fc26-def-313",
-      "name": "Raúl Albiol",
-      "position": "DEF",
-      "attack": 35,
-      "defense": 80,
-      "overall": 80
-    },
-    {
       "id": "fc26-def-314",
       "name": "Cristhian Mosquera",
       "position": "DEF",
@@ -2552,14 +2456,6 @@
       "attack": 29,
       "defense": 81,
       "overall": 81
-    },
-    {
-      "id": "fc26-def-320",
-      "name": "M. Kilman",
-      "position": "DEF",
-      "attack": 38,
-      "defense": 80,
-      "overall": 80
     },
     {
       "id": "fc26-def-321",
@@ -2662,22 +2558,6 @@
       "name": "G. Güvenç",
       "position": "GK",
       "attack": 29,
-      "defense": 78,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-334",
-      "name": "L. Dubois",
-      "position": "DEF",
-      "attack": 48,
-      "defense": 76,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-335",
-      "name": "S. Denswil",
-      "position": "DEF",
-      "attack": 38,
       "defense": 78,
       "overall": 78
     },
@@ -3002,22 +2882,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-def-376",
-      "name": "P. Djilobodji",
-      "position": "DEF",
-      "attack": 36,
-      "defense": 78,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-377",
-      "name": "Serdar Aziz",
-      "position": "DEF",
-      "attack": 38,
-      "defense": 77,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-378",
       "name": "B. Mensah",
       "position": "MID",
@@ -3056,22 +2920,6 @@
       "attack": 29,
       "defense": 79,
       "overall": 79
-    },
-    {
-      "id": "fc26-def-383",
-      "name": "F. Sacko",
-      "position": "DEF",
-      "attack": 46,
-      "defense": 76,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-384",
-      "name": "B. Kouyaté",
-      "position": "DEF",
-      "attack": 34,
-      "defense": 78,
-      "overall": 78
     },
     {
       "id": "fc26-mid-385",
@@ -3282,22 +3130,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-def-411",
-      "name": "S. Bell",
-      "position": "DEF",
-      "attack": 34,
-      "defense": 78,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-412",
-      "name": "A. Hanche-Olsen",
-      "position": "DEF",
-      "attack": 38,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-413",
       "name": "N. Amiri",
       "position": "MID",
@@ -3334,22 +3166,6 @@
       "name": "E. Kardeşler",
       "position": "GK",
       "attack": 29,
-      "defense": 78,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-418",
-      "name": "H. Ali Kaldırım",
-      "position": "DEF",
-      "attack": 46,
-      "defense": 76,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-419",
-      "name": "L. Duarte",
-      "position": "DEF",
-      "attack": 38,
       "defense": 78,
       "overall": 78
     },
@@ -3584,14 +3400,6 @@
       "attack": 46,
       "defense": 84,
       "overall": 84
-    },
-    {
-      "id": "fc26-def-449",
-      "name": "M. Pongračić",
-      "position": "DEF",
-      "attack": 38,
-      "defense": 79,
-      "overall": 79
     },
     {
       "id": "fc26-mid-450",
@@ -3962,14 +3770,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-def-496",
-      "name": "B. Meijer",
-      "position": "DEF",
-      "attack": 48,
-      "defense": 76,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-497",
       "name": "F. Grillitsch",
       "position": "MID",
@@ -3999,14 +3799,6 @@
       "position": "GK",
       "attack": 29,
       "defense": 78,
-      "overall": 78
-    },
-    {
-      "id": "fc26-def-501",
-      "name": "A. Seys",
-      "position": "DEF",
-      "attack": 48,
-      "defense": 76,
       "overall": 78
     },
     {
