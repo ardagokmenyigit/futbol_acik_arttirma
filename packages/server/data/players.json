@@ -906,14 +906,6 @@
       "overall": 81
     },
     {
-      "id": "fc26-fwd-114",
-      "name": "M. Icardi",
-      "position": "FWD",
-      "attack": 84,
-      "defense": 20,
-      "overall": 82
-    },
-    {
       "id": "fc26-fwd-115",
       "name": "C. Immobile",
       "position": "FWD",
@@ -1224,14 +1216,6 @@
       "attack": 80,
       "defense": 75,
       "overall": 81
-    },
-    {
-      "id": "fc26-fwd-156",
-      "name": "Semih Kılıçsoy",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 20,
-      "overall": 78
     },
     {
       "id": "fc26-fwd-157",
@@ -1546,14 +1530,6 @@
       "overall": 81
     },
     {
-      "id": "fc26-fwd-198",
-      "name": "P. Cutrone",
-      "position": "FWD",
-      "attack": 77,
-      "defense": 20,
-      "overall": 78
-    },
-    {
       "id": "fc26-fwd-199",
       "name": "D. Zapata",
       "position": "FWD",
@@ -1656,14 +1632,6 @@
       "attack": 80,
       "defense": 78,
       "overall": 83
-    },
-    {
-      "id": "fc26-fwd-212",
-      "name": "R. Sterling",
-      "position": "FWD",
-      "attack": 81,
-      "defense": 22,
-      "overall": 81
     },
     {
       "id": "fc26-fwd-213",
@@ -1898,22 +1866,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-fwd-247",
-      "name": "B. Banza",
-      "position": "FWD",
-      "attack": 80,
-      "defense": 20,
-      "overall": 80
-    },
-    {
-      "id": "fc26-fwd-248",
-      "name": "Rey Manaj",
-      "position": "FWD",
-      "attack": 79,
-      "defense": 20,
-      "overall": 79
-    },
-    {
       "id": "fc26-gk-249",
       "name": "O. Baumann",
       "position": "GK",
@@ -2106,22 +2058,6 @@
       "overall": 80
     },
     {
-      "id": "fc26-fwd-275",
-      "name": "M. Cham",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 22,
-      "overall": 78
-    },
-    {
-      "id": "fc26-fwd-276",
-      "name": "E. Visca",
-      "position": "FWD",
-      "attack": 80,
-      "defense": 24,
-      "overall": 80
-    },
-    {
       "id": "fc26-gk-277",
       "name": "I. Provedel",
       "position": "GK",
@@ -2258,14 +2194,6 @@
       "overall": 82
     },
     {
-      "id": "fc26-fwd-296",
-      "name": "J. Ayew",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 26,
-      "overall": 78
-    },
-    {
       "id": "fc26-fwd-297",
       "name": "J. Mateta",
       "position": "FWD",
@@ -2320,14 +2248,6 @@
       "attack": 85,
       "defense": 20,
       "overall": 84
-    },
-    {
-      "id": "fc26-fwd-304",
-      "name": "E. Ben Seghir",
-      "position": "FWD",
-      "attack": 79,
-      "defense": 22,
-      "overall": 79
     },
     {
       "id": "fc26-def-306",
@@ -2546,22 +2466,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-fwd-338",
-      "name": "C. Ünder",
-      "position": "FWD",
-      "attack": 80,
-      "defense": 22,
-      "overall": 79
-    },
-    {
-      "id": "fc26-fwd-339",
-      "name": "V. Aboubakar",
-      "position": "FWD",
-      "attack": 81,
-      "defense": 18,
-      "overall": 80
-    },
-    {
       "id": "fc26-gk-340",
       "name": "M. Perin",
       "position": "GK",
@@ -2762,14 +2666,6 @@
       "overall": 79
     },
     {
-      "id": "fc26-fwd-366",
-      "name": "A. Sanabria",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 20,
-      "overall": 78
-    },
-    {
       "id": "fc26-fwd-367",
       "name": "Ché Adams",
       "position": "FWD",
@@ -2826,14 +2722,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-fwd-374",
-      "name": "S. Essende",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 18,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-378",
       "name": "B. Mensah",
       "position": "MID",
@@ -2847,22 +2735,6 @@
       "position": "MID",
       "attack": 78,
       "defense": 70,
-      "overall": 78
-    },
-    {
-      "id": "fc26-fwd-380",
-      "name": "K. Piątek",
-      "position": "FWD",
-      "attack": 80,
-      "defense": 18,
-      "overall": 80
-    },
-    {
-      "id": "fc26-fwd-381",
-      "name": "João Figueiredo",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 20,
       "overall": 78
     },
     {
@@ -2888,14 +2760,6 @@
       "attack": 78,
       "defense": 20,
       "overall": 78
-    },
-    {
-      "id": "fc26-fwd-388",
-      "name": "A. Nordin",
-      "position": "FWD",
-      "attack": 79,
-      "defense": 22,
-      "overall": 79
     },
     {
       "id": "fc26-gk-389",
@@ -2936,14 +2800,6 @@
       "attack": 81,
       "defense": 68,
       "overall": 81
-    },
-    {
-      "id": "fc26-fwd-394",
-      "name": "T. Awoniyi",
-      "position": "FWD",
-      "attack": 79,
-      "defense": 20,
-      "overall": 79
     },
     {
       "id": "fc26-fwd-395",
@@ -3098,14 +2954,6 @@
       "overall": 83
     },
     {
-      "id": "fc26-fwd-416",
-      "name": "K. Onisiwo",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 24,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-420",
       "name": "D. Pelkas",
       "position": "MID",
@@ -3119,22 +2967,6 @@
       "position": "MID",
       "attack": 76,
       "defense": 72,
-      "overall": 78
-    },
-    {
-      "id": "fc26-fwd-422",
-      "name": "D. Türüç",
-      "position": "FWD",
-      "attack": 79,
-      "defense": 24,
-      "overall": 79
-    },
-    {
-      "id": "fc26-fwd-423",
-      "name": "Davidson",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 22,
       "overall": 78
     },
     {
@@ -3306,14 +3138,6 @@
       "overall": 79
     },
     {
-      "id": "fc26-fwd-446",
-      "name": "J. Karlsson",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 22,
-      "overall": 78
-    },
-    {
       "id": "fc26-def-448",
       "name": "D. Hancko",
       "position": "DEF",
@@ -3352,14 +3176,6 @@
       "attack": 82,
       "defense": 23,
       "overall": 81
-    },
-    {
-      "id": "fc26-fwd-454",
-      "name": "M. Nzola",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 20,
-      "overall": 78
     },
     {
       "id": "fc26-gk-455",
@@ -3456,30 +3272,6 @@
       "attack": 77,
       "defense": 78,
       "overall": 79
-    },
-    {
-      "id": "fc26-fwd-468",
-      "name": "Hwang Hee Chan",
-      "position": "FWD",
-      "attack": 80,
-      "defense": 25,
-      "overall": 80
-    },
-    {
-      "id": "fc26-fwd-469",
-      "name": "P. Sarabia",
-      "position": "FWD",
-      "attack": 80,
-      "defense": 24,
-      "overall": 80
-    },
-    {
-      "id": "fc26-fwd-470",
-      "name": "E. Ferguson",
-      "position": "FWD",
-      "attack": 78,
-      "defense": 20,
-      "overall": 78
     },
     {
       "id": "fc26-gk-471",
@@ -3640,14 +3432,6 @@
       "attack": 74,
       "defense": 78,
       "overall": 78
-    },
-    {
-      "id": "fc26-fwd-492",
-      "name": "Samuel Lino",
-      "position": "FWD",
-      "attack": 81,
-      "defense": 30,
-      "overall": 81
     },
     {
       "id": "fc26-fwd-493",
