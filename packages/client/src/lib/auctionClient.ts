@@ -10,3 +10,13 @@ export function placeBid(amount: number): Promise<{ highestBid: Bid }> {
     });
   });
 }
+
+/** Açılış sırası bendeyken pas geç; sunucu reddederse Promise reject olur. */
+export function passOpening(): Promise<{ passesLeft: number }> {
+  return new Promise((resolve, reject) => {
+    socket.emit('auction:pass', (res: AckResult<{ passesLeft: number }>) => {
+      if (res.ok) resolve(res.data);
+      else reject(new Error(res.error));
+    });
+  });
+}

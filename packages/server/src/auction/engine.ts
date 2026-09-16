@@ -3,7 +3,13 @@ import { roomStore } from '../rooms/roomStore.js';
 import { emitRoomState } from '../rooms/broadcast.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { runTournament } from '../tournament/runTournament.js';
-import { botBidDelayMs, botOpeningBid, decideBotBid, type RivalView } from './bot.js';
+import {
+  botBidDelayMs,
+  botOpeningBid,
+  botShouldPass,
+  decideBotBid,
+  type RivalView,
+} from './bot.js';
 import { buildDraftPool, findFootballer } from './pool.js';
 import { buildTurnOrders, type TurnOrderPlan } from './turnOrder.js';
 import { bidFloor, positionCount, validateBid } from './validateBid.js';
@@ -28,6 +34,14 @@ import { bidFloor, positionCount, validateBid } from './validateBid.js';
  *     PAS HAKKI YOK: istemeyen teklif vermez, fikri değişirse geri girer.
  *     Süre bitiminde en yüksek teklif kazanır. Son saniye teklifi mümkün
  *     olduğu için anti-snipe devrede.
+ *
+ *  AÇILIŞ PASI: açılışı yapacak kişinin pas hakkı (`passesLeft`) varsa pas
+ *  diyebilir. Futbolcu masada kalır, açılış görevi bu turda pas demeyen uygun
+ *  katılımcılardan RASTGELE birine geçer ve açılış süresi yeniden başlar; pas
+ *  diyen o turda teklif veremez (eligibleIds'den düşer). Herkes pas derse
+ *  dışlama sıfırlanır, son pas diyen hariç uygun herkesten rastgele biri
+ *  seçilir (hakkı varsa yine pas diyebilir, yoksa açmak zorunda). Tur başına
+ *  sınır yok — haklar sonlu olduğu için zincir her zaman biter.
  *
  *  TABAN FİYAT YOK: açılış `minBidIncrement` kadardır, fiyatı rekabet belirler.
  *
@@ -194,6 +208,7 @@ function startNextRound(io: TypedServer, roomId: string): void {
       openerId: singleEligible.id,
       phase: 'bidding',
       eligibleIds,
+      passedIds: [],
       highestBid: autoBid,
       endsAt: Date.now() + autoDurationMs,
       history: [autoBid],
@@ -223,6 +238,7 @@ function startNextRound(io: TypedServer, roomId: string): void {
     openerId,
     phase: 'opening',
     eligibleIds,
+    passedIds: [],
     highestBid: null,
     endsAt: Date.now() + durationMs,
     history: [],
@@ -232,7 +248,7 @@ function startNextRound(io: TypedServer, roomId: string): void {
   emitRoomState(io, room);
 
   rt.timers.tick = setInterval(() => emitTick(io, roomId), TICK_MS);
-  // Süre dolarsa sunucu onun adına asgari açılışı yapar (pas hakkı yok).
+  // Süre dolarsa sunucu onun adına asgari açılışı yapar (süre dolunca pas da yok).
   rt.timers.end = setTimeout(() => autoOpen(io, roomId), durationMs);
 
   if (opener.isBot) {
@@ -301,8 +317,10 @@ function autoOpen(io: TypedServer, roomId: string): void {
  */
 function rivalsFor(room: RoomState, botId: string): RivalView[] | null {
   if (room.config.hiddenBudgets) return null;
+  // Bu turda pas geçenler teklif veremez — bot onları rakip saymaz.
+  const passed = new Set(room.auction?.passedIds ?? []);
   return room.participants
-    .filter((p) => p.id !== botId)
+    .filter((p) => p.id !== botId && !passed.has(p.id))
     .map((p) => ({ budget: p.budget, squad: p.squad }));
 }
 
@@ -313,6 +331,11 @@ function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
   const bot = room.participants.find((p) => p.id === botId);
   if (!bot?.isBot) return;
 
+  if (botShouldPass(bot, room.auction.footballer, room.config, remainingPool(room))) {
+    applyPass(io, roomId, bot);
+    return;
+  }
+
   const amount = botOpeningBid(
     bot,
     room.auction.footballer,
@@ -321,6 +344,98 @@ function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
     rivalsFor(room, botId),
   );
   applyOpening(io, roomId, amount, false);
+}
+
+/* ------------------------------- pas ------------------------------- */
+
+/**
+ * Pas sonrası açılışı yapacak kişi. Önce bu turda pas demeyen uygun
+ * katılımcılar; hepsi pas dediyse dışlama sıfırlanır ve SON pas diyen hariç
+ * uygun herkesten rastgele seçilir (hakkı olan yeniden pas diyebilir, hakkı
+ * olmayan açmak ZORUNDA). Uygun tek kişi son pas diyense o açar. Rastgele
+ * seçim sıra adaletine dokunmaz: pas gönüllü bir vazgeçiştir.
+ */
+function pickNextOpener(room: RoomState, footballer: Footballer, passedIds: string[]): Participant {
+  const passed = new Set(passedIds);
+  const lastPasser = passedIds[passedIds.length - 1];
+  const able = room.participants.filter((p) => canTake(room, p, footballer));
+  let candidates = able.filter((p) => !passed.has(p.id));
+  if (candidates.length === 0) candidates = able.filter((p) => p.id !== lastPasser);
+  if (candidates.length === 0) candidates = able;
+  return candidates[Math.floor(Math.random() * candidates.length)]!;
+}
+
+/** Açılış pasını uygula: hak düş, teklif hakkını kapat, açılışı devret. */
+function applyPass(io: TypedServer, roomId: string, passer: Participant): void {
+  const room = roomStore.getRoom(roomId);
+  const rt = runtimes.get(roomId);
+  if (!room?.auction || !rt || room.auction.phase !== 'opening') return;
+  const auction = room.auction;
+
+  passer.passesLeft = Math.max(0, passer.passesLeft - 1);
+  auction.passedIds.push(passer.id);
+  auction.eligibleIds = auction.eligibleIds.filter((id) => id !== passer.id);
+
+  const next = pickNextOpener(room, auction.footballer, auction.passedIds);
+  const durationMs = room.config.turnDurationSec * 1000;
+  auction.openerId = next.id;
+  auction.endsAt = Date.now() + durationMs;
+
+  clearTimers(rt.timers);
+  rt.timers = freshTimers();
+  rt.timers.tick = setInterval(() => emitTick(io, roomId), TICK_MS);
+  rt.timers.end = setTimeout(() => autoOpen(io, roomId), durationMs);
+
+  io.to(roomId).emit('auction:passed', {
+    passerId: passer.id,
+    passerNickname: passer.nickname,
+    passesLeft: passer.passesLeft,
+    nextOpenerId: next.id,
+    nextOpenerNickname: next.nickname,
+    endsAt: auction.endsAt,
+  });
+  emitRoomState(io, room);
+
+  if (next.isBot) {
+    const handle = setTimeout(() => runBotOpening(io, roomId, next.id), botBidDelayMs(durationMs));
+    rt.timers.bots.push(handle);
+  }
+}
+
+export function handlePass(
+  io: TypedServer,
+  socket: TypedSocket,
+  ack: (res: AckResult<{ passesLeft: number }>) => void,
+): void {
+  const { roomId, playerId } = socket.data;
+  if (!roomId || !playerId) {
+    ack({ ok: false, error: 'Bir odada değilsin' });
+    return;
+  }
+  const room = roomStore.getRoom(roomId);
+  if (!room || room.phase !== 'draft' || !room.auction) {
+    ack({ ok: false, error: 'Şu an aktif bir açık artırma yok' });
+    return;
+  }
+  const passer = room.participants.find((p) => p.id === playerId);
+  if (!passer) {
+    ack({ ok: false, error: 'Katılımcı bulunamadı' });
+    return;
+  }
+  if (room.auction.phase !== 'opening') {
+    ack({ ok: false, error: 'Pas yalnızca açılış evresinde geçilir' });
+    return;
+  }
+  if (room.auction.openerId !== playerId) {
+    ack({ ok: false, error: 'Açılış sırası sende değil' });
+    return;
+  }
+  if (passer.passesLeft <= 0) {
+    ack({ ok: false, error: 'Pas hakkın kalmadı' });
+    return;
+  }
+  applyPass(io, roomId, passer);
+  ack({ ok: true, data: { passesLeft: passer.passesLeft } });
 }
 
 /* ------------------------------ teklif ------------------------------ */

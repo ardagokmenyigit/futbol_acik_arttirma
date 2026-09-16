@@ -104,6 +104,14 @@ export interface Participant {
   /** Kazanılan futbolcular. */
   squad: Footballer[];
   /**
+   * Kalan AÇILIŞ PAS HAKKI. Açılış sırası gelen katılımcı istemediği
+   * futbolcu için pas diyebilir; futbolcu masada kalır, açılış görevi pas
+   * demeyen uygun katılımcılardan rastgele birine geçer. Oyun başında
+   * `passesForSize(tournamentSize)` ile verilir (2 takım → 1, 4/8 → 2),
+   * tur sınırı yoktur — hepsi tek turda da harcanabilir.
+   */
+  passesLeft: number;
+  /**
    * Yapay zekâ takımı mı? Turnuva formatında eksik oyuncu sayısı
    * botlarla tamamlanır; botlar açık artırmaya da katılır.
    */
@@ -134,9 +142,15 @@ export type AuctionPhase = 'opening' | 'bidding';
  *     vermek ZORUNDADIR (en az `minBidIncrement`). Süresi dolarsa sunucu
  *     onun adına asgari açılışı yapar. Böylece her turda mutlaka gerçek bir
  *     teklif olur — "kimse teklif vermedi, bedavaya gitti" durumu yoktur.
+ *     İSTİSNA — AÇILIŞ PASI: açılışı yapacak kişinin `passesLeft` hakkı
+ *     varsa pas diyebilir (`auction:pass`); futbolcu masada kalır, açılış
+ *     pas demeyen uygun katılımcılardan rastgele birine geçer, pas diyen o
+ *     turda teklif veremez. Herkes pas derse dışlama sıfırlanır: son pas
+ *     diyen hariç uygun herkesten rastgele biri seçilir (hakkı yoksa açmak
+ *     zorunda kalır).
  *  2. `bidding` — teklif serbesttir; pozisyona girebilen herkes teklif
- *     verebilir. PAS HAKKI YOKTUR: istemeyen teklif vermez, fikri değişirse
- *     geri girebilir. Süre bitiminde en yüksek teklif kazanır.
+ *     verebilir. Serbest evrede pas yoktur: istemeyen teklif vermez, fikri
+ *     değişirse geri girebilir. Süre bitiminde en yüksek teklif kazanır.
  *
  * Sıra yalnızca açılışı belirler; sıra numaralarının toplamı tüm katılımcılar
  * için eşittir (bkz. server/auction/turnOrder.ts).
@@ -153,8 +167,18 @@ export interface AuctionState {
   /** Açılış teklifini verecek / vermiş katılımcı. */
   openerId: string;
   phase: AuctionPhase;
-  /** Bu futbolcuya teklif verebilecek katılımcılar (pozisyonu uygun olanlar). */
+  /**
+   * Bu futbolcuya teklif verebilecek katılımcılar (pozisyonu uygun olanlar).
+   * Bu turda pas diyenler listeden ÇIKAR — pas, o futbolcudan tamamen
+   * vazgeçmektir; yoksa "açılışı başkasına yıkıp sonra ucuza kap" bedava olurdu.
+   */
   eligibleIds: string[];
+  /**
+   * Bu turda açılışı pas geçenler (sırayla). Açılış görevi rastgele
+   * seçilirken dışlanırlar; uygun kimse kalmazsa dışlama sıfırlanır ve son
+   * pas diyen hariç uygun herkesten yeniden seçim yapılır.
+   */
+  passedIds: string[];
   /** En yüksek geçerli teklif. `opening` evresinde null. */
   highestBid: Bid | null;
   /** Mevcut evrenin biteceği sunucu zamanı (ms epoch). */

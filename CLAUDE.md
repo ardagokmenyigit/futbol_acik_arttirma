@@ -23,7 +23,8 @@ oynayabilir — eksik takımlar botlarla tamamlanır. (Lig formatı kaldırıld�
 2. **Draft (Açık Artırma) Fazı**: Tam yapı §3.1'de. Özet: draft havuzu
    pozisyon başına tam ihtiyaç kadar (4 oyuncu → 28 futbolcu), draft
    `squadSize × katılımcı` tur sürer, her tur bir futbolcunun açık
-   artırmasıdır (zorunlu açılış + serbest teklif, taban fiyat yok, pas yok).
+   artırmasıdır (zorunlu açılış + serbest teklif, taban fiyat yok; açıcının
+   sınırlı **açılış pas hakkı** var, bkz. §3.1).
 3. **Kadro Kuralları**: Her takım **7 oyuncu** — 1 GK, 2 DEF, 2 MID, 2 FWD.
    Başlangıç bütçesi **150M** (kurgusal, "M"). Kural dışı pozisyon veya
    bütçe aşımı → teklif reddedilir. (`DEFAULT_ROOM_CONFIG`, ayarlanabilir.)
@@ -97,13 +98,38 @@ futbolcunun açık artırmasıdır ve iki evrelidir:
    ilk) katılımcı açılışı yapar. Futbolcu, AÇILIŞI YAPACAK KİŞİNİN ihtiyacına
    göre havuzdan seçilir — böylece sıradaki her zaman açabilir ve "sıra sende,
    ihtiyacın olan biri geliyor" sezgisi korunur. Süre (`turnDurationSec`)
-   dolarsa sunucu onun adına `minBidIncrement` ile açar. **Pas hakkı yoktur.**
-   Bu sayede her turda mutlaka gerçek bir teklif olur; "kimse teklif vermedi,
-   bedavaya gitti" durumu ortadan kalkar.
+   dolarsa sunucu onun adına `minBidIncrement` ile açar. Bu sayede her turda
+   mutlaka gerçek bir teklif olur; "kimse teklif vermedi, bedavaya gitti"
+   durumu ortadan kalkar. Tek istisna aşağıdaki **açılış pası**.
 2. **`bidding` — serbest teklif.** Pozisyona girebilen herkes teklif verebilir,
    istemeyen vermez, fikri değişirse geri girer. Süre `bidDurationSec`;
    son saniye teklifi mümkün olduğu için **anti-snipe (5sn) devrede.**
    Süre bitiminde en yüksek teklif kazanır (`auction:won`).
+
+**AÇILIŞ PASI (`auction:pass`).** Açıcının `Participant.passesLeft` hakkı
+varsa istemediği futbolcuya pas diyebilir. Oyun başına hak `passesForSize`:
+2 takım → 1, 4 ve 8 takım → 2 (`shared/config.ts` `PASSES_BY_SIZE`);
+`startDraft` ve rövanşta yeniden dağıtılır. Kurallar:
+
+- Futbolcu **masada kalır**; açılış görevi bu turda pas demeyen uygun
+  katılımcılardan **rastgele** birine geçer (`pickNextOpener`), açılış süresi
+  baştan başlar, `auction:passed` yayınlanır.
+- Pas diyen o turda **teklif de veremez** (`eligibleIds`'den düşer,
+  `passedIds`'e girer). Aksi halde "açılışı başkasına yıkıp sonra ucuza kap"
+  bedava olurdu.
+- **Tur sınırı yok**: herkes pas derse dışlama sıfırlanır, son pas diyen hariç
+  uygun herkesten rastgele seçilir; hakkı olan yine pas diyebilir, olmayan
+  açmak zorunda kalır. Haklar sonlu olduğu için zincir her zaman biter.
+  Herkes pas dediyse bidding'de kimse teklif veremez → zorunlu açıcı
+  futbolcuyu asgariden alır (bilinçli: pası herkes harcadıysa bedeli budur).
+- Süre dolunca sunucu pas DEĞİL asgari açılış yapar (`autoOpen`).
+- Botlar (`botShouldPass`): futbolcu havuzda kalan aynı mevkidekilerin alt
+  diliminde (eşik kişiliğe bağlı %25–%50) ve ihtiyaçtan en az 2 fazla aday
+  varsa pas; kıtlıkta asla. Bot açılış/teklif değerlemesi pas diyenleri rakip
+  saymaz (`rivalsFor` passedIds'i düşer).
+- Doğrulama: `caffeinate -i npx tsx packages/server/src/scripts/e2ePass.ts`
+  (gerçek sunucu + Socket.io istemcileri; 2 takım/1 pas ve 4 takım/2 pas
+  senaryoları, hatalı çağrılar, değişmezler, tam kadro bitişi).
 
 **TABAN FİYAT YOKTUR.** `Footballer.basePrice` hiçbir yerde kullanılmaz;
 açılış `minBidIncrement` kadardır, fiyatı tamamen rekabet belirler.
@@ -441,7 +467,8 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
 
 - Kadro **7 oyuncu** (GK 1, DEF 2, MID 2, FWD 2), başlangıç bütçesi **150M**.
 - Açık artırma yapısının tamamı için bkz. §3.1 (tam denk havuz, 28 tur,
-  zorunlu açılış + serbest teklif, taban fiyat yok, pas yok, sıra adaleti).
+  zorunlu açılış + serbest teklif, taban fiyat yok, sınırlı açılış pası,
+  sıra adaleti).
 - Oyun formatı `config.tournamentSize`: her zaman `4` ya da `8` (eleme
   turnuvası). **Lig formatı (`null`) kaldırıldı**, `minPlayers` kaldırıldı.
   Oda kapasitesi = turnuva boyutu; tek kişi bile başlatır, eksik takımlar

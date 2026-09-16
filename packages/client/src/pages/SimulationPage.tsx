@@ -191,6 +191,7 @@ function createClientTournament(
       isReady: true,
       connected: true,
       budget: 0,
+      passesLeft: 0,
       squad: DEFAULT_DEMO_SQUADS[botId] ?? DEFAULT_DEMO_SQUADS['bot-1']!,
     });
   }
@@ -424,6 +425,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
               isReady: true,
               connected: true,
               budget: 0,
+              passesLeft: 0,
               squad: DEFAULT_DEMO_SQUADS['user-1']!,
             },
             {
@@ -433,6 +435,7 @@ export const SimulationPage: FC<SimulationPageProps> = ({
               isReady: true,
               connected: true,
               budget: 0,
+              passesLeft: 0,
               squad: DEFAULT_DEMO_SQUADS['user-2']!,
             },
           ];

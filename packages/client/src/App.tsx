@@ -48,6 +48,19 @@ export function App() {
     function onAuctionOpened({ endsAt }: { endsAt: number }) {
       useRoomStore.getState().roundStarted(Math.max(0, endsAt - Date.now()));
     }
+    // Açılış pas geçildi — aynı futbolcu, yeni açıcı, geri sayım baştan.
+    function onAuctionPassed(payload: {
+      passerNickname: string;
+      nextOpenerNickname: string;
+      endsAt: number;
+    }) {
+      const store = useRoomStore.getState();
+      store.setRemainingMs(Math.max(0, payload.endsAt - Date.now()));
+      store.setLastPass({
+        passerNickname: payload.passerNickname,
+        nextOpenerNickname: payload.nextOpenerNickname,
+      });
+    }
     function onAuctionTick({ remainingMs }: { remainingMs: number }) {
       useRoomStore.getState().setRemainingMs(remainingMs);
     }
@@ -82,6 +95,7 @@ export function App() {
     socket.on('room:kicked', onRoomKicked);
     socket.on('auction:started', onAuctionStarted);
     socket.on('auction:opened', onAuctionOpened);
+    socket.on('auction:passed', onAuctionPassed);
     socket.on('auction:tick', onAuctionTick);
     socket.on('auction:won', onAuctionWon);
     socket.on('tournament:bracket', onTournamentBracket);
@@ -95,6 +109,7 @@ export function App() {
       socket.off('room:kicked', onRoomKicked);
       socket.off('auction:started', onAuctionStarted);
       socket.off('auction:opened', onAuctionOpened);
+      socket.off('auction:passed', onAuctionPassed);
       socket.off('auction:tick', onAuctionTick);
       socket.off('auction:won', onAuctionWon);
       socket.off('tournament:bracket', onTournamentBracket);

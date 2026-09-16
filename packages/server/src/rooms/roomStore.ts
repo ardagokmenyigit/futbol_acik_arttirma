@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import {
   BOT_NICKNAMES,
   DEFAULT_ROOM_CONFIG,
+  passesForSize,
   type Participant,
   type Position,
   type RematchState,
@@ -289,9 +290,14 @@ class RoomStore {
         connected: true,
         budget: room.config.startingBudget,
         squad: [],
+        passesLeft: 0,
         isBot: true,
       });
     }
+
+    // Açılış pas hakları format kesinleşince dağıtılır (lobide değişebilir).
+    const passes = passesForSize(size);
+    for (const p of room.participants) p.passesLeft = passes;
 
     room.phase = 'draft';
     return room;
@@ -376,6 +382,7 @@ class RoomStore {
     for (const p of keep) {
       p.budget = room.config.startingBudget;
       p.squad = [];
+      p.passesLeft = passesForSize(room.config.tournamentSize);
       p.isHost = false;
       p.isReady = false;
     }
@@ -481,6 +488,7 @@ function makeParticipant(nickname: string, config: RoomConfig, isHost: boolean):
     connected: true,
     budget: config.startingBudget,
     squad: [],
+    passesLeft: passesForSize(config.tournamentSize),
   };
 }
 

@@ -58,6 +58,12 @@ export interface ClientToServerEvents {
     payload: { amount: number },
     ack: (res: AckResult<{ highestBid: Bid }>) => void,
   ) => void;
+  /**
+   * Açılış sırası bendeyken pas geç (`passesLeft` > 0 şart). Futbolcu masada
+   * kalır, açılış görevi rastgele başka birine geçer; ben bu turda teklif
+   * veremem. Ack'te kalan hakkım döner.
+   */
+  'auction:pass': (ack: (res: AckResult<{ passesLeft: number }>) => void) => void;
 }
 
 /* ---------- Sunucu -> İstemci ---------- */
@@ -84,6 +90,19 @@ export interface ServerToClientEvents {
     endsAt: number;
     /** Sunucu, süresi dolduğu için açılışı onun adına mı yaptı? */
     auto: boolean;
+  }) => void;
+  /**
+   * Açılış pas geçildi — futbolcu aynı, açılış görevi `nextOpenerId`'ye geçti.
+   * İstemci geri sayımı `endsAt`'e göre yeniler ve pası duyurur.
+   */
+  'auction:passed': (payload: {
+    passerId: string;
+    passerNickname: string;
+    /** Pas diyenin kalan hakkı. */
+    passesLeft: number;
+    nextOpenerId: string;
+    nextOpenerNickname: string;
+    endsAt: number;
   }) => void;
   'auction:tick': (payload: { round: number; remainingMs: number }) => void;
   'auction:bid': (payload: { highestBid: Bid | null; history: Bid[] }) => void;

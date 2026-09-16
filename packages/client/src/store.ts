@@ -13,6 +13,12 @@ export interface LiveMatch {
   result: MatchResult;
 }
 
+/** Bu turdaki son açılış pası (Draft ekranındaki duyuru için). */
+export interface PassInfo {
+  passerNickname: string;
+  nextOpenerNickname: string;
+}
+
 /** Son biten round'un özeti (Draft ekranındaki kısa bildirim için). */
 export interface WonInfo {
   round: number;
@@ -33,6 +39,8 @@ interface RoomStoreState {
   /** auction:tick'ten gelen, sunucu-otoriteli kalan süre. */
   remainingMs: number;
   lastWon: WonInfo | null;
+  /** Tur içinde açılış pas geçildiyse dolu; yeni turda temizlenir. */
+  lastPass: PassInfo | null;
 
   /** Lig durumu — league:* eventleriyle akışta güncellenir. */
   league: LeagueState | null;
@@ -52,6 +60,7 @@ interface RoomStoreState {
   setRemainingMs: (ms: number) => void;
   roundStarted: (remainingMs: number) => void;
   setLastWon: (won: WonInfo) => void;
+  setLastPass: (pass: PassInfo | null) => void;
   setLeague: (league: LeagueState) => void;
   setTournament: (tournament: TournamentState) => void;
   setLiveMatch: (liveMatch: LiveMatch | null) => void;
@@ -65,6 +74,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   notice: null,
   remainingMs: 0,
   lastWon: null,
+  lastPass: null,
   league: null,
   tournament: null,
   liveMatch: null,
@@ -81,6 +91,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
           tournament: null,
           liveMatch: null,
           lastWon: null,
+          lastPass: null,
           league: null,
           remainingMs: 0,
           error: null,
@@ -96,6 +107,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
       notice: notice ?? null,
       remainingMs: 0,
       lastWon: null,
+      lastPass: null,
       league: null,
       tournament: null,
       liveMatch: null,
@@ -104,8 +116,9 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   setNotice: (notice) => set({ notice }),
 
   setRemainingMs: (remainingMs) => set({ remainingMs }),
-  roundStarted: (remainingMs) => set({ remainingMs, lastWon: null }),
+  roundStarted: (remainingMs) => set({ remainingMs, lastWon: null, lastPass: null }),
   setLastWon: (lastWon) => set({ lastWon }),
+  setLastPass: (lastPass) => set({ lastPass }),
   setLeague: (league) => set({ league }),
   setTournament: (tournament) => set({ tournament }),
   setLiveMatch: (liveMatch) => set({ liveMatch }),

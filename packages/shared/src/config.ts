@@ -1,4 +1,4 @@
-import type { RoomConfig } from './types.js';
+import type { RoomConfig, TournamentSize } from './types.js';
 
 /**
  * FAZ 0 TASLAĞI — varsayılan oda ayarları.
@@ -40,6 +40,18 @@ export const DEFAULT_ROOM_CONFIG: RoomConfig = {
   tournamentSize: 4,
   hiddenBudgets: false,
 };
+
+/**
+ * AÇILIŞ PAS HAKKI — turnuva boyutuna göre oyuncu başına toplam hak.
+ * 2 takımda rakip tek kişi olduğu için 1; 4 ve 8 takımda 2. Tur başına
+ * sınır yoktur: bir oyuncu iki hakkını da aynı turda kullanabilir (pas →
+ * açılış başkasına geçer → herkes pas derse sıra ona geri gelebilir).
+ */
+export const PASSES_BY_SIZE: Record<TournamentSize, number> = { 2: 1, 4: 2, 8: 2 };
+
+export function passesForSize(size: TournamentSize): number {
+  return PASSES_BY_SIZE[size] ?? 0;
+}
 
 /**
  * Gizli bütçe modunda sunucu, başka katılımcıların `budget` alanını bu değerle
