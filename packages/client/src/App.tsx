@@ -35,6 +35,11 @@ export function App() {
     function onRoomError({ message }: { message: string }) {
       useRoomStore.getState().setError(message);
     }
+    // Sunucu bizi odadan çıkardı (örn. rövanş sensiz başladı) → ana ekran.
+    function onRoomKicked({ reason }: { reason: string }) {
+      clearSession();
+      useRoomStore.getState().exitRoom(reason);
+    }
     function onAuctionStarted(auction: AuctionState) {
       const durationMs = Math.max(0, auction.endsAt - Date.now());
       useRoomStore.getState().roundStarted(durationMs);
@@ -74,6 +79,7 @@ export function App() {
     store.setConnected(connected);
     socket.on('room:state', onRoomState);
     socket.on('room:error', onRoomError);
+    socket.on('room:kicked', onRoomKicked);
     socket.on('auction:started', onAuctionStarted);
     socket.on('auction:opened', onAuctionOpened);
     socket.on('auction:tick', onAuctionTick);
@@ -86,6 +92,7 @@ export function App() {
     return () => {
       socket.off('room:state', onRoomState);
       socket.off('room:error', onRoomError);
+      socket.off('room:kicked', onRoomKicked);
       socket.off('auction:started', onAuctionStarted);
       socket.off('auction:opened', onAuctionOpened);
       socket.off('auction:tick', onAuctionTick);
@@ -122,7 +129,8 @@ export function App() {
             alignItems: 'center',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img className="brand-logo" src="/icon-192.png" alt="Açık Artırma Ligi" />
             <span className={`dot ${connected ? '' : 'off'}`} />
             {connected ? 'Sunucuya bağlı' : 'Bağlanıyor…'}
           </div>

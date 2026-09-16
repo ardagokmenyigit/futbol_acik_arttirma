@@ -163,6 +163,24 @@ export interface AuctionState {
   history: Bid[];
 }
 
+/**
+ * RÖVANŞ TEKLİFİ — yalnız `phase === 'finished'` iken dolu.
+ *
+ * Herhangi bir insan katılımcı teklif edebilir (host olmak şart değil).
+ * Odadaki TÜM insanlar (`!isBot`) kabul edince sunucu odayı aynı kod ve aynı
+ * katılımcılarla lobiye sıfırlar (`gameNumber` artar). Teklif eden,
+ * yanıt vermeyenleri beklemeden "kabul edenlerle başla" diyebilir; o zaman
+ * kabul etmeyenler odadan çıkarılır (`room:kicked`). Kabul eden geri
+ * çekilebilir, teklif eden iptal edebilir, çıkan (`room:leave`) ana ekrana
+ * döner. Teklif eden çıkarsa teklif kabul etmiş birine devrolur; kimse
+ * yoksa iptal olur.
+ */
+export interface RematchState {
+  proposerId: string;
+  /** Kabul edenler — teklif eden baştan dahildir. */
+  acceptedIds: string[];
+}
+
 /** Sunucudaki tek doğruluk kaynağı — bir odanın tam durumu. */
 export interface RoomState {
   /** Dahili benzersiz oda kimliği. */
@@ -173,6 +191,10 @@ export interface RoomState {
   hostId: string;
   config: RoomConfig;
   participants: Participant[];
+  /** Bu odada kaçıncı oyun (1'den başlar; her rövanşta artar). */
+  gameNumber: number;
+  /** Aktif rövanş teklifi — yalnız `finished` fazında. */
+  rematch: RematchState | null;
   /** phase === 'draft' iken dolu. */
   auction: AuctionState | null;
   /** Draft'ta henüz artırmaya çıkmamış futbolcu id'leri. */
@@ -217,7 +239,47 @@ export const DEFENSE_WEIGHT: Record<Position, number> = {
 };
 
 /**
+ * Orta saha ROL ağırlığı. MID tek mevki ama iki karakter taşır: hücumcu
+ * (10 numara, kanat) ve defansif (6 numara). Simetrik 0.6/0.6 her ikisini
+ * de "yarım adam" sayıyordu: Olise (94 GEN, 90/55) güç katkısında 136 orta
+ * sahanın 120'ncisine düşüyor, iki tarafı 77 olan sıradan oyuncu onu
+ * geçiyordu (GEN–güç korelasyonu MID'de 0.59, diğer mevkilerde 0.93+).
+ *
+ * Uzmanlaşma `t = clamp((attack − defense) / MID_ROLE_SPAN, −1, 1)` ile
+ * ölçülür; baskın taraf `0.6 + 0.2·t`, zayıf taraf `0.6 − 0.2·t` ağırlık
+ * alır (toplam 1.2 sabit). Tam uzman (fark ≥ 25) 0.8/0.4, dengeli oyuncu
+ * 0.6/0.6. SÜREKLİ olması şart: ikili seçim (`attack >= defense`) paydalar
+ * farklı olduğu için (Σaw 3.7, Σdw 4.7) 88/87 ile 87/88 arasında ~0.9 güç
+ * sıçraması yaratıyordu — ≈8 GEN'e denk bir yapaylık.
+ */
+export const MID_ROLE_SHIFT = 0.2;
+export const MID_ROLE_SPAN = 25;
+
+/**
+ * Bir futbolcunun takım gücüne girdiği (hücum, savunma) ağırlıkları.
+ * MID dışında mevki sabiti; MID'de oyuncunun uzmanlaşmasına göre rol ağırlığı.
+ */
+export function positionWeights(p: Footballer): { attack: number; defense: number } {
+  const attack = ATTACK_WEIGHT[p.position];
+  const defense = DEFENSE_WEIGHT[p.position];
+  if (p.position !== 'MID') return { attack, defense };
+  const t = Math.max(-1, Math.min(1, (p.attack - p.defense) / MID_ROLE_SPAN));
+  return { attack: attack + MID_ROLE_SHIFT * t, defense: defense - MID_ROLE_SHIFT * t };
+}
+
+/**
  * Kadronun mevkisel ağırlıklı hücum ve savunma gücünü hesaplar.
+ *
+ * PAYDA MEVKİ SABİTİ, PAY ROL AĞIRLIĞI. Rol ağırlığı paydaya da girse bir
+ * oyuncunun katkısı kadronun geri kalanına bağlı olurdu (hücumcu MID paydayı
+ * 0.8, defansif MID 0.4 büyütür). Payda `ATTACK_WEIGHT`/`DEFENSE_WEIGHT`
+ * sabitinde kaldığı için tam kadroda her oyuncunun güç katkısı kadrodan
+ * bağımsız, doğrusal bir sayıdır: `aw·att/Σaw/2 + dw·def/Σdw/2`.
+ *
+ * VERİ SETİ SÖZLEŞMESİ: `players.json`'da aynı mevkideki iki oyuncudan GEN'i
+ * yüksek olanın bu katkısı her zaman daha yüksektir; eşit GEN eşit katkıdır
+ * (bkz. server/src/scripts/checkPowerMonotonic.ts). Ağırlıkları değiştiren
+ * bu kontrolü yeniden çalıştırmalı — veri seti ağırlıklara göre kalibre edildi.
  */
 export function calculateTeamStats(players: Footballer[]): CalculatedStats {
   if (!players || players.length === 0) {
@@ -230,12 +292,11 @@ export function calculateTeamStats(players: Footballer[]): CalculatedStats {
   let defenseWeight = 0;
 
   for (const p of players) {
-    const aw = ATTACK_WEIGHT[p.position];
-    const dw = DEFENSE_WEIGHT[p.position];
+    const { attack: aw, defense: dw } = positionWeights(p);
     attackSum += p.attack * aw;
-    attackWeight += aw;
+    attackWeight += ATTACK_WEIGHT[p.position];
     defenseSum += p.defense * dw;
-    defenseWeight += dw;
+    defenseWeight += DEFENSE_WEIGHT[p.position];
   }
 
   const attack = attackWeight > 0 ? attackSum / attackWeight : 50;

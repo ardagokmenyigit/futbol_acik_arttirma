@@ -4,6 +4,7 @@ import {
   dropBidderIfLeading,
   handleBotTakeover,
 } from '../auction/index.js';
+import type { RoomState } from '@fal/shared';
 import { cancelTournament, startTournamentImmediately } from '../tournament/runTournament.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { emitRoomState, redactRoomState } from './broadcast.js';
@@ -114,6 +115,69 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     startTournamentImmediately(roomId);
   });
 
+  /* ------------------------------ rövanş ------------------------------ */
+
+  socket.on('room:rematchPropose', (ack) => {
+    const { roomId, playerId } = socket.data;
+    if (!roomId || !playerId) {
+      ack({ ok: false, error: 'Bir odada değilsin' });
+      return;
+    }
+    try {
+      const room = roomStore.proposeRematch(roomId, playerId);
+      ack({ ok: true, data: { roomState: room } });
+      // Tek insan varsa (solo) teklif anında tamamlanır → doğrudan lobi.
+      if (!maybeStartRematch(io, roomId)) broadcastRoomState(io, room);
+    } catch (err) {
+      ack({ ok: false, error: errorMessage(err) });
+    }
+  });
+
+  socket.on('room:rematchRespond', ({ accept }, ack) => {
+    const { roomId, playerId } = socket.data;
+    if (!roomId || !playerId) {
+      ack({ ok: false, error: 'Bir odada değilsin' });
+      return;
+    }
+    try {
+      const room = roomStore.respondRematch(roomId, playerId, accept === true);
+      ack({ ok: true, data: { roomState: room } });
+      if (!maybeStartRematch(io, roomId)) broadcastRoomState(io, room);
+    } catch (err) {
+      ack({ ok: false, error: errorMessage(err) });
+    }
+  });
+
+  socket.on('room:rematchStart', (ack) => {
+    const { roomId, playerId } = socket.data;
+    if (!roomId || !playerId) {
+      ack({ ok: false, error: 'Bir odada değilsin' });
+      return;
+    }
+    try {
+      const { room, kickedIds } = roomStore.startRematch(roomId, playerId);
+      ack({ ok: true, data: { roomState: room } });
+      finishRematchStart(io, room, kickedIds);
+    } catch (err) {
+      ack({ ok: false, error: errorMessage(err) });
+    }
+  });
+
+  socket.on('room:rematchCancel', (ack) => {
+    const { roomId, playerId } = socket.data;
+    if (!roomId || !playerId) {
+      ack({ ok: false, error: 'Bir odada değilsin' });
+      return;
+    }
+    try {
+      const room = roomStore.cancelRematch(roomId, playerId);
+      ack({ ok: true, data: { roomState: room } });
+      broadcastRoomState(io, room);
+    } catch (err) {
+      ack({ ok: false, error: errorMessage(err) });
+    }
+  });
+
   socket.on('room:leave', () => {
     handleLeave(io, socket);
   });
@@ -129,6 +193,53 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
     // ve terk edilmiş odalar sunucuda süresiz yaşardı).
     if (room.phase !== 'lobby') scheduleBotTakeover(io, roomId, playerId);
   });
+}
+
+/* ------------------------------ rövanş ------------------------------ */
+
+/**
+ * Odadaki tüm insanlar kabul ettiyse rövanşı başlatır (oda lobiye döner) ve
+ * `true` döner. İnsan sayısı her değiştiğinde (kabul, çıkış, bot devri)
+ * çağrılmalı — "son bekleyen çıktı" durumunda da tamamlanır.
+ */
+function maybeStartRematch(io: TypedServer, roomId: string): boolean {
+  const room = roomStore.getRoom(roomId);
+  if (!room || !roomStore.isRematchComplete(room)) return false;
+  try {
+    const { room: reset, kickedIds } = roomStore.startRematch(roomId);
+    finishRematchStart(io, reset, kickedIds);
+    return true;
+  } catch (err) {
+    console.error('[rooms] rövanş başlatılamadı:', err);
+    return false;
+  }
+}
+
+/**
+ * Oda lobiye döndü: eski oyunun timer'larını temizle, çıkarılanları
+ * bilgilendirip soketlerini odadan al, herkese yeni durumu yayınla.
+ */
+function finishRematchStart(io: TypedServer, room: RoomState, kickedIds: string[]): void {
+  cancelAuction(room.roomId);
+  cancelTournament(room.roomId);
+  const kicked = new Set(kickedIds);
+  for (const s of io.sockets.sockets.values()) {
+    if (s.data.roomId !== room.roomId || !s.data.playerId) continue;
+    if (!kicked.has(s.data.playerId)) continue;
+    cancelBotTakeover(room.roomId, s.data.playerId);
+    s.data.roomId = undefined;
+    s.data.playerId = undefined;
+    void s.leave(room.roomId);
+    s.emit('room:kicked', {
+      reason: `Rövanş sensiz başladı. İstersen ${room.code} koduyla lobiye yeniden katılabilirsin.`,
+    });
+  }
+  // Bağlı olmayan (kopuk) kicked oyuncuların bekleyen devir timer'ları da gitsin.
+  for (const id of kickedIds) cancelBotTakeover(room.roomId, id);
+  console.log(
+    `[rooms] ${room.code}: rövanş #${room.gameNumber} lobisi — ${room.participants.length} oyuncu, ${kickedIds.length} çıkarıldı`,
+  );
+  broadcastRoomState(io, room);
 }
 
 /* --------------------- kopan bağlantı → bot devri --------------------- */
@@ -158,10 +269,23 @@ function scheduleBotTakeover(io: TypedServer, roomId: string, playerId: string):
     const participant = current?.participants.find((p) => p.id === playerId);
     if (!current || !participant || participant.connected || participant.isBot) return;
 
+    // Oda bu arada lobiye döndüyse (rövanş) bot değil, lobi kuralı: silinir.
+    if (current.phase === 'lobby') {
+      const room = roomStore.leaveRoom(roomId, playerId);
+      if (room) {
+        io.to(roomId).emit('room:playerLeft', { playerId });
+        broadcastRoomState(io, room);
+      } else {
+        closeRoom(roomId);
+      }
+      return;
+    }
+
     const room = roomStore.convertToBot(roomId, playerId);
     if (room) {
       handleBotTakeover(io, roomId, playerId);
-      broadcastRoomState(io, room);
+      // Bota dönüşen artık beklenmez — kalanların hepsi kabul ettiyse rövanş başlar.
+      if (!maybeStartRematch(io, roomId)) broadcastRoomState(io, room);
     } else {
       closeRoom(roomId);
     }
@@ -202,7 +326,8 @@ function handleLeave(io: TypedServer, socket: TypedSocket): void {
       dropBidderIfLeading(io, room.roomId, playerId);
     }
     io.to(room.roomId).emit('room:playerLeft', { playerId });
-    broadcastRoomState(io, room);
+    // Çıkan, rövanş teklifini reddetmiş sayılır; kalanlar tamamsa rövanş başlar.
+    if (!maybeStartRematch(io, room.roomId)) broadcastRoomState(io, room);
   } else {
     closeRoom(roomId);
   }
