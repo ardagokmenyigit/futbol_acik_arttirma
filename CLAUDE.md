@@ -212,8 +212,33 @@ alanları veri setinden kaldırıldı, kontrol scripti silindi.
 4. **Maç durumu** — geride kalan basar (hücum +%12, savunma −%7), 2+ farkla
    önde olan oyunu yönetir. Geri dönüşler buradan doğar.
 5. **Tempo** — son 20 dakikada pozisyon üretimi artar.
+6. **Uzatma** — turnuva maçı 90'da berabereyse aynı döngü 120. dakikaya kadar
+   sürer (tempo 70+ kuralıyla 1.18); `MatchResult.extraTime = true`, skor
+   uzatma gollerini içerir (u.s.), goller 91–120. dakikada.
 
-Beraberlikte (`isTournament`) seri penaltı. **Atıcı becerisi `GEN − mevki
+**NEDEN UZATMA (17 Eylül 2026).** 90 dakikadaki beraberlik oranı ~~%26 —
+gerçek futbolla (~~%25) uyumlu, düşürülmesi gereken bir şey değildi. Sorun
+beraberliğin doğrudan penaltıya, yani yazı-turaya gitmesiydi: penaltıda güçlü
+takım 1–4 puan farkta yalnız %51–56 kazanıyor. `baseConversion` ile bastırmak
+pahalı çıktı (5000 draft taraması: 0.111 → 0.18, gol/maç 3.7 → 6.0, maçların
+%71'i 5+ gollü; beraberlik yalnız %26 → %19.5 — eşit λ'lı Poisson'da eşitlik
+olasılığı çok yavaş düşer). Uzatma ise güce duyarlı 30 dakika daha verir.
+Ölçüm (5000 bot draft × 4 bracket, 60k maç; baseConversion 0.111 sabit):
+
+| güç farkı | uzatmaya gider | penaltıya gider | uzatmada güçlü kazanır | penaltıda güçlü kazanır | tur geçme |
+| --------- | -------------- | --------------- | ---------------------- | ----------------------- | --------- |
+| 0–2p      | %28–29         | %13             | %54–60                 | %52                     | %56–61    |
+| 3–4p      | %25–26         | %11–12          | %65                    | %53–54                  | %67–71    |
+| 5–6p      | %22–23         | %9–10           | %72–73                 | %58–60                  | %77–81    |
+| 7–8p      | %20            | %8              | %78–80                 | %62–66                  | %84–87    |
+
+Toplam: penaltıya giden maç **%26 → %11.5**, en güçlü şampiyon %45.5 →
+%47.3, en zayıf %9.6 → %8.9, normal süre gol/maç 3.68 sabit (uzatma
+golleriyle 4.04). Canlı ekranda uzatma ~4.6 sn ek süre alır
+(`EXTRA_TIME_LIVE_MS`), ilerleme çubuğu altına döner, kartlarda "U.S."
+etiketi görünür.
+
+Uzatma da berabereyse (`isTournament`) seri penaltı. **Atıcı becerisi `GEN − mevki
 cezası`** (`penaltySkill`; FWD 0, MID 3, DEF 26, GK 37); atıcılar buna göre
 iyiden kötüye sıralanır (forvetler önce, kaleci en son), başarı oranı aynı
 beceri ile rakip kalecinin GEN'inden türer. Cezalar, eski `0.7·HÜC + 0.3·GEN`
@@ -222,8 +247,8 @@ Daha eski model GEN + mevki payıydı ve 92 GEN kaleci 87 GEN defanstan önce
 atıyordu (kullanıcı "iyiden kötüye görünmüyor" dedi); HÜC ağırlıklı ölçek daha
 geniş olduğu için (ilk 5 atıcı ort. 76 / sd 10, eski 84 / 5) formül o zaman
 yeniden merkezlenmişti (merkez 74, eğim 0.0035). Güncel ölçüm (5000 bot draft,
-60k maç): mevki bazında FWD %73.9 · MID %72.8 · DEF %65.2 · GK %60.4;
-penaltıya giden maç %26.
+60k maç): mevki bazında FWD %73.7 · MID %73.0 · DEF %64.5 · GK %61.1;
+penaltıya giden maç %11.5 (uzatma sonrası).
 
 **Saf ve deterministik.** Aynı girdi + aynı seed → aynı sonuç.
 `simulateFullTournament` seed'i katılımcı id'lerinden türetir: her oda kendi
@@ -238,15 +263,16 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 (12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
 (rastgele olsa %25):
 
-| ayar                                                            | en güçlü  | en zayıf | oran     | gol/maç  |
-| --------------------------------------------------------------- | --------- | -------- | -------- | -------- |
-| sens 1.6 + saha av. 1.05 (eski)                                 | %34.6     | %17.1    | 2.0x     | 2.77     |
-| sens 2.5 + saha av. yok                                         | %37.7     | %15.0    | 2.5x     | 2.92     |
-| sens 2.5 + form ±%12 + baseConv 0.100                           | %39.1     | %13.2    | 3.0x     | 3.48     |
-| sens 3.2 + form ±%8 + baseConv 0.104                            | %42.7     | %10.7    | 4.0x     | 3.53     |
-| **sens 3.2 + form ±%4 + baseConv 0.108**                        | **%46.3** | **%8.3** | **5.6x** | **3.54** |
-| sens 3.2 + form ±%4 + MID rol + baseConv 0.099                  | %43.8     | %10.9    | 4.0x     | 3.66     |
-| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 (güncel) | %45.6     | %10.1    | 4.5x     | 3.68     |
+| ayar                                                   | en güçlü  | en zayıf | oran     | gol/maç  |
+| ------------------------------------------------------ | --------- | -------- | -------- | -------- |
+| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1    | 2.0x     | 2.77     |
+| sens 2.5 + saha av. yok                                | %37.7     | %15.0    | 2.5x     | 2.92     |
+| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2    | 3.0x     | 3.48     |
+| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7    | 4.0x     | 3.53     |
+| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3** | **5.6x** | **3.54** |
+| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9    | 4.0x     | 3.66     |
+| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1    | 4.5x     | 3.68     |
+| + uzatma (güncel; gol/maç uzatma golleri dahil)        | %47.3     | %8.9     | 5.3x     | 4.04     |
 
 (Son üç satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
 ayarla en güçlü %36.6, en zayıf %1.8 — oran 20.3x.)
@@ -273,8 +299,9 @@ en sık skor %9.9 → %10.8) ve penaltı sıklığı arttı (aşağıya bkz.). D
 dar bir form aralığı aynı iki takımın her karşılaşmada birbirine benzer
 maçlar üretmesine yol açar.
 
-⚠️ **ÖDÜNLEŞME — PENALTI SIKLIĞI.** Form daralınca denk takımlar denk kalır,
-yani **berabere bitme ihtimali artar**. Maçın penaltıya gitme oranı:
+⚠️ **ÖDÜNLEŞME — BERABERLİK SIKLIĞI.** Form daralınca denk takımlar denk kalır,
+yani **berabere bitme ihtimali artar**. Maçın 90 dakikada berabere bitme
+(uzatma öncesi ölçüm; o zaman doğrudan penaltıya gidiyordu) oranı:
 
 | güç farkı | form ±%12 | form ±%8 | form ±%4 (güncel) |
 | --------- | --------- | -------- | ----------------- |
@@ -282,11 +309,13 @@ yani **berabere bitme ihtimali artar**. Maçın penaltıya gitme oranı:
 | 5         | %21.3     | %21.6    | **%23.4**         |
 | 12        | %15.3     | %11.1    | **%8.8**          |
 
-Yani denk maçlarda daha çok, farkın açıldığı maçlarda daha az penaltı.
-Bu bilinçli bir tercihtir: penaltıya giden maçlar artık gerçekten denk
-takımlar arasında oluyor, güçlü takım haksızca penaltıya sürüklenmiyor.
-Kullanıcı "çok penaltı görüyorum" derse çözüm formu genişletmek DEĞİL,
-`baseConversion`ı yükseltmektir (daha çok gol → daha az beraberlik).
+Yani denk maçlarda daha çok, farkın açıldığı maçlarda daha az beraberlik.
+Bu bilinçli bir tercihtir: beraberlik gerçekten denk takımlar arasında
+oluyor, güçlü takım haksızca sürüklenmiyor. Uzatma eklendikten sonra bu
+beraberliklerin yalnız ~%45'i penaltıya kalıyor (toplam %11.5). Kullanıcı
+"çok penaltı görüyorum" derse çözüm formu genişletmek de `baseConversion`ı
+yükseltmek de DEĞİLDİR (ikincisi ölçüldü: gol sayısını %63 artırmak
+beraberliği yalnız 6.5 puan düşürüyor) — uzatma zaten bunun için var.
 
 - **Saha avantajı KAPATILDI** (`homeAdvantage` varsayılan 1.0). Eleme
   ağacında ev sahipliği keyfî bir koltuktur; 1.05 maç başına ~3 güç puanı
@@ -315,7 +344,7 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
 - Format her zaman **eleme usulü turnuva ağacı**: 4 takım (yarı final) ya da
   8 takım (çeyrek final). Draft bitince `finishDraft` → `runTournament`.
 - Maçlar sunucuda önceden simüle edilir (`simulateFullTournament`), sonuçlar
-  tur tur yayınlanır; beraberlikte penaltı.
+  tur tur yayınlanır; beraberlikte önce uzatma, sonra penaltı.
 - **CANLI MAÇ EKRANI** (`server/src/tournament/runTournament.ts` +
   client `LiveMatchTicker`): bir maçın iki tarafından biri bile **insan**sa
   sunucu önce `tournament:matchLive { matchId, result }` yayınlar, istemci

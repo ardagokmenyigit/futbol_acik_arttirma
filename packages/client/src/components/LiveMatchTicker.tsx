@@ -67,7 +67,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   speedMs = 30,
   serverPaced = false,
 }) => {
-  const [phase, setPhase] = useState<'regular' | 'shootout' | 'finished'>('regular');
+  const [phase, setPhase] = useState<'regular' | 'extra' | 'shootout' | 'finished'>('regular');
   const [minute, setMinute] = useState(1);
   const [liveHomeScore, setLiveHomeScore] = useState(0);
   const [liveAwayScore, setLiveAwayScore] = useState(0);
@@ -89,7 +89,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   const resultRef = useRef(result);
   resultRef.current = result;
 
-  // 90 dakikalık normal süre simülasyonu
+  // 90 dakikalık normal süre + (beraberlikte) 30 dakikalık uzatma simülasyonu
   useEffect(() => {
     setPhase('regular');
     setMinute(1);
@@ -107,27 +107,42 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     let min = 1;
     let hScore = 0;
     let aScore = 0;
+    const lastMinute = result.extraTime ? 120 : 90;
+
+    const finishMatch = (): void => {
+      const shootout = result.penaltyShootout;
+      const endLabel = result.extraTime ? 'Uzatma da' : '90 Dakika';
+      if (shootout && shootout.length > 0) {
+        setPhase('shootout');
+        setTickerLogs((prev) => [
+          `${lastMinute}' ⏱️ ${endLabel} Berabere Bitti (${result.scoreHome} - ${result.scoreAway})! Kazananı SERİ PENALTI ATIŞLARI belirleyecek! 🔥`,
+          ...prev,
+        ]);
+      } else {
+        setPhase('finished');
+        setIsFinished(true);
+        const suffix = result.extraTime ? ' (uzatmalar sonunda)' : '';
+        setTickerLogs((prev) => [
+          `${lastMinute}' 🏁 Maç Bitti${suffix}! Sonuç: ${homeName} ${result.scoreHome} - ${result.scoreAway} ${awayName}`,
+          ...prev,
+        ]);
+      }
+    };
 
     const timer = setInterval(() => {
       min += 1;
-      if (min > 90) {
+      if (min > lastMinute) {
         clearInterval(timer);
-        const shootout = result.penaltyShootout;
-        if (shootout && shootout.length > 0) {
-          setPhase('shootout');
-          setTickerLogs((prev) => [
-            `90' ⏱️ 90 Dakika Berabere Bitti (${result.scoreHome} - ${result.scoreAway})! Kazananı SERİ PENALTI ATIŞLARI belirleyecek! 🔥`,
-            ...prev,
-          ]);
-        } else {
-          setPhase('finished');
-          setIsFinished(true);
-          setTickerLogs((prev) => [
-            `90' 🏁 Maç Bitti! Sonuç: ${homeName} ${result.scoreHome} - ${result.scoreAway} ${awayName}`,
-            ...prev,
-          ]);
-        }
+        finishMatch();
         return;
+      }
+      if (min === 91) {
+        // Normal süre berabere bitti, uzatmaya gidiliyor.
+        setPhase('extra');
+        setTickerLogs((prev) => [
+          `90' ⏱️ Normal Süre Berabere Bitti (${hScore} - ${aScore})! 30 dakikalık UZATMA başlıyor! ⚡`,
+          ...prev,
+        ]);
       }
 
       setMinute(min);
@@ -258,7 +273,8 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     }
   }, [isFinished, serverPaced]);
 
-  const progressPct = Math.min(100, Math.round((minute / 90) * 100));
+  const totalMinutes = result.extraTime ? 120 : 90;
+  const progressPct = Math.min(100, Math.round((minute / totalMinutes) * 100));
 
   const hasShootout = Boolean(result.penaltyShootout && result.penaltyShootout.length > 0);
   // Nokta sayısı serinin uzayıp uzamayacağını ELE VERMEMELİ: baştan yalnız
@@ -275,7 +291,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   const shootoutRounds = Array.from({ length: revealedRound }, (_, i) => i + 1);
 
   const renderPenaltyDots = (teamId: string) => {
-    if (!hasShootout || phase === 'regular') return null;
+    if (!hasShootout || phase === 'regular' || phase === 'extra') return null;
     const shootout = result.penaltyShootout!;
 
     return (
@@ -454,7 +470,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               </span>
             )}
           </div>
-          {phase !== 'regular' && hasShootout && renderPenaltyDots(result.homeId)}
+          {hasShootout && renderPenaltyDots(result.homeId)}
         </div>
 
         <div style={{ textAlign: 'center' }}>
@@ -483,8 +499,10 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             {phase === 'shootout'
               ? `Penaltılar: ${shootoutHomeScore} - ${shootoutAwayScore}`
               : isFinished
-                ? "Maç Sonu (90')"
-                : `Dakika: ${minute}'`}
+                ? `Maç Sonu (${totalMinutes}')${result.extraTime ? ' · U.S.' : ''}`
+                : phase === 'extra'
+                  ? `Uzatma: ${minute}'`
+                  : `Dakika: ${minute}'`}
           </div>
         </div>
 
@@ -520,12 +538,12 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               </span>
             )}
           </div>
-          {phase !== 'regular' && hasShootout && renderPenaltyDots(result.awayId)}
+          {hasShootout && renderPenaltyDots(result.awayId)}
         </div>
       </div>
 
-      {/* Normal Süre İlerleme Çubuğu */}
-      {phase === 'regular' && (
+      {/* Süre İlerleme Çubuğu (normal süre + uzatma) */}
+      {(phase === 'regular' || phase === 'extra') && (
         <div
           style={{
             height: 6,
@@ -539,7 +557,8 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             style={{
               width: `${progressPct}%`,
               height: '100%',
-              backgroundColor: 'var(--accent-green, #10b981)',
+              backgroundColor:
+                phase === 'extra' ? 'var(--accent-gold)' : 'var(--accent-green, #10b981)',
               transition: 'width 0.1s linear',
             }}
           />
@@ -626,8 +645,8 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         </div>
       )}
 
-      {/* Son Gol Anonsu (Normal süre boyunca) */}
-      {latestGoal && phase === 'regular' && (
+      {/* Son Gol Anonsu (oyun sürerken) */}
+      {latestGoal && (phase === 'regular' || phase === 'extra') && (
         <div
           style={{
             backgroundColor: 'rgba(245, 158, 11, 0.15)',

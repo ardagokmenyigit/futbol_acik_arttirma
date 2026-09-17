@@ -139,7 +139,8 @@ export function HowToPlay({ onClose }: Props) {
               <p>
                 Kadrolar tamamlanınca eleme ağacı kurulur. Maçlar dakika dakika simüle edilir;{' '}
                 <strong>bir insanın oynadığı maçlar canlı</strong> akar, bot–bot maçlar anında
-                sonuçlanır. Beraberlikte <strong>seri penaltı</strong> vardır.
+                sonuçlanır. Beraberlikte önce <strong>30 dakika uzatma</strong>, hâlâ eşitse{' '}
+                <strong>seri penaltı</strong> vardır.
               </p>
               <p className="htp-note">
                 <strong>Maçı belirleyen sayı GÜÇ'tür</strong> ve tek girdisi futbolcunun{' '}

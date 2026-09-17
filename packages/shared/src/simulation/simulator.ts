@@ -77,7 +77,21 @@ export interface SimulateMatchOptions {
    * Tekdüzelik kontrolü: 60k maçta 84 farklı skor, en sık skor (1-1) %10.8.
    */
   strengthSensitivity?: number;
-  /** Turnuva eleme maçı mı? Beraberlikte penaltı atışlarına gider. */
+  /**
+   * Turnuva eleme maçı mı? 90 dakika berabere biterse önce 30 dakika UZATMA
+   * oynanır, hâlâ eşitse seri penaltı.
+   *
+   * NEDEN UZATMA (17 Eylül 2026): 90 dakikada beraberlik oranı ~%26 — gerçek
+   * futbolla (~%25) uyumlu, düşürülmesi gereken bir şey değil. Sorun
+   * beraberliğin doğrudan penaltıya, yani yazı-turaya gitmesiydi: penaltıda
+   * güçlü takım 1–4 puan farkta yalnız %51–56 kazanıyor. `baseConversion`
+   * ile bastırmak pahalı (3.7 → 6.0 gol/maç ancak %26 → %19.5 beraberlik;
+   * eşit λ'lı Poisson'da eşitlik olasılığı çok yavaş düşer). Uzatma güce
+   * duyarlı 30 dakika daha verir: 5 puan farkta uzatmada biten maçların
+   * %72'sini güçlü alır (penaltıda %60). Ölçüm (5000 bot draft × 4 bracket):
+   * penaltıya giden maç %26 → %11.5, en güçlü şampiyon %45.5 → %47.3,
+   * normal süre gol/maç 3.68 sabit (uzatma golleriyle 4.04).
+   */
   isTournament?: boolean;
 }
 
@@ -116,6 +130,10 @@ const PROTECTING_DEFENSE = 1.06;
 
 /** Son 20 dakikada tempo artar (yorgunluk + risk alma). */
 const LATE_TEMPO = 1.18;
+
+/** Normal süre ve uzatma uzunluğu (dakika). */
+export const REGULAR_TIME_MINUTES = 90;
+export const EXTRA_TIME_MINUTES = 30;
 
 /**
  * Penaltı atma yeteneği — GEN eksi MEVKİ CEZASI.
@@ -192,6 +210,8 @@ function pickScorer(team: Team, prng: () => number): Footballer | undefined {
  *     −%7); 2+ farkla önde olan oyunu yönetir. Geri dönüşler buradan
  *     doğar, skorlar tekdüze olmaz.
  *  5. TEMPO — son 20 dakikada pozisyon üretimi artar.
+ *  6. UZATMA — turnuva maçı 90'da berabereyse aynı döngü 120'ye kadar sürer
+ *     (tempo çarpanı 70+ kuralıyla zaten 1.18); hâlâ eşitse seri penaltı.
  *
  * Saf (pure) ve deterministiktir: aynı girdi + aynı seed → aynı sonuç.
  */
@@ -224,7 +244,15 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
   const homeForm = FORM_MIN + prng() * FORM_SPREAD;
   const awayForm = FORM_MIN + prng() * FORM_SPREAD;
 
-  for (let minute = 1; minute <= 90; minute++) {
+  let extraTime = false;
+  const lastMinute = REGULAR_TIME_MINUTES + EXTRA_TIME_MINUTES;
+
+  for (let minute = 1; minute <= lastMinute; minute++) {
+    // 6. UZATMA — normal süre bitti: turnuva maçı ve beraberlik yoksa maç biter
+    if (minute === REGULAR_TIME_MINUTES + 1) {
+      if (!isTournament || scoreHome !== scoreAway) break;
+      extraTime = true;
+    }
     const diff = scoreHome - scoreAway;
 
     // 4. MAÇ DURUMU — geride kalan basar, önde olan yönetir
@@ -258,7 +286,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     const awayThreat = awayAtt / homeDef;
 
     // 5. TEMPO
-    const tempo = minute > 70 ? LATE_TEMPO : 1;
+    const tempo = minute > 70 ? LATE_TEMPO : 1; // uzatmada da yüksek tempo sürer
 
     // 2. POZİSYON ÜRETİMİ
     if (prng() >= chanceRate * tempo) continue;
@@ -308,7 +336,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
   } else if (scoreAway > scoreHome) {
     winnerId = awayTeam.participantId;
   } else if (isTournament) {
-    // Seri penaltı atışları — iyiden kötüye (HÜC ağırlıklı beceri).
+    // Uzatma da berabere: seri penaltı atışları — iyiden kötüye.
     const homeShooters = [...(homeTeam.players ?? [])].sort(
       (a, b) => penaltySkill(b) - penaltySkill(a),
     );
@@ -448,6 +476,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     scoreHome,
     scoreAway,
     events,
+    ...(extraTime ? { extraTime } : {}),
     penaltiesHome,
     penaltiesAway,
     winnerId,

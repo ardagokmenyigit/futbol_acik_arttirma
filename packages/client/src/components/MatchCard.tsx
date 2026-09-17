@@ -104,6 +104,20 @@ export const MatchCard: FC<MatchCardProps> = ({
           }}
         >
           <span>{isFinished ? `${result?.scoreHome} - ${result?.scoreAway}` : 'VS'}</span>
+          {isFinished && result?.extraTime && (
+            <span
+              style={{
+                fontSize: '0.68rem',
+                color: 'var(--text-muted)',
+                letterSpacing: 1,
+                fontWeight: 700,
+                marginTop: 2,
+              }}
+              title="Uzatma sonucu"
+            >
+              U.S.
+            </span>
+          )}
           {isFinished && result?.penaltiesHome !== undefined && (
             <span
               style={{
