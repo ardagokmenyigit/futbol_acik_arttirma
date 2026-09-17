@@ -3,6 +3,7 @@ import type {
   MatchEvent,
   MatchResult,
   PenaltyShootoutAttempt,
+  Position,
   Team,
 } from '../types.js';
 import { createPRNG, stringToSeed } from './random.js';
@@ -26,15 +27,18 @@ export interface SimulateMatchOptions {
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
   /**
-   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.099).
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.111).
    *
    * MAÇ BAŞINA GOL bu değere neredeyse doğrusal bağlı — heyecan kolu budur.
    * Hedef maç başı ~3.5 gol; `strengthSensitivity`, `FORM_SPREAD` ya da
-   * TAKIM GÜCÜ AĞIRLIKLARI (`positionWeights`) değişirse gol sayısı kayar ve
+   * TAKIM GÜCÜ AĞIRLIKLARI (`POSITION_POWER_WEIGHT`) değişirse gol sayısı kayar ve
    * bu değerle geri kalibre edilmelidir. Sens 3.2 + form ±%4 için 0.108'di;
-   * MID rol ağırlığı hücum ölçeğini yükselttiği için (gol/maç 3.64 → 3.98)
-   * 0.099'a çekildi — aynı bot draft ölçümünde 3.66'ya geri döndü, şampiyon
-   * oranları değişmedi.
+   * MID rol ağırlığı hücum ölçeğini yükselttiği için 0.099'a çekilmişti.
+   * GEN tabanlı güç modelinde takım hücumu ile savunması aynı ölçekte
+   * (ort. 84.6 / 84.7; eski modelde 78.3 / 75.6, yani hücum %3.6 öndeydi ve
+   * tehdit oranı^3.2 ile ~%12 fazla gol üretiyordu). Gol/maç 3.66 → 3.27'ye
+   * düştüğü için 0.111'e çıkarıldı: 5000 bot draft × 4 bracket ölçümünde
+   * 3.68 gol/maç, 0-0 %3.8, penaltı %26.
    *
    * Ölçüm (12.000 turnuva, gerçek bot draft'ları; sens 2.5 + form ±%12 iken):
    *
@@ -114,39 +118,49 @@ const PROTECTING_DEFENSE = 1.06;
 const LATE_TEMPO = 1.18;
 
 /**
- * Penaltı atma yeteneği — HÜCUM AĞIRLIKLI: `0.7·attack + 0.3·overall`.
+ * Penaltı atma yeteneği — GEN eksi MEVKİ CEZASI.
  *
- * Atıcı sırası da gol ihtimali de bu sayıdan türer; yani forvetler önce,
- * kaleci en son atar ve kartta görünen HÜC değeriyle sıra tutarlıdır.
- * (Önceki model GEN + mevki payıydı: 92 GEN kaleci 87 GEN defanstan önce
- * atıyordu — oyuncuya "iyiden kötüye" görünmüyordu.)
+ * Atıcı sırası da gol ihtimali de bu sayıdan türer; forvetler önce, kaleci
+ * en son atar. Eski model `0.7·HÜC + 0.3·GEN` idi; oyuncu başına HÜC alanı
+ * kalkınca (bkz. `POSITION_POWER_WEIGHT`) aynı ölçek mevki ofsetiyle korundu:
+ * cezalar, eski beceri ile GEN arasındaki mevki ortalaması farkıdır (veri
+ * seti ölçümü: FWD −0.3, MID −3.0, DEF −25.9, GK −37.1). Böylece
+ * `calcSuccessRate`in merkezi (74) ve eğimi (0.0035) değişmedi.
  *
- * Ölçek: ilk 5 atıcının becerisi ort. ~76, sd ~10 (3000 rastgele kadro;
- * eski modelde ort. 84, sd 5). `calcSuccessRate` buna göre merkezlenmiştir
- * (merkez 74, eğim 0.0035) — ortalama gol oranı ~%72'de sabit kaldı, yalnız
- * mevkiler arası fark değişti: FWD ~%74, MID ~%73, DEF ~%65, GK ~%61.
+ * Ölçek: ilk 5 atıcının becerisi ort. ~76, sd ~10; ortalama gol oranı ~%72,
+ * mevkiler arası fark FWD ~%74, MID ~%73, DEF ~%65, GK ~%61.
  */
-const PENALTY_ATTACK_WEIGHT = 0.7;
+const PENALTY_POSITION_PENALTY: Record<Position, number> = {
+  FWD: 0,
+  MID: 3,
+  DEF: 26,
+  GK: 37,
+};
 const PENALTY_SKILL_CENTER = 74;
 const PENALTY_SKILL_SLOPE = 0.0035;
 
 function penaltySkill(p: Footballer): number {
-  return PENALTY_ATTACK_WEIGHT * p.attack + (1 - PENALTY_ATTACK_WEIGHT) * p.overall;
+  return p.overall - PENALTY_POSITION_PENALTY[p.position];
 }
+
+/**
+ * Golcü seçimi — mevki ağırlığı × GEN. Ağırlıklar eski `mevki × HÜC/20`
+ * modelinin fiili oranlarını korur (FWD : MID : DEF : GK ≈ 25 : 11 : 1.6 : 0.08);
+ * HÜC alanı kalktığı için mevki farkı doğrudan ağırlığa taşındı.
+ */
+const SCORER_POSITION_WEIGHT: Record<Position, number> = {
+  FWD: 6.0,
+  MID: 2.7,
+  DEF: 0.4,
+  GK: 0.02,
+};
 
 function pickScorer(team: Team, prng: () => number): Footballer | undefined {
   if (!team.players || team.players.length === 0) return undefined;
 
-  const weights = team.players.map((p) => {
-    let posWeight = 1.0;
-    if (p.position === 'FWD') posWeight = 6.0;
-    else if (p.position === 'MID') posWeight = 2.8;
-    else if (p.position === 'DEF') posWeight = 0.7;
-    else if (p.position === 'GK') posWeight = 0.05;
-
-    const attMult = Math.max(1, p.attack / 20);
-    return posWeight * attMult;
-  });
+  const weights = team.players.map(
+    (p) => SCORER_POSITION_WEIGHT[p.position] * Math.max(1, p.overall / 20),
+  );
 
   const totalWeight = weights.reduce((s, w) => s + w, 0);
   if (totalWeight <= 0) {
@@ -189,7 +203,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.0,
     chanceRate = 0.3,
-    baseConversion = 0.099,
+    baseConversion = 0.111,
     strengthSensitivity = 3.2,
     isTournament = true,
   } = options;
@@ -312,16 +326,15 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
         id: `gen-${team.participantId}-${kickIdx}`,
         name: `${team.nickname} Oyuncusu ${kickIdx + 1}`,
         position: 'FWD',
-        attack: team.attack,
-        defense: team.defense,
         overall: 80,
       };
     };
 
     const homeGk = homeTeam.players?.find((p) => p.position === 'GK');
     const awayGk = awayTeam.players?.find((p) => p.position === 'GK');
-    const homeGkDef = homeGk?.defense ?? baseHomeDef;
-    const awayGkDef = awayGk?.defense ?? baseAwayDef;
+    // Kalecinin penaltı kurtarma gücü = GEN'i (veri setinde GK SAV ≈ GEN idi).
+    const homeGkDef = homeGk?.overall ?? baseHomeDef;
+    const awayGkDef = awayGk?.overall ?? baseAwayDef;
 
     const calcSuccessRate = (shooterSkill: number, oppGkDef: number) => {
       const rate =

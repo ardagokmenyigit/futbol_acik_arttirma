@@ -142,20 +142,18 @@ export function HowToPlay({ onClose }: Props) {
                 sonuçlanır. Beraberlikte <strong>seri penaltı</strong> vardır.
               </p>
               <p className="htp-note">
-                <strong>Maçı belirleyen sayı GÜÇ'tür.</strong> Mevkiye göre ağırlıklı hesaplanır:
-                hücumu <strong>forvet ve orta saha</strong>, savunmayı{' '}
-                <strong>defans ve kaleci</strong> belirler. Kadro ekranındaki{' '}
-                <em>kadro ortalaması</em> sadece bilgidir — maç sonucunu <strong>etkilemez</strong>.
+                <strong>Maçı belirleyen sayı GÜÇ'tür</strong> ve tek girdisi futbolcunun{' '}
+                <strong>genel reytingi</strong>dir. Mevki, reytingin nereye aktığını belirler:{' '}
+                <strong>kaleci ve defans</strong> tamamen savunmaya, <strong>forvet</strong> tamamen
+                hücuma, <strong>orta saha</strong> ağırlıkla hücuma (1.5) ve biraz savunmaya (0.5)
+                yazılır. Takımın hücum ve savunma gücü bu ağırlıklı ortalamalardır; güç ikisinin
+                ortalamasıdır.
               </p>
               <p>
-                Yani 88'lik bir kaleci almakla 88'lik bir forvet almak aynı şey değildir. Parayı{' '}
-                <strong>nereye</strong> harcadığın, ne kadar harcadığın kadar önemli.
-              </p>
-              <p>
-                Pratik kural: <strong>genel reyting artık iyi bir pusuladır.</strong> Aynı mevkide
-                daha yüksek reytingli futbolcu, neredeyse her zaman takımına daha çok katar. Ama
-                mevkiler arasında karşılaştırma yapma — 88'lik bir kaleci ile 88'lik bir forvet
-                takımına aynı şeyi katmaz.
+                Pratik kural: <strong>reyting her mevkide aynı değerdedir.</strong> 90'lık bir
+                kaleci de 90'lık bir forvet de takım gücüne aynı miktarı katar; fark, gücün hücuma
+                mı savunmaya mı gittiğidir. Maçta hücumun rakibin savunmasıyla karşılaştırılır — bir
+                tarafı ihmal etmek diğerini şişirmekle telafi edilmez.
               </p>
             </div>
           </section>
