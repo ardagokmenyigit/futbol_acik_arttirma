@@ -2,6 +2,9 @@
 
 # ⚽ Açık Artırma Ligi (Football Auction League)
 
+**🎮 Hemen oyna:** <https://futbol-acik-arttirma.vercel.app/> — kurulum yok,
+tarayıcıdan açılır; tek kişi bile oynayabilir (eksik takımlar botlarla dolar).
+
 Gerçek zamanlı, çok oyunculu bir web oyunu: oyuncular başlangıç bütçeleriyle
 her turda rastgele gelen futbolcuları **açık artırmayla** satın alır, en iyi
 kadroyu kurar ve turnuva sonunda takımlar simüle edilen maçlarla yarışır.
@@ -56,14 +59,14 @@ npm run dev
 
 ## 🗺️ Yol Haritası
 
-- [ ] Altyapı ve oda sistemi
-- [ ] Futbolcu veri seti
-- [ ] Açık artırma (draft) motoru
-- [ ] Kadro kuralları ve validasyon
-- [ ] Maç simülasyon algoritması
-- [ ] Turnuva/lig yörüngesi
-- [ ] UI/UX ve canlı maç anlatımı
-- [ ] Deploy ve test
+- [x] Altyapı ve oda sistemi
+- [x] Futbolcu veri seti (504 futbolcu)
+- [x] Açık artırma (draft) motoru — zorunlu açılış, anti-snipe, açılış pası
+- [x] Kadro kuralları ve validasyon
+- [x] Maç simülasyon algoritması (deterministik, seri penaltı)
+- [x] Eleme turnuvası (2 / 4 / 8 takım) ve rövanş
+- [x] UI/UX ve canlı maç anlatımı
+- [x] Deploy (Vercel + Render) — canlı: <https://futbol-acik-arttirma.vercel.app/>
 
 ## 👥 Katkı (Contributing)
 
