@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   calculateTeamStats,
   isBudgetHidden,
+  powerRoleLabel,
+  powerSplit,
   type Footballer,
   type Position,
   type RoomState,
@@ -242,8 +244,8 @@ export function DraftPage({ room }: Props) {
 
           <div className="stat-row">
             <StatItem label="GEN" value={f.overall} />
-            <StatItem label="HÜC" value={f.attack} />
-            <StatItem label="DEF" value={f.defense} />
+            <StatItem label="HÜC" value={powerSplit(f).attack} />
+            <StatItem label="SAV" value={powerSplit(f).defense} />
           </div>
 
           <div className="top-bid-row">
@@ -402,7 +404,7 @@ export function DraftPage({ room }: Props) {
               </span>
               <span>·</span>
               <span>
-                DEF: <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.defense}</strong>
+                SAV: <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.defense}</strong>
               </span>
             </div>
           )}
@@ -437,9 +439,7 @@ export function DraftPage({ room }: Props) {
                           <div className="squad-player-stats">
                             <span className="stat-tag gen">GEN {pl.overall}</span>
                             <span className="sep">|</span>
-                            <span className="stat-tag">HÜC {pl.attack}</span>
-                            <span className="sep">|</span>
-                            <span className="stat-tag">DEF {pl.defense}</span>
+                            <span className="stat-tag">{powerRoleLabel(pl.position)}</span>
                           </div>
                         </div>
                       ))}
@@ -580,6 +580,6 @@ function wonText(
   f?: Footballer | null,
 ): string {
   if (!w.winnerNickname) return `${w.footballerName} satılmadı (teklif gelmedi).`;
-  const stats = f ? ` (GEN ${f.overall}, HÜC ${f.attack}, DEF ${f.defense})` : '';
+  const stats = f ? ` (GEN ${f.overall})` : '';
   return `${w.winnerNickname}, ${w.footballerName}${stats} oyuncusunu ${w.amount}M'ye aldı.`;
 }

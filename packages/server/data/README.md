@@ -2,8 +2,16 @@
 
 ## `players.json` ELLE BAKIMLIDIR — ÜRETİLMEZ
 
-504 futbolcu (72 GK, 144 DEF, 119 MID, 169 FWD). Bu dosya tek doğru kaynaktır
+648 futbolcu (82 GK, 150 DEF, 217 MID, 199 FWD). Bu dosya tek doğru kaynaktır
 ve **hiçbir script tarafından üretilmez.**
+
+Oyuncu başına alanlar: `id`, `name`, `position`, `overall`. **HÜC/SAV alanı
+yoktur** — takım gücü yalnız GEN ve mevkiden hesaplanır (`CLAUDE.md` §3.2,
+`POSITION_POWER_WEIGHT`). Eski `attack`/`defense` alanları 17 Eylül 2026'da
+kaldırıldı: elle kalibre edilen bu sayılar her veri güncellemesinde GEN–güç
+sırasını bozuyordu (son güncellemede 321 ihlal). Yeni oyuncu eklerken yalnız
+GEN'i doğru girmek yeterlidir; fazladan alanlar ayrıştırıcı tarafından yok
+sayılır ama eklemeyin.
 
 Bir dönem üç ayrı script bu dosyanın üstüne yazıyordu (`generatePlayers.ts`,
 `importFromFC26.ts`, `importKaggleData.ts`). Üçü de bayatlamıştı: 108 oyuncu
@@ -22,19 +30,13 @@ etiketlemelidir (bkz. `CLAUDE.md` §4).
 
 ## Mevki sınıflandırması
 
-Oyunun güç modelinde MID mevkisinde savunma, hücum kadar sayılır
-(`ATTACK_WEIGHT.MID` = `DEFENSE_WEIGHT.MID` = 0.6). Bu yüzden **savunması 70'in
-altındaki oyuncular MID olarak etiketlenmemelidir** — kanatlar ve ofansif orta
-sahalar FWD'dir.
-
-Kural bir kez ihlal edilmişti: Salah, Yamal, Raphinha gibi kanatlar MID
-etiketliydi ve savunmaları 25–58 arasındaydı. Sonuç olarak GEN reytingi orta
-sahada gerçek katkıyı ölçmüyordu (sıra korelasyonu yalnızca 0.509) ve veri
-setindeki en yüksek reytingli orta saha, katkıya göre 144 oyuncu içinde 129.
-sıradaydı. 25 oyuncu FWD'ye taşınarak düzeltildi (korelasyon 0.866).
-
-Eşik keyfî değil: orta sahaların savunma dağılımında 70'te doğal bir kırılma
-var (65–69 aralığında 7 oyuncu, 70–74 aralığında 20, 75–79 aralığında 52).
+Mevki, GEN'in hangi eksene aktığını belirler: GK ve DEF tamamen savunmaya,
+FWD tamamen hücuma, MID 1.5 hücum / 0.5 savunma. Bu yüzden **kanatlar ve
+ofansif orta sahalar FWD, tam saha / defansif orta sahalar MID** olarak
+etiketlenmelidir — bir kanadı MID yapmak onun GEN'inin dörtte birini savunmaya
+yazar. (Eski modelde bu kural "savunması 70'in altındaki oyuncu MID olmasın"
+diye SAV alanı üzerinden ifade ediliyordu; alan kalkınca kural mevki
+tanımının kendisi oldu.)
 
 ## Kaynak
 

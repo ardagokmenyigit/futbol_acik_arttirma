@@ -17,17 +17,19 @@ export type RoomPhase = 'lobby' | 'draft' | 'simulation' | 'finished';
 
 /**
  * Havuzdaki bir futbolcu. Statik veri (`packages/server/data/players.json`).
- * Stat aralıkları için Kişi 2'nin üretim scriptine bakın (öneri: 1-100).
+ * GEN aralığı 1-100 (veri setinde 78-96); dosya elle bakımlıdır, bkz. data/README.md.
  */
 export interface Footballer {
   id: string;
   name: string;
   position: Position;
-  /** Hücum katkısı. */
-  attack: number;
-  /** Defans katkısı. */
-  defense: number;
-  /** Genel değer — kart üzerinde gösterilir. */
+  /**
+   * Genel değer (GEN) — kartta gösterilen ve TAKIM GÜCÜNE GİREN TEK sayı.
+   * Mevki, GEN'in hücuma mı savunmaya mı aktığını belirler
+   * (`POSITION_POWER_WEIGHT`). Oyuncu başına ayrı HÜC/SAV alanı yoktur:
+   * eski elle kalibre edilen alanlar her veri güncellemesinde GEN–güç
+   * sırasını bozuyordu.
+   */
   overall: number;
   /**
    * @deprecated TABAN FİYAT KALDIRILDI. Açık artırma artık 0'dan başlar ve
@@ -248,62 +250,59 @@ export interface CalculatedStats {
   defense: number;
 }
 
-export const ATTACK_WEIGHT: Record<Position, number> = {
-  FWD: 1.0,
-  MID: 0.6,
-  DEF: 0.2,
-  GK: 0.1,
-};
-
-export const DEFENSE_WEIGHT: Record<Position, number> = {
-  FWD: 0.2,
-  MID: 0.6,
-  DEF: 1.0,
-  GK: 1.1,
-};
-
 /**
- * Orta saha ROL ağırlığı. MID tek mevki ama iki karakter taşır: hücumcu
- * (10 numara, kanat) ve defansif (6 numara). Simetrik 0.6/0.6 her ikisini
- * de "yarım adam" sayıyordu: Olise (94 GEN, 90/55) güç katkısında 136 orta
- * sahanın 120'ncisine düşüyor, iki tarafı 77 olan sıradan oyuncu onu
- * geçiyordu (GEN–güç korelasyonu MID'de 0.59, diğer mevkilerde 0.93+).
+ * MEVKİ → (hücum, savunma) AĞIRLIĞI. Takım gücünün tek girdisi GEN'dir
+ * (`overall`); mevki yalnız GEN'in hangi eksene aktığını belirler:
  *
- * Uzmanlaşma `t = clamp((attack − defense) / MID_ROLE_SPAN, −1, 1)` ile
- * ölçülür; baskın taraf `0.6 + 0.2·t`, zayıf taraf `0.6 − 0.2·t` ağırlık
- * alır (toplam 1.2 sabit). Tam uzman (fark ≥ 25) 0.8/0.4, dengeli oyuncu
- * 0.6/0.6. SÜREKLİ olması şart: ikili seçim (`attack >= defense`) paydalar
- * farklı olduğu için (Σaw 3.7, Σdw 4.7) 88/87 ile 87/88 arasında ~0.9 güç
- * sıçraması yaratıyordu — ≈8 GEN'e denk bir yapaylık.
+ *   GK, DEF → 2.0 savunma            MID → 1.5 hücum + 0.5 savunma
+ *   FWD     → 2.0 hücum
+ *
+ * Her oyuncu toplam 2.0 ağırlık taşır. Varsayılan dizilişte (1-2-2-2) iki
+ * eksenin paydası da 7'dir (savunma 2+4+1, hücum 4+3); dolayısıyla HER
+ * MEVKİDE 1 GEN PUANI TAKIM GÜCÜNE TAM 1/7 KATAR — mevkiler arası adalet
+ * formülden gelir, veri setine bağlı değildir. Orta sahanın 0.5/1.5 bölünmesi
+ * bu eşitliğin tek çözümüdür: 1.0/1.0 paydaları 8/6 yapar ve forvetin GEN'i
+ * stoperinkinden %33 değerli olur.
+ *
+ * Eski model oyuncu başına elle kalibre edilmiş HÜC/SAV alanlarına dayanıyor
+ * ve her veri güncellemesinde "94'lük oyuncu 88'likten az güç veriyor" sınıfı
+ * ihlaller üretiyordu (16 Eylül 2026 güncellemesinde 321 ihlal). GEN tek
+ * kaynak olunca mevki içinde GEN sırası = güç sırası yapısal olarak sağlanır.
  */
-export const MID_ROLE_SHIFT = 0.2;
-export const MID_ROLE_SPAN = 25;
+export const POSITION_POWER_WEIGHT: Record<Position, { attack: number; defense: number }> = {
+  GK: { attack: 0, defense: 2 },
+  DEF: { attack: 0, defense: 2 },
+  MID: { attack: 1.5, defense: 0.5 },
+  FWD: { attack: 2, defense: 0 },
+};
 
 /**
- * Bir futbolcunun takım gücüne girdiği (hücum, savunma) ağırlıkları.
- * MID dışında mevki sabiti; MID'de oyuncunun uzmanlaşmasına göre rol ağırlığı.
+ * Oyuncunun GEN'inin hücum / savunma eksenlerine dağılımı — kart gösterimi
+ * için (`GEN · ağırlık / 2`). FWD 94 → HÜC 94 / SAV 0; MID 94 → HÜC 71 / SAV 24;
+ * GK 90 → SAV 90. Takım gücü hesabında KULLANILMAZ; oyuncuya "reytingin
+ * nereye akıyor" sorusunun görsel cevabıdır.
  */
-export function positionWeights(p: Footballer): { attack: number; defense: number } {
-  const attack = ATTACK_WEIGHT[p.position];
-  const defense = DEFENSE_WEIGHT[p.position];
-  if (p.position !== 'MID') return { attack, defense };
-  const t = Math.max(-1, Math.min(1, (p.attack - p.defense) / MID_ROLE_SPAN));
-  return { attack: attack + MID_ROLE_SHIFT * t, defense: defense - MID_ROLE_SHIFT * t };
+export function powerSplit(p: Footballer): { attack: number; defense: number } {
+  const w = POSITION_POWER_WEIGHT[p.position];
+  return {
+    attack: Math.round((p.overall * w.attack) / 2),
+    defense: Math.round((p.overall * w.defense) / 2),
+  };
+}
+
+/** Oyuncunun güce etki ettiği eksen(ler)in kısa etiketi: "HÜC", "SAV", "HÜC+SAV". */
+export function powerRoleLabel(position: Position): string {
+  const w = POSITION_POWER_WEIGHT[position];
+  if (w.attack > 0 && w.defense > 0) return 'HÜC+SAV';
+  return w.attack > 0 ? 'HÜC' : 'SAV';
 }
 
 /**
- * Kadronun mevkisel ağırlıklı hücum ve savunma gücünü hesaplar.
- *
- * PAYDA MEVKİ SABİTİ, PAY ROL AĞIRLIĞI. Rol ağırlığı paydaya da girse bir
- * oyuncunun katkısı kadronun geri kalanına bağlı olurdu (hücumcu MID paydayı
- * 0.8, defansif MID 0.4 büyütür). Payda `ATTACK_WEIGHT`/`DEFENSE_WEIGHT`
- * sabitinde kaldığı için tam kadroda her oyuncunun güç katkısı kadrodan
- * bağımsız, doğrusal bir sayıdır: `aw·att/Σaw/2 + dw·def/Σdw/2`.
- *
- * VERİ SETİ SÖZLEŞMESİ: `players.json`'da aynı mevkideki iki oyuncudan GEN'i
- * yüksek olanın bu katkısı her zaman daha yüksektir; eşit GEN eşit katkıdır
- * (bkz. server/src/scripts/checkPowerMonotonic.ts). Ağırlıkları değiştiren
- * bu kontrolü yeniden çalıştırmalı — veri seti ağırlıklara göre kalibre edildi.
+ * Kadronun hücum ve savunma gücü: GEN'lerin mevki ağırlıklı ortalaması.
+ * Sonuç doğal olarak GEN aralığında (0–100) kalır; ayrıca kalibrasyon
+ * gerekmez. Payda gerçek kadrodan toplanır — host kadro dizilişini
+ * değiştirse de formül geçerli kalır. Bir eksene hiç oyuncu düşmemişse
+ * (ör. yalnız kaleci + defans alınmış eksik kadro) o eksen 50 sayılır.
  */
 export function calculateTeamStats(players: Footballer[]): CalculatedStats {
   if (!players || players.length === 0) {
@@ -316,11 +315,11 @@ export function calculateTeamStats(players: Footballer[]): CalculatedStats {
   let defenseWeight = 0;
 
   for (const p of players) {
-    const { attack: aw, defense: dw } = positionWeights(p);
-    attackSum += p.attack * aw;
-    attackWeight += ATTACK_WEIGHT[p.position];
-    defenseSum += p.defense * dw;
-    defenseWeight += DEFENSE_WEIGHT[p.position];
+    const w = POSITION_POWER_WEIGHT[p.position];
+    attackSum += p.overall * w.attack;
+    attackWeight += w.attack;
+    defenseSum += p.overall * w.defense;
+    defenseWeight += w.defense;
   }
 
   const attack = attackWeight > 0 ? attackSum / attackWeight : 50;
@@ -335,15 +334,16 @@ export function calculateTeamStats(players: Footballer[]): CalculatedStats {
 /**
  * Takımın TEK SAYILIK gücü — maç sonucunu belirleyen değer budur.
  *
- * Kadronun `overall` ortalaması (arayüzdeki "GEN") anlamlı bir futbol ölçüsü
- * DEĞİLDİR: 88'lik bir kaleciyle 88'lik bir forveti ortalamak "bu kadro
- * pahalı" der, "bu takım gol atar/yemez" demez. Simülatör yalnızca mevki
- * ağırlıklı hücum/savunmayı kullanır (bkz. `calculateTeamStats`).
+ * Kadronun düz GEN ortalaması DEĞİLDİR: 88'lik bir kaleciyle 88'lik bir
+ * forveti ortalamak "bu kadro pahalı" der, "bu takım gol atar/yemez" demez.
+ * Simülatör hücum ve savunmayı ayrı kullanır (`hücumum / rakibin savunması`);
+ * güç, ikisinin ortalamasıdır ve tam kadroda her oyuncunun katkısı
+ * kadrodan bağımsız `2·GEN / 14 = GEN / 7`'dir.
  *
- * Ölçüm: 2670 gerçek draft'ta, GEN'e göre en iyi takım ile bu değere göre en
- * iyi takım **%21.4 oranında farklı** çıkıyor; sıralamanın tamamı %54.2
- * oranında ayrışıyor. Bu yüzden arayüzde öne çıkan sayı bu olmalı — aksi
- * halde oyuncu "daha güçlü takımım kaybetti, motor bozuk" diye okur.
+ * Ölçüm (eski model, 2670 gerçek draft): GEN'e göre en iyi takım ile bu
+ * değere göre en iyi takım %21.4 oranında farklı çıkıyordu. Yeni modelde de
+ * mevki dağılımı farklı iki kadro aynı GEN ortalamasında farklı güç alır;
+ * arayüzde öne çıkan sayı bu olmalı.
  */
 export function calculateTeamPower(players: Footballer[]): number {
   const { attack, defense } = calculateTeamStats(players);

@@ -119,8 +119,6 @@ function parseFootballer(entry: unknown, index: number): Footballer {
     id,
     name,
     position,
-    attack: num('attack'),
-    defense: num('defense'),
     overall: num('overall'),
   };
 }

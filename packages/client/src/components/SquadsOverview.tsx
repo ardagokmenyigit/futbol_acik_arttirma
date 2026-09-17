@@ -1,6 +1,7 @@
 import {
   calculateTeamPower,
   calculateTeamStats,
+  powerRoleLabel,
   type Participant,
   type Position,
   type RoomState,
@@ -158,7 +159,7 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
           </span>
           <span>·</span>
           <span>
-            DEF: <strong style={{ color: 'var(--chalk)' }}>{teamStats.defense}</strong>
+            SAV: <strong style={{ color: 'var(--chalk)' }}>{teamStats.defense}</strong>
           </span>
           <span
             style={{ color: 'var(--chalk-faint)', opacity: 0.7 }}
@@ -208,9 +209,7 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
                         <div className="squad-player-stats" style={{ gap: 6, fontSize: 11.5 }}>
                           <span className="stat-tag gen">GEN {pl.overall}</span>
                           <span className="sep">|</span>
-                          <span className="stat-tag">HÜC {pl.attack}</span>
-                          <span className="sep">|</span>
-                          <span className="stat-tag">DEF {pl.defense}</span>
+                          <span className="stat-tag">{powerRoleLabel(pl.position)}</span>
                         </div>
                       </div>
                     ))}
