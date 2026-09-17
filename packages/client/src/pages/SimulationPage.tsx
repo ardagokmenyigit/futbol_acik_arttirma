@@ -1,4 +1,4 @@
-import { useEffect, useState, type FC } from 'react';
+import { useEffect, useMemo, useState, type FC } from 'react';
 import type {
   Footballer,
   MatchResult,
@@ -8,7 +8,7 @@ import type {
   TournamentSize,
   TournamentState,
 } from '@fal/shared';
-import { buildTeam, simulateMatch } from '@fal/shared';
+import { buildTeam, calculateTeamPower, simulateMatch } from '@fal/shared';
 import { useSocket } from '../hooks/useSocket.js';
 import { TournamentBracket } from '../components/TournamentBracket.js';
 import { LiveMatchTicker } from '../components/LiveMatchTicker.js';
@@ -534,6 +534,22 @@ export const SimulationPage: FC<SimulationPageProps> = ({
     return participants.find((p) => p.id === id)?.nickname ?? id;
   };
 
+  const getTeamPower = (id: string | null): number | null => {
+    if (!id) return null;
+    const p = participants.find((x) => x.id === id);
+    return p && p.squad && p.squad.length > 0 ? calculateTeamPower(p.squad) : null;
+  };
+
+  const liveSimulatingRoundTitle = useMemo(() => {
+    if (!liveSimulatingResult || !tournament) return undefined;
+    for (const r of tournament.rounds) {
+      if (r.matches.some((m) => m.matchId === liveSimulatingResult.matchId)) {
+        return r.title;
+      }
+    }
+    return undefined;
+  }, [liveSimulatingResult, tournament]);
+
   const champion = tournament?.championId
     ? participants.find((p) => p.id === tournament.championId)
     : null;
@@ -559,12 +575,21 @@ export const SimulationPage: FC<SimulationPageProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: 10,
+              margin: 0,
             }}
           >
-            <span>🏆</span> Turnuva Ağacı (Playoff Bracket)
+            🏟️ Turnuva Simülasyonu
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-            Tek maçlı eleme usulü! Eksik takımlar yapay zekâ botlarıyla otomatik tamamlandı.
+          <p
+            style={{
+              color: 'var(--text-secondary)',
+              fontSize: '0.9rem',
+              marginTop: 4,
+              marginBottom: 0,
+            }}
+          >
+            Açık artırmada oluşturulan kadrolar tek maçlı eleme usulüyle şampiyonluk için
+            karşılaşıyor.
           </p>
         </div>
 
@@ -707,6 +732,9 @@ export const SimulationPage: FC<SimulationPageProps> = ({
         <LiveMatchTicker
           homeName={getTeamName(liveSimulatingResult.homeId)}
           awayName={getTeamName(liveSimulatingResult.awayId)}
+          homePower={getTeamPower(liveSimulatingResult.homeId)}
+          awayPower={getTeamPower(liveSimulatingResult.awayId)}
+          roundTitle={liveSimulatingRoundTitle}
           result={liveSimulatingResult}
           speedMs={25}
           onComplete={handleLiveTickerComplete}

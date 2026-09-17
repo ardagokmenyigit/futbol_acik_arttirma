@@ -4,6 +4,9 @@ import type { MatchResult, PenaltyShootoutAttempt } from '@fal/shared';
 interface LiveMatchTickerProps {
   homeName: string;
   awayName: string;
+  homePower?: number | null;
+  awayPower?: number | null;
+  roundTitle?: string;
   result: MatchResult;
   /** Yerel önizlemede kullanıcı "sonraki tura geç" der. Sunucu temposunda verilmez. */
   onComplete?: (result: MatchResult) => void;
@@ -56,6 +59,9 @@ function getPhrase(list: string[], seedKey: string | number): string {
 export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   homeName,
   awayName,
+  homePower,
+  awayPower,
+  roundTitle,
   result,
   onComplete,
   speedMs = 30,
@@ -343,43 +349,67 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: 12,
+          marginBottom: 14,
+          flexWrap: 'wrap',
+          gap: 8,
         }}
       >
-        <span
-          style={{
-            backgroundColor:
-              phase === 'shootout'
-                ? 'rgba(245, 158, 11, 0.3)'
-                : isFinished
-                  ? 'rgba(16, 185, 129, 0.2)'
-                  : 'rgba(245, 158, 11, 0.2)',
-            color:
-              phase === 'shootout'
-                ? 'var(--accent-gold)'
-                : isFinished
-                  ? 'var(--accent-green, #10b981)'
-                  : 'var(--accent-gold)',
-            padding: '4px 14px',
-            borderRadius: 16,
-            fontSize: '0.8rem',
-            fontWeight: 800,
-            letterSpacing: 1,
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 6,
-          }}
-        >
-          {phase === 'shootout' ? (
-            <>
-              <span className="live-pulse-dot" />⚡ SERİ PENALTI ATIŞLARI
-            </>
-          ) : isFinished ? (
-            '✓ MAÇ TAMAMLANDI'
-          ) : (
-            '● CANLI MAÇ OYNANIYOR'
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {roundTitle && (
+            <span
+              style={{
+                backgroundColor: 'rgba(201, 151, 74, 0.22)',
+                color: 'var(--accent-gold, #f59e0b)',
+                border: '1px solid rgba(201, 151, 74, 0.45)',
+                padding: '4px 12px',
+                borderRadius: 16,
+                fontSize: '0.8rem',
+                fontWeight: 900,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+              }}
+            >
+              🏆 {roundTitle}
+            </span>
           )}
-        </span>
+          <span
+            style={{
+              backgroundColor:
+                phase === 'shootout'
+                  ? 'rgba(245, 158, 11, 0.3)'
+                  : isFinished
+                    ? 'rgba(16, 185, 129, 0.2)'
+                    : 'rgba(245, 158, 11, 0.2)',
+              color:
+                phase === 'shootout'
+                  ? 'var(--accent-gold)'
+                  : isFinished
+                    ? 'var(--accent-green, #10b981)'
+                    : 'var(--accent-gold)',
+              padding: '4px 14px',
+              borderRadius: 16,
+              fontSize: '0.8rem',
+              fontWeight: 800,
+              letterSpacing: 1,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            {phase === 'shootout' ? (
+              <>
+                <span className="live-pulse-dot" />⚡ SERİ PENALTI ATIŞLARI
+              </>
+            ) : isFinished ? (
+              '✓ MAÇ TAMAMLANDI'
+            ) : (
+              '● CANLI MAÇ OYNANIYOR'
+            )}
+          </span>
+        </div>
       </div>
 
       {/* Büyük Canlı Skor Tabelası */}
@@ -394,7 +424,36 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       >
         <div style={{ textAlign: 'right' }}>
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>{homeName}</h3>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>EV SAHİBİ</span>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: 8,
+              marginTop: 4,
+              flexWrap: 'wrap',
+            }}
+          >
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>EV SAHİBİ</span>
+            {homePower != null && (
+              <span
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                  color: '#93c5fd',
+                  border: '1px solid rgba(147, 197, 253, 0.3)',
+                  padding: '2px 8px',
+                  borderRadius: 12,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                ⚡ Kadro Gücü: {homePower}
+              </span>
+            )}
+          </div>
           {phase !== 'regular' && hasShootout && renderPenaltyDots(result.homeId)}
         </div>
 
@@ -431,7 +490,36 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
 
         <div style={{ textAlign: 'left' }}>
           <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>{awayName}</h3>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>DEPLASMAN</span>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: 8,
+              marginTop: 4,
+              flexWrap: 'wrap',
+            }}
+          >
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>DEPLASMAN</span>
+            {awayPower != null && (
+              <span
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                  color: '#93c5fd',
+                  border: '1px solid rgba(147, 197, 253, 0.3)',
+                  padding: '2px 8px',
+                  borderRadius: 12,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                ⚡ Kadro Gücü: {awayPower}
+              </span>
+            )}
+          </div>
           {phase !== 'regular' && hasShootout && renderPenaltyDots(result.awayId)}
         </div>
       </div>

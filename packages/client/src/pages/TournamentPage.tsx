@@ -55,6 +55,16 @@ export function TournamentPage({ room, tournament }: Props) {
   const played = tournament.rounds.flatMap((r) => r.matches).filter((m) => m.result).length;
   const total = tournament.rounds.reduce((s, r) => s + r.matches.length, 0);
 
+  const liveMatchRound = useMemo(() => {
+    if (!liveMatch) return null;
+    for (const r of tournament.rounds) {
+      if (r.matches.some((m) => m.matchId === liveMatch.matchId)) {
+        return r.title;
+      }
+    }
+    return null;
+  }, [liveMatch, tournament.rounds]);
+
   return (
     <div className="stack">
       {champ ? (
@@ -112,6 +122,9 @@ export function TournamentPage({ room, tournament }: Props) {
           key={liveMatch.matchId}
           homeName={nameOf(liveMatch.result.homeId)}
           awayName={nameOf(liveMatch.result.awayId)}
+          homePower={powerOf(liveMatch.result.homeId)}
+          awayPower={powerOf(liveMatch.result.awayId)}
+          roundTitle={liveMatchRound ?? undefined}
           result={liveMatch.result}
           speedMs={140}
           serverPaced
