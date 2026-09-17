@@ -44,13 +44,18 @@ export function DraftPage({ room }: Props) {
     return auction.highestBid ? auction.highestBid.amount + minInc : minInc;
   }, [auction, minInc]);
 
-  const [amount, setAmount] = useState(floor);
+  // customBid: null ise kullanıcı henüz elle teklif yazmamıştır, input anlık floor'u gösterir.
+  // Kullanıcı herhangi bir şey yazdığında bu değer string olarak saklanır ve arkada gelen
+  // teklifler bu değeri ASLA ezmez / üzerine yazmaz.
+  const [customBid, setCustomBid] = useState<string | null>(null);
   const [bidError, setBidError] = useState<string | null>(null);
 
+  // Tur veya futbolcu değiştiğinde özel teklifi sıfırla
+  const roundKey = auction ? `${auction.round}-${auction.footballer.id}` : null;
   useEffect(() => {
-    setAmount(floor);
+    setCustomBid(null);
     setBidError(null);
-  }, [floor]);
+  }, [roundKey]);
 
   if (!you) return null;
 
@@ -97,9 +102,20 @@ export function DraftPage({ room }: Props) {
     : eligible && !youAreLeading && !budgetShort && secs > 0;
 
   async function submitBid() {
+    if (!you) return;
     setBidError(null);
+    const targetAmount = customBid !== null && customBid !== '' ? Number(customBid) : floor;
+    if (!Number.isFinite(targetAmount) || targetAmount < floor) {
+      setBidError(`Teklif en az ${floor}M olmalıdır.`);
+      return;
+    }
+    if (targetAmount > you.budget) {
+      setBidError(`Bütçeniz (${you.budget}M) bu teklife yetmiyor.`);
+      return;
+    }
     try {
-      await placeBid(amount);
+      await placeBid(targetAmount);
+      setCustomBid(null);
     } catch (err) {
       setBidError(err instanceof Error ? err.message : 'Teklif reddedildi');
     }
@@ -113,6 +129,26 @@ export function DraftPage({ room }: Props) {
       setBidError(err instanceof Error ? err.message : 'Pas reddedildi');
     }
   }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/[^0-9]/g, '');
+    setCustomBid(raw);
+    setBidError(null);
+  };
+
+  const handleSetMin = () => {
+    setCustomBid(null);
+    setBidError(null);
+  };
+
+  const handleAddStep = (step: number) => {
+    const currentVal = customBid !== null && customBid !== '' ? Number(customBid) : floor;
+    const base = Math.max(currentVal, floor);
+    const maxBudget = you ? you.budget : Infinity;
+    const next = Math.min(base + step, maxBudget);
+    setCustomBid(String(next));
+    setBidError(null);
+  };
 
   // Oyun sırasında çıkış: sunucu yerine bot geçirir, kadro ve bütçe korunur.
   // Oturum temizlenir çünkü artık geri dönülemez (sunucu rejoin'i reddeder).
@@ -233,25 +269,17 @@ export function DraftPage({ room }: Props) {
           <input
             type="text"
             inputMode="numeric"
-            value={String(amount)}
-            onChange={(e) => {
-              const n = Number(e.target.value.replace(/[^0-9]/g, ''));
-              setAmount(Number.isFinite(n) ? n : 0);
-            }}
+            value={customBid !== null ? customBid : String(floor)}
+            onChange={handleInputChange}
+            placeholder={String(floor)}
           />
-          <button className="step-btn" onClick={() => setAmount(floor)}>
+          <button className="step-btn" onClick={handleSetMin}>
             MIN
           </button>
-          <button
-            className="step-btn"
-            onClick={() => setAmount((curr) => Math.min(Math.max(curr, floor) + 1, you.budget))}
-          >
+          <button className="step-btn" onClick={() => handleAddStep(1)}>
             +1
           </button>
-          <button
-            className="step-btn"
-            onClick={() => setAmount((curr) => Math.min(Math.max(curr, floor) + 5, you.budget))}
-          >
+          <button className="step-btn" onClick={() => handleAddStep(5)}>
             +5
           </button>
         </div>
@@ -259,7 +287,9 @@ export function DraftPage({ room }: Props) {
           <button
             className="btn-primary"
             style={{ flex: 1 }}
-            disabled={!canBid || amount < floor}
+            disabled={
+              !canBid || (customBid !== null && customBid !== '' && Number(customBid) < floor)
+            }
             onClick={() => void submitBid()}
           >
             {isOpening ? 'Açılış teklifi ver' : 'Teklif ver'}
