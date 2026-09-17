@@ -27,7 +27,7 @@ export interface SimulateMatchOptions {
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
   /**
-   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.111).
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.116).
    *
    * MAÇ BAŞINA GOL bu değere neredeyse doğrusal bağlı — heyecan kolu budur.
    * Hedef maç başı ~3.5 gol; `strengthSensitivity`, `FORM_SPREAD` ya da
@@ -37,8 +37,8 @@ export interface SimulateMatchOptions {
    * GEN tabanlı güç modelinde takım hücumu ile savunması aynı ölçekte
    * (ort. 84.6 / 84.7; eski modelde 78.3 / 75.6, yani hücum %3.6 öndeydi ve
    * tehdit oranı^3.2 ile ~%12 fazla gol üretiyordu). Gol/maç 3.66 → 3.27'ye
-   * düştüğü için 0.111'e çıkarıldı: 5000 bot draft × 4 bracket ölçümünde
-   * 3.68 gol/maç, 0-0 %3.8, penaltı %26.
+   * düştüğü için 0.111'e çıkarıldı (3.68 gol/maç). `strengthSensitivity`
+   * 3.2 → 2.4'e inince gol 3.67'de kalsın diye 0.116'ya alındı.
    *
    * Ölçüm (12.000 turnuva, gerçek bot draft'ları; sens 2.5 + form ±%12 iken):
    *
@@ -52,7 +52,7 @@ export interface SimulateMatchOptions {
    */
   baseConversion?: number;
   /**
-   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 3.2).
+   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 2.4).
    * Hem pozisyon payına hem de gole çevirme oranına uygulanır.
    *
    * ⚠️ TEK BAŞINA ZAYIF BİR KOL. Yükseltmek gol sayısını da şişirdiği için
@@ -66,7 +66,16 @@ export interface SimulateMatchOptions {
    *
    * Yani 2.5'ten 4.0'a çıkmak yalnızca ~3 puan kazandırıyor. Duyarlılığı
    * artırmanın asıl kolu `FORM_SPREAD` (bkz. oradaki not) — ikisi birlikte
-   * ayarlanmalı. Şu anki çift: sens 3.2 + form ±%4 → 5 puan farkta %76.8.
+   * ayarlanmalı. Uzun süre sens 3.2 + form ±%4 idi (5 puan farkta %76.8).
+   *
+   * 3.2 → 2.4 (17 Eylül 2026): GEN tabanlı güç (1 GEN = 0.143 güç, eskiden
+   * 0.105 → draft farkları %30 açıldı) ve uzatma (penaltı yazı-turası yarıya
+   * indi) birlikte en güçlü takımın şampiyonluğunu %43.8'den %47.5'e çıkardı;
+   * kullanıcı bunu fazla belirleyici buldu. Tarama (5000 draft, gol/maç
+   * sabit): sens 3.2 → %47.5/%9.3, 2.8 → %45.4/%10.2, 2.5 → %43.0/%10.7,
+   * 2.4 → %42.8/%11.6, 2.2 → %41.6/%12.4. 2.4 önceki kabul edilmiş dengeye
+   * (~%43 / 4x) döner; güç hâlâ ana faktör (5 puan farkta tur geçme %71,
+   * 8 puanda %82; 2.2 ve altında 6p ile 8p ayırt edilemez oluyordu).
    *
    * ⚠️ ASIL TAVAN MOTOR DEĞİL, DRAFT. Gerçek draft'larda takımlar arası güç
    * farkı ortalama sadece ~5.2 puan (ölçüm: 3000 gerçek bot draft'ı; medyan
@@ -223,8 +232,8 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.0,
     chanceRate = 0.3,
-    baseConversion = 0.111,
-    strengthSensitivity = 3.2,
+    baseConversion = 0.116,
+    strengthSensitivity = 2.4,
     isTournament = true,
   } = options;
 

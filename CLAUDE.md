@@ -234,7 +234,27 @@ olasılığı çok yavaş düşer). Uzatma ise güce duyarlı 30 dakika daha ver
 
 Toplam: penaltıya giden maç **%26 → %11.5**, en güçlü şampiyon %45.5 →
 %47.3, en zayıf %9.6 → %8.9, normal süre gol/maç 3.68 sabit (uzatma
-golleriyle 4.04). Canlı ekranda uzatma ~4.6 sn ek süre alır
+golleriyle 4.04). (Tablo sens 3.2 ile ölçüldü; aşağıdaki sens 2.4
+kararından sonra tur geçme oranları ~4 puan düşer, penaltı payı aynı.)
+
+**SENS 3.2 → 2.4 (17 Eylül 2026).** GEN tabanlı güç (draft farkı 4.2 → 5.5)
+ve uzatma birlikte en güçlü takımın şampiyonluğunu %43.8 → %47.5'e
+çıkarmıştı; kullanıcı "güç ana faktör kalsın ama biraz daha dengeli" dedi.
+Tarama (5000 draft × 4 bracket, `baseConversion` her satırda gol/maç ~3.67'ye
+eşlenmiş):
+
+| sens    | en güçlü  | en zayıf  | oran | 3p  | 5p  | 6p  | 8p  |
+| ------- | --------- | --------- | ---- | --- | --- | --- | --- |
+| 3.2     | %47.5     | %9.3      | 5.1x | %67 | %76 | %80 | %89 |
+| 2.8     | %45.4     | %10.2     | 4.5x | %66 | %73 | %79 | %84 |
+| 2.5     | %43.0     | %10.7     | 4.0x | %63 | %71 | %76 | %84 |
+| **2.4** | **%42.8** | **%11.6** | 3.7x | %63 | %71 | %74 | %82 |
+| 2.2     | %41.6     | %12.4     | 3.3x | %62 | %70 | %72 | %78 |
+
+(Sütunlar: güç farkına göre güçlünün turu geçme oranı.) 2.4 seçildi:
+önceki kabul edilmiş dengeye (~%43, 4x) döner, `baseConversion` 0.116 ile
+gol/maç 3.67. 2.2 ve altında 6p ile 8p arasındaki fark kapanıyor — büyük
+yatırım küçük yatırımdan ayırt edilemez oluyor. Canlı ekranda uzatma ~4.6 sn ek süre alır
 (`EXTRA_TIME_LIVE_MS`), ilerleme çubuğu altına döner, kartlarda "U.S."
 etiketi görünür.
 
@@ -263,16 +283,17 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 (12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
 (rastgele olsa %25):
 
-| ayar                                                   | en güçlü  | en zayıf | oran     | gol/maç  |
-| ------------------------------------------------------ | --------- | -------- | -------- | -------- |
-| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1    | 2.0x     | 2.77     |
-| sens 2.5 + saha av. yok                                | %37.7     | %15.0    | 2.5x     | 2.92     |
-| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2    | 3.0x     | 3.48     |
-| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7    | 4.0x     | 3.53     |
-| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3** | **5.6x** | **3.54** |
-| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9    | 4.0x     | 3.66     |
-| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1    | 4.5x     | 3.68     |
-| + uzatma (güncel; gol/maç uzatma golleri dahil)        | %47.3     | %8.9     | 5.3x     | 4.04     |
+| ayar                                                   | en güçlü  | en zayıf  | oran     | gol/maç          |
+| ------------------------------------------------------ | --------- | --------- | -------- | ---------------- |
+| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1     | 2.0x     | 2.77             |
+| sens 2.5 + saha av. yok                                | %37.7     | %15.0     | 2.5x     | 2.92             |
+| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2     | 3.0x     | 3.48             |
+| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7     | 4.0x     | 3.53             |
+| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3**  | **5.6x** | **3.54**         |
+| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9     | 4.0x     | 3.66             |
+| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1     | 4.5x     | 3.68             |
+| + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9      | 5.3x     | 4.04             |
+| **+ sens 2.4 + baseConv 0.116 (güncel)**               | **%42.8** | **%11.6** | **3.7x** | **3.67 (90 dk)** |
 
 (Son üç satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
 ayarla en güçlü %36.6, en zayıf %1.8 — oran 20.3x.)
@@ -323,7 +344,7 @@ beraberliği yalnız 6.5 puan düşürüyor) — uzatma zaten bunun için var.
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
 - `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
   ~3.48 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
-  kayar ve bununla geri kalibre edilmelidir (güncel: 0.111, GEN tabanlı güç sonrası).
+  kayar ve bununla geri kalibre edilmelidir (güncel: 0.116, sens 2.4 için).
 - **ASIL TAVAN MOTOR DEĞİL, DRAFT.** Gerçek draft'larda takımlar arası güç
   farkı ortalama yalnızca **5.25 puan** (medyan 5.0, p10 3.0, p90 8.0, max 13;
   ölçüm: 3000 gerçek bot draft'ı). Havuz tam denk (§3.1) olduğu için herkes
