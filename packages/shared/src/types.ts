@@ -456,10 +456,21 @@ export interface MatchResult {
   matchId: string;
   homeId: string;
   awayId: string;
+  /**
+   * Nihai skor. Uzatmaya gidildiyse (`extraTime`) uzatma golleri DAHİLDİR
+   * (gerçek futboldaki "u.s." skoru); normal süre skoru `events`ten
+   * `minute <= 90` ile türetilir.
+   */
   scoreHome: number;
   scoreAway: number;
+  /** Goller; uzatma golleri 91–120. dakikadadır. */
   events: MatchEvent[];
-  /** Turnuva maçında beraberlik durumunda penaltı skoru. */
+  /**
+   * Turnuva maçında 90 dakika berabere bitti ve 30 dakika UZATMA oynandı.
+   * Uzatma da eşit biterse ayrıca `penaltiesHome/Away` dolar.
+   */
+  extraTime?: boolean;
+  /** Turnuva maçında uzatma sonrası beraberlik durumunda penaltı skoru. */
   penaltiesHome?: number;
   penaltiesAway?: number;
   /** Maçı kazanan ve bir üst tura yükselen takımın participantId'si. */

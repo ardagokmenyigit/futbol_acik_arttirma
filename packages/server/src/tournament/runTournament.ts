@@ -18,6 +18,8 @@ const BOT_MATCH_MS = 900;
  * gösterimi için yeterli olmalı (istemci speedMs ≈ 140 → ~12.6 sn animasyon).
  */
 const LIVE_MATCH_MS = 14000;
+/** Uzatmaya giden maçta 30 dakikanın (91–120) canlı oynanma payı (30 × 140 ms + pay). */
+const EXTRA_TIME_LIVE_MS = 4600;
 /** Canlı maç bittikten sonra sonraki maça geçmeden önceki kısa nefes. */
 const POST_LIVE_GAP_MS = 1200;
 /** Açık artırma sonrası kadroların incelenmesi için başlangıç bekleme süresi. */
@@ -178,7 +180,8 @@ export function runTournament(io: TypedServer, roomId: string): void {
       io.to(roomId).emit('tournament:matchLive', { matchId: result.matchId, result });
       const penaltyCount = result.penaltyShootout?.length ?? 0;
       const penaltyDelay = penaltyCount > 0 ? penaltyCount * 3000 + 3500 : 0;
-      schedule(finalize, LIVE_MATCH_MS + penaltyDelay);
+      const extraTimeDelay = result.extraTime ? EXTRA_TIME_LIVE_MS : 0;
+      schedule(finalize, LIVE_MATCH_MS + extraTimeDelay + penaltyDelay);
     } else {
       finalize();
     }

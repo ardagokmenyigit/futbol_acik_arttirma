@@ -196,7 +196,20 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                         </span>
                       </div>
 
-                      {/* Penaltı Bilgisi */}
+                      {/* Uzatma / Penaltı Bilgisi */}
+                      {match.result?.extraTime && match.result.penaltiesHome === undefined && (
+                        <div
+                          style={{
+                            fontSize: '0.72rem',
+                            textAlign: 'center',
+                            marginTop: 6,
+                            color: 'var(--text-muted)',
+                            fontWeight: 600,
+                          }}
+                        >
+                          Uzatma sonucu
+                        </div>
+                      )}
                       {match.result?.penaltiesHome !== undefined && (
                         <div
                           style={{
@@ -207,7 +220,8 @@ export const TournamentBracket: FC<TournamentBracketProps> = ({
                             fontWeight: 600,
                           }}
                         >
-                          Penaltılar: {match.result.penaltiesHome} - {match.result.penaltiesAway}
+                          U.S. · Penaltılar: {match.result.penaltiesHome} -{' '}
+                          {match.result.penaltiesAway}
                         </div>
                       )}
 
