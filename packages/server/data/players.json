@@ -930,22 +930,6 @@
       "overall": 86
     },
     {
-      "id": "fc26-mid-119",
-      "name": "Fred",
-      "position": "MID",
-      "attack": 78,
-      "defense": 79,
-      "overall": 81
-    },
-    {
-      "id": "fc26-mid-120",
-      "name": "Gedson Fernandes",
-      "position": "MID",
-      "attack": 76,
-      "defense": 78,
-      "overall": 80
-    },
-    {
       "id": "fc26-fwd-121",
       "name": "Y. En-Nesyri",
       "position": "FWD",
@@ -1040,14 +1024,6 @@
       "attack": 46,
       "defense": 84,
       "overall": 84
-    },
-    {
-      "id": "fc26-mid-133",
-      "name": "Lucas Paquetá",
-      "position": "MID",
-      "attack": 82,
-      "defense": 72,
-      "overall": 82
     },
     {
       "id": "fc26-mid-134",
@@ -1210,14 +1186,6 @@
       "overall": 79
     },
     {
-      "id": "fc26-mid-155",
-      "name": "J. Ward-Prowse",
-      "position": "MID",
-      "attack": 80,
-      "defense": 75,
-      "overall": 81
-    },
-    {
       "id": "fc26-fwd-157",
       "name": "C. Wood",
       "position": "FWD",
@@ -1256,14 +1224,6 @@
       "attack": 81,
       "defense": 82,
       "overall": 85
-    },
-    {
-      "id": "fc26-mid-162",
-      "name": "I. Bennacer",
-      "position": "MID",
-      "attack": 78,
-      "defense": 79,
-      "overall": 81
     },
     {
       "id": "fc26-fwd-163",
@@ -1474,14 +1434,6 @@
       "overall": 80
     },
     {
-      "id": "fc26-mid-190",
-      "name": "İ. C. Kahveci",
-      "position": "MID",
-      "attack": 80,
-      "defense": 52,
-      "overall": 80
-    },
-    {
       "id": "fc26-fwd-191",
       "name": "A. Sørloth",
       "position": "FWD",
@@ -1560,14 +1512,6 @@
       "attack": 64,
       "defense": 76,
       "overall": 84
-    },
-    {
-      "id": "fc26-mid-203",
-      "name": "R. Andrich",
-      "position": "MID",
-      "attack": 76,
-      "defense": 82,
-      "overall": 82
     },
     {
       "id": "fc26-mid-204",
@@ -1706,22 +1650,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-mid-224",
-      "name": "Al-Musrati",
-      "position": "MID",
-      "attack": 72,
-      "defense": 79,
-      "overall": 79
-    },
-    {
-      "id": "fc26-mid-225",
-      "name": "K. Demirbay",
-      "position": "MID",
-      "attack": 77,
-      "defense": 72,
-      "overall": 78
-    },
-    {
       "id": "fc26-fwd-226",
       "name": "E. Zhegrova",
       "position": "FWD",
@@ -1850,14 +1778,6 @@
       "overall": 83
     },
     {
-      "id": "fc26-mid-245",
-      "name": "B. Kutlu",
-      "position": "MID",
-      "attack": 72,
-      "defense": 77,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-246",
       "name": "M. Jensen",
       "position": "MID",
@@ -1888,14 +1808,6 @@
       "attack": 53,
       "defense": 79,
       "overall": 82
-    },
-    {
-      "id": "fc26-mid-252",
-      "name": "E. Can",
-      "position": "MID",
-      "attack": 75,
-      "defense": 81,
-      "overall": 81
     },
     {
       "id": "fc26-mid-253",
@@ -2266,22 +2178,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-mid-308",
-      "name": "B. Özdemir",
-      "position": "MID",
-      "attack": 72,
-      "defense": 78,
-      "overall": 78
-    },
-    {
-      "id": "fc26-mid-309",
-      "name": "M. Crespo",
-      "position": "MID",
-      "attack": 74,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-fwd-310",
       "name": "P. Onuachu",
       "position": "FWD",
@@ -2458,14 +2354,6 @@
       "overall": 78
     },
     {
-      "id": "fc26-mid-337",
-      "name": "S. Uçan",
-      "position": "MID",
-      "attack": 76,
-      "defense": 73,
-      "overall": 78
-    },
-    {
       "id": "fc26-gk-340",
       "name": "M. Perin",
       "position": "GK",
@@ -2495,14 +2383,6 @@
       "position": "MID",
       "attack": 74,
       "defense": 78,
-      "overall": 79
-    },
-    {
-      "id": "fc26-mid-344",
-      "name": "H. Wilson",
-      "position": "MID",
-      "attack": 79,
-      "defense": 60,
       "overall": 79
     },
     {
@@ -2658,14 +2538,6 @@
       "overall": 79
     },
     {
-      "id": "fc26-mid-365",
-      "name": "I. Ilić",
-      "position": "MID",
-      "attack": 78,
-      "defense": 74,
-      "overall": 79
-    },
-    {
       "id": "fc26-fwd-367",
       "name": "Ché Adams",
       "position": "FWD",
@@ -2698,60 +2570,12 @@
       "overall": 78
     },
     {
-      "id": "fc26-mid-371",
-      "name": "A. Maier",
-      "position": "MID",
-      "attack": 77,
-      "defense": 74,
-      "overall": 78
-    },
-    {
-      "id": "fc26-mid-372",
-      "name": "E. Rexhbeçaj",
-      "position": "MID",
-      "attack": 74,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-fwd-373",
       "name": "P. Tietz",
       "position": "FWD",
       "attack": 78,
       "defense": 20,
       "overall": 78
-    },
-    {
-      "id": "fc26-mid-378",
-      "name": "B. Mensah",
-      "position": "MID",
-      "attack": 78,
-      "defense": 72,
-      "overall": 78
-    },
-    {
-      "id": "fc26-mid-379",
-      "name": "J. Shelvey",
-      "position": "MID",
-      "attack": 78,
-      "defense": 70,
-      "overall": 78
-    },
-    {
-      "id": "fc26-mid-385",
-      "name": "J. Chotard",
-      "position": "MID",
-      "attack": 73,
-      "defense": 79,
-      "overall": 78
-    },
-    {
-      "id": "fc26-mid-386",
-      "name": "T. Savanier",
-      "position": "MID",
-      "attack": 81,
-      "defense": 65,
-      "overall": 80
     },
     {
       "id": "fc26-fwd-387",
@@ -2832,14 +2656,6 @@
       "attack": 38,
       "defense": 81,
       "overall": 81
-    },
-    {
-      "id": "fc26-mid-399",
-      "name": "M. Vesga",
-      "position": "MID",
-      "attack": 72,
-      "defense": 80,
-      "overall": 79
     },
     {
       "id": "fc26-mid-400",
@@ -2952,22 +2768,6 @@
       "attack": 83,
       "defense": 23,
       "overall": 83
-    },
-    {
-      "id": "fc26-mid-420",
-      "name": "D. Pelkas",
-      "position": "MID",
-      "attack": 78,
-      "defense": 64,
-      "overall": 78
-    },
-    {
-      "id": "fc26-mid-421",
-      "name": "Berkay Özcan",
-      "position": "MID",
-      "attack": 76,
-      "defense": 72,
-      "overall": 78
     },
     {
       "id": "fc26-gk-424",
@@ -3106,14 +2906,6 @@
       "overall": 80
     },
     {
-      "id": "fc26-mid-442",
-      "name": "M. Aebischer",
-      "position": "MID",
-      "attack": 76,
-      "defense": 77,
-      "overall": 78
-    },
-    {
       "id": "fc26-mid-443",
       "name": "G. Frendrup",
       "position": "MID",
@@ -3144,14 +2936,6 @@
       "attack": 46,
       "defense": 84,
       "overall": 84
-    },
-    {
-      "id": "fc26-mid-450",
-      "name": "M. Badelj",
-      "position": "MID",
-      "attack": 74,
-      "defense": 78,
-      "overall": 78
     },
     {
       "id": "fc26-mid-451",
@@ -3207,14 +2991,6 @@
       "position": "MID",
       "attack": 75,
       "defense": 78,
-      "overall": 78
-    },
-    {
-      "id": "fc26-mid-459",
-      "name": "K. Doué",
-      "position": "MID",
-      "attack": 76,
-      "defense": 76,
       "overall": 78
     },
     {
@@ -3426,14 +3202,6 @@
       "overall": 82
     },
     {
-      "id": "fc26-mid-491",
-      "name": "B. Soumaré",
-      "position": "MID",
-      "attack": 74,
-      "defense": 78,
-      "overall": 78
-    },
-    {
       "id": "fc26-fwd-493",
       "name": "B. Zaragoza",
       "position": "FWD",
@@ -3480,14 +3248,6 @@
       "attack": 79,
       "defense": 18,
       "overall": 79
-    },
-    {
-      "id": "fc26-mid-502",
-      "name": "T. Krauß",
-      "position": "MID",
-      "attack": 74,
-      "defense": 78,
-      "overall": 78
     },
     {
       "id": "fc26-fwd-503",
