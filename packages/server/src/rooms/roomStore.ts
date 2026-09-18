@@ -65,6 +65,7 @@ class RoomStore {
       remainingPoolIds: [],
       league: null,
       tournament: null,
+      shootout: null,
     };
 
     this.rooms.set(roomId, room);
@@ -403,6 +404,7 @@ class RoomStore {
     room.remainingPoolIds = [];
     room.league = null;
     room.tournament = null;
+    room.shootout = null;
     return { room, kickedIds };
   }
 

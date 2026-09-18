@@ -1497,6 +1497,314 @@ div[style*='text-align: left'] .penalty-dots-row {
 }
 
 /* ---------------------------------------------------------------
+   Canlı seri penaltı — 2D sahne + köşe seçimi (PenaltyScene.tsx,
+   LiveMatchTicker.tsx). Sahne atıcının gözünden; SOL/ORTA/SAĞ her iki
+   taraf için ekran yönüdür.
+   --------------------------------------------------------------- */
+
+.penalty-active-card.pen-live {
+  padding: 12px 12px 14px;
+}
+
+.pen-matchup {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 4px 0 10px;
+  font-family: var(--font-cond);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--chalk);
+}
+.pen-matchup-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pen-matchup-icon {
+  font-size: 0.95rem;
+}
+.pen-vs {
+  font-size: 0.75rem;
+  color: var(--chalk-faint);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.pen-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--hairline-strong);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
+  background: #1d5238;
+}
+.pen-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* kaleci ve top: CSS transform ile dalış / uçuş */
+.pen-keeper,
+.pen-ball {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.55s cubic-bezier(0.22, 0.9, 0.3, 1);
+}
+.pen-keeper {
+  transform-origin: 50% 70%;
+}
+.pen-scene.is-idle .pen-keeper,
+.pen-scene.is-select .pen-keeper {
+  animation: penKeeperSway 1.6s ease-in-out infinite alternate;
+}
+.pen-scene.is-goal .pen-net-group {
+  animation: penNetShake 0.5s ease-out 0.45s 1;
+}
+.pen-scene.is-saved .pen-keeper {
+  filter: drop-shadow(0 0 8px rgba(201, 151, 74, 0.9));
+}
+
+/* seçim bölgeleri (kale ağzı) */
+.pen-zone rect {
+  fill: rgba(242, 239, 230, 0.06);
+  stroke: rgba(242, 239, 230, 0.35);
+  stroke-width: 1.2;
+  stroke-dasharray: 5 4;
+  transition:
+    fill 0.15s ease,
+    stroke 0.15s ease;
+}
+.pen-zone.selectable {
+  cursor: pointer;
+}
+.pen-zone.selectable:hover rect {
+  fill: rgba(201, 151, 74, 0.22);
+  stroke: rgba(227, 185, 120, 0.8);
+}
+.pen-zone.selected rect {
+  fill: rgba(201, 151, 74, 0.32);
+  stroke: var(--gold-bright);
+  stroke-width: 3;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 6px rgba(201, 151, 74, 0.7));
+}
+.pen-zone-label {
+  font-family: var(--font-cond);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  fill: rgba(242, 239, 230, 0.75);
+  pointer-events: none;
+  user-select: none;
+}
+.pen-zone.selected .pen-zone-label {
+  fill: var(--gold-bright);
+}
+.pen-zone-mark {
+  font-size: 28px;
+  pointer-events: none;
+}
+
+/* sahne üstü sonuç rozeti */
+.pen-scene-badge {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 2px;
+  color: #071613;
+  background: var(--gold-bright);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  animation: penBadgeIn 0.35s ease-out 0.5s forwards;
+}
+.pen-scene-badge.is-goal {
+  background: #34d399;
+}
+.pen-scene-badge.is-saved {
+  background: var(--gold-bright);
+}
+.pen-scene-badge.is-missed {
+  background: #f87171;
+}
+
+/* seçim kontrolleri */
+.pen-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+.pen-role-banner {
+  font-family: var(--font-cond);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--chalk-dim);
+}
+.pen-role-banner.role-shooter,
+.pen-role-banner.role-keeper {
+  color: var(--gold-bright);
+}
+
+.pen-countdown {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pen-countdown-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--track);
+  overflow: hidden;
+}
+.pen-countdown-bar {
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.1s linear;
+}
+.pen-countdown-bar.urgent {
+  background: var(--crimson);
+}
+.pen-countdown-num {
+  min-width: 28px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--gold-bright);
+}
+.pen-countdown-num.urgent {
+  color: #f0a3a8;
+  animation: penaltyPulseActive 0.5s infinite alternate ease-in-out;
+}
+
+.pen-btn-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.pen-btn {
+  padding: 12px 6px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(201, 151, 74, 0.55);
+  background: rgba(201, 151, 74, 0.1);
+  color: var(--chalk);
+  font-family: var(--font-cond);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+.pen-btn:hover {
+  background: rgba(201, 151, 74, 0.22);
+  border-color: var(--gold-bright);
+}
+.pen-btn:active {
+  transform: scale(0.97);
+}
+.pen-btn.selected {
+  background: var(--gold);
+  border-color: var(--gold-bright);
+  color: #071613;
+  box-shadow: 0 0 14px rgba(201, 151, 74, 0.55);
+}
+
+.pen-hint {
+  font-size: 0.78rem;
+  color: var(--chalk-faint);
+}
+.pen-error {
+  font-size: 0.8rem;
+  color: var(--danger-color, #d98d93);
+}
+
+.pen-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.pen-chip {
+  font-size: 0.74rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--hairline-strong);
+  color: var(--chalk-faint);
+  background: rgba(242, 239, 230, 0.04);
+}
+.pen-chip.done {
+  color: var(--ready-bright);
+  border-color: rgba(143, 203, 158, 0.5);
+  background: rgba(76, 138, 92, 0.16);
+}
+
+.penalty-final-banner.pen-winner {
+  margin-bottom: 0;
+  animation: penFadeUp 0.4s ease-out 0.6s both;
+}
+
+@keyframes penKeeperSway {
+  from {
+    transform: translate(-4px, 0);
+  }
+  to {
+    transform: translate(4px, 0);
+  }
+}
+@keyframes penNetShake {
+  0% {
+    transform: translate(0, 0);
+  }
+  30% {
+    transform: translate(2px, 3px);
+  }
+  60% {
+    transform: translate(-2px, 1px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+@keyframes penFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes penBadgeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* ---------------------------------------------------------------
    Nasıl oynanır? — ana ekrandaki açılır rehber (HowToPlay.tsx)
    --------------------------------------------------------------- */
 

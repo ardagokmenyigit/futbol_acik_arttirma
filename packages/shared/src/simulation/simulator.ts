@@ -6,6 +6,7 @@ import type {
   Position,
   Team,
 } from '../types.js';
+import { simulateShootout } from './penalty.js';
 import { createPRNG, stringToSeed } from './random.js';
 
 export interface SimulateMatchOptions {
@@ -102,6 +103,13 @@ export interface SimulateMatchOptions {
    * normal süre gol/maç 3.68 sabit (uzatma golleriyle 4.04).
    */
   isTournament?: boolean;
+  /**
+   * İNSANLI MAÇ: uzatma sonrası beraberlikte seri penaltıyı BURADA oynama,
+   * `pendingShootout: true` ile dön — köşeleri oyuncular canlı seçer, seriyi
+   * sunucunun canlı motoru (server/tournament/shootout.ts) oynatır. Bot–bot
+   * maçlarda (varsayılan false) seri anında, rastgele köşelerle çözülür.
+   */
+  interactiveShootout?: boolean;
 }
 
 /* ------------------------------ ayarlar ------------------------------ */
@@ -143,32 +151,6 @@ const LATE_TEMPO = 1.18;
 /** Normal süre ve uzatma uzunluğu (dakika). */
 export const REGULAR_TIME_MINUTES = 90;
 export const EXTRA_TIME_MINUTES = 30;
-
-/**
- * Penaltı atma yeteneği — GEN eksi MEVKİ CEZASI.
- *
- * Atıcı sırası da gol ihtimali de bu sayıdan türer; forvetler önce, kaleci
- * en son atar. Eski model `0.7·HÜC + 0.3·GEN` idi; oyuncu başına HÜC alanı
- * kalkınca (bkz. `POSITION_POWER_WEIGHT`) aynı ölçek mevki ofsetiyle korundu:
- * cezalar, eski beceri ile GEN arasındaki mevki ortalaması farkıdır (veri
- * seti ölçümü: FWD −0.3, MID −3.0, DEF −25.9, GK −37.1). Böylece
- * `calcSuccessRate`in merkezi (74) ve eğimi (0.0035) değişmedi.
- *
- * Ölçek: ilk 5 atıcının becerisi ort. ~76, sd ~10; ortalama gol oranı ~%72,
- * mevkiler arası fark FWD ~%74, MID ~%73, DEF ~%65, GK ~%61.
- */
-const PENALTY_POSITION_PENALTY: Record<Position, number> = {
-  FWD: 0,
-  MID: 3,
-  DEF: 26,
-  GK: 37,
-};
-const PENALTY_SKILL_CENTER = 74;
-const PENALTY_SKILL_SLOPE = 0.0035;
-
-function penaltySkill(p: Footballer): number {
-  return p.overall - PENALTY_POSITION_PENALTY[p.position];
-}
 
 /**
  * Golcü seçimi — mevki ağırlığı × GEN. Ağırlıklar eski `mevki × HÜC/20`
@@ -235,6 +217,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     baseConversion = 0.116,
     strengthSensitivity = 2.4,
     isTournament = true,
+    interactiveShootout = false,
   } = options;
 
   const prng = createPRNG(seed);
@@ -339,143 +322,36 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
   let penaltiesAway: number | undefined;
   let winnerId: string | undefined;
   let penaltyShootout: PenaltyShootoutAttempt[] | undefined;
+  let pendingShootout = false;
 
   if (scoreHome > scoreAway) {
     winnerId = homeTeam.participantId;
   } else if (scoreAway > scoreHome) {
     winnerId = awayTeam.participantId;
   } else if (isTournament) {
-    // Uzatma da berabere: seri penaltı atışları — iyiden kötüye.
-    const homeShooters = [...(homeTeam.players ?? [])].sort(
-      (a, b) => penaltySkill(b) - penaltySkill(a),
-    );
-    const awayShooters = [...(awayTeam.players ?? [])].sort(
-      (a, b) => penaltySkill(b) - penaltySkill(a),
-    );
-
-    // Kadro tükenince başa dönülür: 7 kişilik kadroda 8. atışı yine 1. atıcı
-    // kullanır (gerçek futbol kuralı — herkes bir kez atmadan kimse iki kez atmaz).
-    const getShooter = (shooters: Footballer[], team: Team, kickIdx: number): Footballer => {
-      if (shooters.length > 0) {
-        return shooters[kickIdx % shooters.length]!;
-      }
-      return {
-        id: `gen-${team.participantId}-${kickIdx}`,
-        name: `${team.nickname} Oyuncusu ${kickIdx + 1}`,
-        position: 'FWD',
-        overall: 80,
-      };
-    };
-
-    const homeGk = homeTeam.players?.find((p) => p.position === 'GK');
-    const awayGk = awayTeam.players?.find((p) => p.position === 'GK');
-    // Kalecinin penaltı kurtarma gücü = GEN'i (veri setinde GK SAV ≈ GEN idi).
-    const homeGkDef = homeGk?.overall ?? baseHomeDef;
-    const awayGkDef = awayGk?.overall ?? baseAwayDef;
-
-    const calcSuccessRate = (shooterSkill: number, oppGkDef: number) => {
-      const rate =
-        0.715 +
-        (shooterSkill - PENALTY_SKILL_CENTER) * PENALTY_SKILL_SLOPE -
-        (oppGkDef - 82) * 0.006;
-      return Math.min(0.93, Math.max(0.45, rate));
-    };
-
-    let penH = 0;
-    let penA = 0;
-    const shootout: PenaltyShootoutAttempt[] = [];
-
-    // İlk 5 atış (klasik seri)
-    let homeKicks = 0;
-    let awayKicks = 0;
-
-    for (let round = 1; round <= 5; round++) {
-      // 1. Ev Sahibi atışı
-      const hShooter = getShooter(homeShooters, homeTeam, homeKicks);
-      const hScored = prng() < calcSuccessRate(penaltySkill(hShooter), awayGkDef);
-      if (hScored) penH++;
-      homeKicks++;
-      shootout.push({
-        round,
-        teamId: homeTeam.participantId,
-        playerId: hShooter.id,
-        playerName: hShooter.name,
-        scored: hScored,
-        scoreHomeAfter: penH,
-        scoreAwayAfter: penA,
-      });
-
-      // Matematiksel kontrol (Ev sahibi attıktan sonra)
-      const aRemainingAfterHome = 5 - awayKicks;
-      const hRemainingAfterHome = 5 - homeKicks;
-      if (penH > penA + aRemainingAfterHome || penA > penH + hRemainingAfterHome) {
-        break;
-      }
-
-      // 2. Deplasman atışı
-      const aShooter = getShooter(awayShooters, awayTeam, awayKicks);
-      const aScored = prng() < calcSuccessRate(penaltySkill(aShooter), homeGkDef);
-      if (aScored) penA++;
-      awayKicks++;
-      shootout.push({
-        round,
-        teamId: awayTeam.participantId,
-        playerId: aShooter.id,
-        playerName: aShooter.name,
-        scored: aScored,
-        scoreHomeAfter: penH,
-        scoreAwayAfter: penA,
-      });
-
-      // Matematiksel kontrol (Deplasman attıktan sonra)
-      const aRemainingAfterAway = 5 - awayKicks;
-      const hRemainingAfterAway = 5 - homeKicks;
-      if (penH > penA + aRemainingAfterAway || penA > penH + hRemainingAfterAway) {
-        break;
-      }
+    // Uzatma da berabere: seri penaltı (köşe oyunu, bkz. penalty.ts).
+    if (interactiveShootout) {
+      // İnsanlı maç: köşeleri oyuncular canlı seçecek — seri sunucuda oynanır.
+      pendingShootout = true;
+    } else {
+      const shootout = simulateShootout(
+        {
+          id: homeTeam.participantId,
+          nickname: homeTeam.nickname,
+          players: homeTeam.players ?? [],
+        },
+        {
+          id: awayTeam.participantId,
+          nickname: awayTeam.nickname,
+          players: awayTeam.players ?? [],
+        },
+        prng,
+      );
+      penaltiesHome = shootout.penaltiesHome;
+      penaltiesAway = shootout.penaltiesAway;
+      penaltyShootout = shootout.attempts;
+      winnerId = shootout.winnerId ?? awayTeam.participantId;
     }
-
-    // 5 atış bittiğinde ve eşitlik varsa ani ölüm (sudden death)
-    let suddenDeathRound = 6;
-    while (penH === penA && suddenDeathRound <= 25) {
-      // Ev sahibi
-      const hShooter = getShooter(homeShooters, homeTeam, homeKicks);
-      const hScored = prng() < calcSuccessRate(penaltySkill(hShooter), awayGkDef);
-      if (hScored) penH++;
-      homeKicks++;
-      shootout.push({
-        round: suddenDeathRound,
-        teamId: homeTeam.participantId,
-        playerId: hShooter.id,
-        playerName: hShooter.name,
-        scored: hScored,
-        scoreHomeAfter: penH,
-        scoreAwayAfter: penA,
-      });
-
-      // Deplasman
-      const aShooter = getShooter(awayShooters, awayTeam, awayKicks);
-      const aScored = prng() < calcSuccessRate(penaltySkill(aShooter), homeGkDef);
-      if (aScored) penA++;
-      awayKicks++;
-      shootout.push({
-        round: suddenDeathRound,
-        teamId: awayTeam.participantId,
-        playerId: aShooter.id,
-        playerName: aShooter.name,
-        scored: aScored,
-        scoreHomeAfter: penH,
-        scoreAwayAfter: penA,
-      });
-
-      if (penH !== penA) break;
-      suddenDeathRound++;
-    }
-
-    penaltiesHome = penH;
-    penaltiesAway = penA;
-    winnerId = penH > penA ? homeTeam.participantId : awayTeam.participantId;
-    penaltyShootout = shootout;
   }
 
   return {
@@ -486,6 +362,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     scoreAway,
     events,
     ...(extraTime ? { extraTime } : {}),
+    ...(pendingShootout ? { pendingShootout } : {}),
     penaltiesHome,
     penaltiesAway,
     winnerId,

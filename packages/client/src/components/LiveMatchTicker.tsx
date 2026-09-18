@@ -1,5 +1,12 @@
-import { useEffect, useRef, useState, type FC } from 'react';
-import type { MatchResult, PenaltyShootoutAttempt } from '@fal/shared';
+import { useCallback, useEffect, useRef, useState, type FC } from 'react';
+import {
+  SHOOTOUT_CHOOSE_MS,
+  type MatchResult,
+  type PenaltyDirection,
+  type PenaltyShootoutAttempt,
+  type ShootoutState,
+} from '@fal/shared';
+import { PenaltyScene } from './PenaltyScene.js';
 
 interface LiveMatchTickerProps {
   homeName: string;
@@ -17,6 +24,19 @@ interface LiveMatchTickerProps {
    * geçişi sunucu `tournament:matchResult` ile tetikler.
    */
   serverPaced?: boolean;
+  /**
+   * CANLI SERİ PENALTI (sunucu güdümlü). `result.pendingShootout` iken seri
+   * burada oynanmaz; sunucunun her vuruşta yayınladığı durum gelir, taraflar
+   * köşe seçer (`onChoose`). Bot–bot / önizleme maçlarında `result.penaltyShootout`
+   * hazır gelir ve seri senaryolu oynatılır.
+   */
+  shootout?: ShootoutState | null;
+  /** Bu istemcinin katılımcı id'si — seride rolünü belirler. */
+  youId?: string | null;
+  /** Köşe seçimini sunucuya gönderir; reddedilirse reject olur. */
+  onChoose?: (kickIndex: number, direction: PenaltyDirection) => Promise<unknown>;
+  /** Maçın sunucudaki başlangıç anı — yeniden bağlanınca dakika buradan türer. */
+  startedAt?: number;
 }
 
 const AIMING_PHRASES = [
@@ -30,23 +50,35 @@ const AIMING_PHRASES = [
 const GOAL_PHRASES = [
   'Topu doksana astı!',
   'Kaleciyi ters köşeye yatırdı!',
-  'Panenka vuruşuyla kaleciyi çaresiz bıraktı!',
   'İnanılmaz bir soğukkanlılık, top filelerle buluştu!',
   'Kalecinin uzanamayacağı köşeye adeta çivi gibi çaktı!',
   'Ağları adeta sarstı, kusursuz bir penaltı vuruşu!',
   'Örümcek ağlarını temizledi, müthiş bir vuruş!',
+];
+
+/** Kaleci köşeyi bildi ama top yine de girdi. */
+const GOAL_SAME_SIDE_PHRASES = [
   'Kaleci köşeyi tahmin etti ama top o kadar sert ki filelerle buluştu!',
+  'Doğru tarafa uzandı, yine de yetişemedi — top fileye gitti!',
+  'Eldivenine sürdü ama engelleyemedi, GOL!',
+];
+
+const SAVE_PHRASES = [
+  'Kaleci devleşti, köşeden müthiş uzandı ve kurtardı!',
+  'Kaleci köşeyi kusursuz tahmin etti ve penaltıyı çeldi!',
+  'Doğru köşeye yattı, topu eldivenleriyle uzaklaştırdı!',
+  'Çok zayıf bir vuruş, kaleci zorlanmadan kontrol etti!',
 ];
 
 const MISS_PHRASES = [
   'Dağa taşa vurdu, top auta gitti!',
   'Direğe nişanladı, inanılmaz bir şanssızlık!',
-  'Kaleci devleşti, köşeden müthiş uzandı ve kurtardı!',
-  'Çok zayıf bir vuruş, kaleci zorlanmadan kontrol etti!',
-  'Kaleci köşeyi kusursuz tahmin etti ve penaltıyı çeldi!',
-  'Çerçeveyi bulamadı, top farklı şekilde dışarıda!',
+  'Çerçeveyi bulamadı, top dışarıda!',
   'Direkten döndü! Büyük talihsizlik!',
+  'Topun altına girdi, üstten aut!',
 ];
+
+const DIR_LABEL: Record<PenaltyDirection, string> = { left: 'sol', center: 'orta', right: 'sağ' };
 
 function getPhrase(list: string[], seedKey: string | number): string {
   const num =
@@ -54,6 +86,58 @@ function getPhrase(list: string[], seedKey: string | number): string {
       ? seedKey
       : seedKey.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
   return list[Math.abs(num) % list.length]!;
+}
+
+/** Açıklanan vuruşun anlatım satırı (her iki modda ortak). */
+function describeKick(attempt: PenaltyShootoutAttempt, teamName: string, idx: number): string {
+  const key = attempt.playerName + idx + (attempt.playerId ?? '');
+  const corners = `(vuruş ${DIR_LABEL[attempt.shotDirection]} · kaleci ${DIR_LABEL[attempt.keeperDirection]})`;
+  const score = `(${attempt.scoreHomeAfter} - ${attempt.scoreAwayAfter})`;
+  if (attempt.outcome === 'goal') {
+    const same = attempt.shotDirection === attempt.keeperDirection;
+    const text = getPhrase(same ? GOAL_SAME_SIDE_PHRASES : GOAL_PHRASES, key);
+    return `⚽ GOOOL! ${attempt.playerName} (${teamName}) — ${text} ${corners} ${score}`;
+  }
+  if (attempt.outcome === 'saved') {
+    const keeper = attempt.keeperName ? `${attempt.keeperName} ` : 'Kaleci ';
+    return `🧤 KURTARDI! ${keeper}— ${getPhrase(SAVE_PHRASES, key)} ${attempt.playerName} kaçırdı ${corners} ${score}`;
+  }
+  return `❌ DIŞARI! ${attempt.playerName} (${teamName}) — ${getPhrase(MISS_PHRASES, key)} ${corners} ${score}`;
+}
+
+/* ---------------- seri görünüm modeli (senaryolu + canlı ortak) ---------------- */
+
+type Stage = 'waiting' | 'aiming' | 'revealed' | 'done';
+type Role = 'shooter' | 'keeper' | 'spectator';
+
+interface ShootoutView {
+  attempts: PenaltyShootoutAttempt[];
+  scoreHome: number;
+  scoreAway: number;
+  stage: Stage;
+  round: number;
+  shooterTeamId: string | null;
+  shooterName: string;
+  keeperName: string;
+  revealed: PenaltyShootoutAttempt | null;
+  winnerId: string | null;
+  /** Anlatım cümlesi seçimi için vuruş anahtarı (kart ve akış aynı cümleyi kullanır). */
+  kickKey: number;
+  /** Yalnız canlı seride: seçim bilgisi. */
+  live: {
+    kickIndex: number;
+    endsAt: number;
+    role: Role;
+    shooterChosen: boolean;
+    keeperChosen: boolean;
+  } | null;
+}
+
+/** Senaryolu seride açıklanmadan önce kalecinin adı bilinmez; kadrodan tahmin. */
+function scriptedKeeperName(result: MatchResult, shooterTeamId: string): string {
+  const other = result.penaltyShootout?.find((a) => a.teamId !== shooterTeamId && a.keeperName);
+  const own = result.penaltyShootout?.find((a) => a.teamId === shooterTeamId && a.keeperName);
+  return own?.keeperName ?? other?.keeperName ?? 'Kaleci';
 }
 
 export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
@@ -66,6 +150,10 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   onComplete,
   speedMs = 30,
   serverPaced = false,
+  shootout = null,
+  youId = null,
+  onChoose,
+  startedAt,
 }) => {
   const [phase, setPhase] = useState<'regular' | 'extra' | 'shootout' | 'finished'>('regular');
   const [minute, setMinute] = useState(1);
@@ -75,19 +163,44 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   const [latestGoal, setLatestGoal] = useState<string | null>(null);
   const [isFinished, setIsFinished] = useState(false);
 
-  // Seri penaltı atışları durumu
+  // Senaryolu seri (bot–bot / önizleme) durumu
   const [currentKickIndex, setCurrentKickIndex] = useState<number>(-1);
   const [kickState, setKickState] = useState<'aiming' | 'revealed'>('aiming');
-  const [shootoutHomeScore, setShootoutHomeScore] = useState<number>(0);
-  const [shootoutAwayScore, setShootoutAwayScore] = useState<number>(0);
   const [completedAttempts, setCompletedAttempts] = useState<PenaltyShootoutAttempt[]>([]);
 
+  // Canlı seri: kendi seçimim + sunucu yanıtı
+  const [myChoice, setMyChoice] = useState<PenaltyDirection | null>(null);
+  const [chooseError, setChooseError] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  const clockRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const shootoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
-
   const resultRef = useRef(result);
   resultRef.current = result;
+  const shootoutRef = useRef(shootout);
+  shootoutRef.current = shootout;
+
+  const interactive = Boolean(result.pendingShootout);
+  const liveShootout =
+    interactive && shootout && shootout.matchId === result.matchId ? shootout : null;
+  const lastMinute = result.extraTime ? 120 : 90;
+
+  const log = useCallback((line: string) => setTickerLogs((prev) => [line, ...prev]), []);
+
+  const enterShootout = useCallback(
+    (silent: boolean) => {
+      setPhase('shootout');
+      const endLabel = result.extraTime ? 'Uzatma da' : '90 Dakika';
+      if (!silent) {
+        log(
+          `${lastMinute}' ⏱️ ${endLabel} Berabere Bitti (${result.scoreHome} - ${result.scoreAway})! Kazananı SERİ PENALTI ATIŞLARI belirleyecek! 🔥`,
+        );
+      }
+    },
+    [lastMinute, log, result.extraTime, result.scoreAway, result.scoreHome],
+  );
 
   // 90 dakikalık normal süre + (beraberlikte) 30 dakikalık uzatma simülasyonu
   useEffect(() => {
@@ -99,50 +212,69 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     setLatestGoal(null);
     setCurrentKickIndex(-1);
     setKickState('aiming');
-    setShootoutHomeScore(0);
-    setShootoutAwayScore(0);
     setCompletedAttempts([]);
     setTickerLogs([`0' ⏱️ Karşılaşma başladı! ${homeName} vs ${awayName}`]);
 
+    // Yeniden bağlanma: dakikayı sunucu başlangıcından türet; seri zaten
+    // sürüyorsa doğrudan seriye geç (maçı baştan oynatma).
     let min = 1;
+    if (startedAt) {
+      min = Math.max(1, Math.min(lastMinute + 1, Math.floor((Date.now() - startedAt) / speedMs)));
+    }
+    const s0 = shootoutRef.current;
+    if (s0 && s0.matchId === result.matchId) min = lastMinute + 1;
+
     let hScore = 0;
     let aScore = 0;
-    const lastMinute = result.extraTime ? 120 : 90;
+    for (const e of result.events) {
+      if (e.type !== 'goal' || e.minute >= min) continue;
+      if (e.teamId === result.homeId) hScore += 1;
+      else aScore += 1;
+    }
+    if (min > 1) {
+      setLiveHomeScore(hScore);
+      setLiveAwayScore(aScore);
+      setMinute(Math.min(min, lastMinute));
+      if (min > 90) setPhase('extra');
+      log(`↻ Maça yeniden bağlandın (${Math.min(min, lastMinute)}' · ${hScore} - ${aScore})`);
+    }
 
     const finishMatch = (): void => {
-      const shootout = result.penaltyShootout;
-      const endLabel = result.extraTime ? 'Uzatma da' : '90 Dakika';
-      if (shootout && shootout.length > 0) {
-        setPhase('shootout');
-        setTickerLogs((prev) => [
-          `${lastMinute}' ⏱️ ${endLabel} Berabere Bitti (${result.scoreHome} - ${result.scoreAway})! Kazananı SERİ PENALTI ATIŞLARI belirleyecek! 🔥`,
-          ...prev,
-        ]);
+      const hasScripted = Boolean(result.penaltyShootout && result.penaltyShootout.length > 0);
+      if (result.pendingShootout || hasScripted) {
+        enterShootout(false);
       } else {
         setPhase('finished');
         setIsFinished(true);
         const suffix = result.extraTime ? ' (uzatmalar sonunda)' : '';
-        setTickerLogs((prev) => [
+        log(
           `${lastMinute}' 🏁 Maç Bitti${suffix}! Sonuç: ${homeName} ${result.scoreHome} - ${result.scoreAway} ${awayName}`,
-          ...prev,
-        ]);
+        );
       }
     };
+
+    if (min > lastMinute) {
+      setMinute(lastMinute);
+      setLiveHomeScore(result.scoreHome);
+      setLiveAwayScore(result.scoreAway);
+      finishMatch();
+      return;
+    }
 
     const timer = setInterval(() => {
       min += 1;
       if (min > lastMinute) {
         clearInterval(timer);
+        clockRef.current = null;
         finishMatch();
         return;
       }
       if (min === 91) {
         // Normal süre berabere bitti, uzatmaya gidiliyor.
         setPhase('extra');
-        setTickerLogs((prev) => [
+        log(
           `90' ⏱️ Normal Süre Berabere Bitti (${hScore} - ${aScore})! 30 dakikalık UZATMA başlıyor! ⚡`,
-          ...prev,
-        ]);
+        );
       }
 
       setMinute(min);
@@ -160,23 +292,50 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         const scorer = goal.playerName ? `${goal.playerName} (${teamName})` : teamName;
         const msg = `⚽ ${min}' GOOOL! ${scorer} topu ağlara gönderdi! (${hScore} - ${aScore})`;
         setLatestGoal(msg);
-        setTickerLogs((prev) => [msg, ...prev]);
+        log(msg);
       }
     }, speedMs);
+    clockRef.current = timer;
 
     return () => {
       clearInterval(timer);
+      clockRef.current = null;
       if (shootoutTimerRef.current) {
         clearTimeout(shootoutTimerRef.current);
       }
     };
-  }, [result.matchId, homeName, awayName, result, speedMs]);
+  }, [
+    result.matchId,
+    homeName,
+    awayName,
+    result,
+    speedMs,
+    startedAt,
+    lastMinute,
+    enterShootout,
+    log,
+  ]);
 
-  // Heyecanlı seri penaltı atışları adımları (1.5s gerilim beklemesi)
+  // Sunucu seriye geçti ama saat henüz 120'ye gelmedi (gecikme / yeniden
+  // bağlanma): saati bitir, seriye geç.
   useEffect(() => {
-    if (phase !== 'shootout') return;
-    const shootout = result.penaltyShootout;
-    if (!shootout || shootout.length === 0) {
+    if (!liveShootout) return;
+    if (phase !== 'regular' && phase !== 'extra') return;
+    if (clockRef.current) {
+      clearInterval(clockRef.current);
+      clockRef.current = null;
+    }
+    setMinute(lastMinute);
+    setLiveHomeScore(result.scoreHome);
+    setLiveAwayScore(result.scoreAway);
+    enterShootout(false);
+  }, [liveShootout, phase, lastMinute, result.scoreHome, result.scoreAway, enterShootout]);
+
+  // Senaryolu seri (bot–bot / önizleme): hazır gelen atışları sırayla oynat.
+  useEffect(() => {
+    if (phase !== 'shootout' || interactive) return;
+    const shootoutList = result.penaltyShootout;
+    if (!shootoutList || shootoutList.length === 0) {
       setPhase('finished');
       setIsFinished(true);
       return;
@@ -186,71 +345,41 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
 
     const playKick = (index: number) => {
       if (!active) return;
-      if (index >= shootout.length) {
-        // Tüm atışlar tamamlandı
+      if (index >= shootoutList.length) {
         const winnerName = result.winnerId === result.homeId ? homeName : awayName;
-        setTickerLogs((prev) => [
+        log(
           `🏆 SERİ PENALTILAR SONUCU: ${homeName} ${result.penaltiesHome} - ${result.penaltiesAway} ${awayName}! Kazanan: ${winnerName}!`,
-          ...prev,
-        ]);
+        );
         setPhase('finished');
         setIsFinished(true);
         return;
       }
 
-      const attempt = shootout[index];
+      const attempt = shootoutList[index];
       if (!attempt) return;
       const isHome = attempt.teamId === result.homeId;
       const teamName = isHome ? homeName : awayName;
       const aimText = getPhrase(AIMING_PHRASES, attempt.playerName + index);
 
-      // 1. Oyuncu topun başına geçiyor (Heyecan / Bekleme Aşaması)
       setCurrentKickIndex(index);
       setKickState('aiming');
-      setTickerLogs((prev) => [
+      log(
         `🎯 ${attempt.round}. Penaltı: ${attempt.playerName} (${teamName}) topun başına geçti... ${aimText}`,
-        ...prev,
-      ]);
+      );
 
-      // 1.5 saniyelik heyecan verici bekleme süresi
       shootoutTimerRef.current = setTimeout(() => {
         if (!active) return;
-
-        // 2. Vuruş sonucu açıklanıyor!
         setKickState('revealed');
-        setShootoutHomeScore(attempt.scoreHomeAfter);
-        setShootoutAwayScore(attempt.scoreAwayAfter);
         setCompletedAttempts((prev) => [...prev, attempt]);
+        log(describeKick(attempt, teamName, index));
 
-        if (attempt.scored) {
-          const goalText = getPhrase(
-            GOAL_PHRASES,
-            attempt.playerName + index + (attempt.playerId ?? ''),
-          );
-          setTickerLogs((prev) => [
-            `⚽ GOOOL! ${attempt.playerName} (${teamName}) — ${goalText} (${attempt.scoreHomeAfter} - ${attempt.scoreAwayAfter})`,
-            ...prev,
-          ]);
-        } else {
-          const missText = getPhrase(
-            MISS_PHRASES,
-            attempt.playerName + index + (attempt.playerId ?? ''),
-          );
-          setTickerLogs((prev) => [
-            `❌ KAÇIRDI! ${attempt.playerName} (${teamName}) — ${missText} (${attempt.scoreHomeAfter} - ${attempt.scoreAwayAfter})`,
-            ...prev,
-          ]);
-        }
-
-        // Bir sonraki atıcıya geçmeden önce 1.2 saniyelik nefes payı
         shootoutTimerRef.current = setTimeout(() => {
           if (!active) return;
           playKick(index + 1);
-        }, 1200);
+        }, 2200);
       }, 1500);
     };
 
-    // 90. dakika düdüğünden sonra penaltılara geçiş esnası (1.2s ara)
     shootoutTimerRef.current = setTimeout(() => {
       playKick(0);
     }, 1200);
@@ -261,7 +390,55 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         clearTimeout(shootoutTimerRef.current);
       }
     };
-  }, [phase, result, homeName, awayName]);
+  }, [phase, interactive, result, homeName, awayName, log]);
+
+  // Canlı seri anlatımı: yeni vuruş (seçim evresi) ve açıklanan vuruş.
+  const promptedRef = useRef<number>(-1);
+  const revealedRef = useRef<number>(-1);
+  useEffect(() => {
+    if (!liveShootout) return;
+    const teamName = liveShootout.shooterTeamId === result.homeId ? homeName : awayName;
+    if (liveShootout.phase === 'choosing' && promptedRef.current !== liveShootout.kickIndex) {
+      promptedRef.current = liveShootout.kickIndex;
+      const you =
+        youId === liveShootout.shooterTeamId
+          ? ' — SEN ATIYORSUN, köşeyi seç!'
+          : youId === liveShootout.keeperTeamId
+            ? ' — SEN KALEDESİN, bir tarafa uzan!'
+            : '';
+      log(
+        `🎯 ${liveShootout.round}. Penaltı: ${liveShootout.shooter.name} (${teamName}) topun başına geçti, karşısında ${liveShootout.keeper.name}... ${getPhrase(AIMING_PHRASES, liveShootout.kickIndex)}${you}`,
+      );
+    }
+    if (
+      liveShootout.phase === 'revealed' &&
+      liveShootout.lastAttempt &&
+      revealedRef.current !== liveShootout.kickIndex
+    ) {
+      revealedRef.current = liveShootout.kickIndex;
+      log(describeKick(liveShootout.lastAttempt, teamName, liveShootout.kickIndex));
+      if (liveShootout.winnerId) {
+        const winnerName = liveShootout.winnerId === result.homeId ? homeName : awayName;
+        log(
+          `🏆 SERİ PENALTILAR SONUCU: ${homeName} ${liveShootout.penaltiesHome} - ${liveShootout.penaltiesAway} ${awayName}! Kazanan: ${winnerName}!`,
+        );
+      }
+    }
+  }, [liveShootout, homeName, awayName, youId, log, result.homeId]);
+
+  // Her yeni vuruşta seçim sıfırlanır; seçim evresinde geri sayım için saat işler.
+  const liveKickIndex = liveShootout?.kickIndex ?? -1;
+  const livePhase = liveShootout?.phase ?? null;
+  useEffect(() => {
+    setMyChoice(null);
+    setChooseError(null);
+  }, [liveKickIndex]);
+  useEffect(() => {
+    if (livePhase !== 'choosing') return;
+    setNow(Date.now());
+    const iv = setInterval(() => setNow(Date.now()), 100);
+    return () => clearInterval(iv);
+  }, [livePhase, liveKickIndex]);
 
   // Otomatik tamamlama (yalnız yerel önizleme — sunucu temposunda değil).
   useEffect(() => {
@@ -273,35 +450,155 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     }
   }, [isFinished, serverPaced]);
 
+  /* ---------------------------- görünüm modeli ---------------------------- */
+
+  let view: ShootoutView | null = null;
+  if (phase === 'shootout' || (phase === 'finished' && isFinished && !interactive)) {
+    if (interactive) {
+      if (!liveShootout) {
+        view = {
+          attempts: [],
+          scoreHome: 0,
+          scoreAway: 0,
+          stage: 'waiting',
+          round: 1,
+          shooterTeamId: null,
+          shooterName: '',
+          keeperName: '',
+          revealed: null,
+          winnerId: null,
+          kickKey: 0,
+          live: null,
+        };
+      } else {
+        const role: Role =
+          youId === liveShootout.shooterTeamId
+            ? 'shooter'
+            : youId === liveShootout.keeperTeamId
+              ? 'keeper'
+              : 'spectator';
+        const revealed = liveShootout.phase === 'revealed' ? liveShootout.lastAttempt : null;
+        view = {
+          attempts: liveShootout.attempts,
+          scoreHome: liveShootout.penaltiesHome,
+          scoreAway: liveShootout.penaltiesAway,
+          stage: liveShootout.phase === 'choosing' ? 'aiming' : 'revealed',
+          round: liveShootout.round,
+          shooterTeamId: liveShootout.shooterTeamId,
+          shooterName: liveShootout.shooter.name,
+          keeperName: liveShootout.keeper.name,
+          revealed,
+          winnerId: liveShootout.winnerId,
+          kickKey: liveShootout.kickIndex,
+          live: {
+            kickIndex: liveShootout.kickIndex,
+            endsAt: liveShootout.endsAt,
+            role,
+            shooterChosen: liveShootout.shooterChosen,
+            keeperChosen: liveShootout.keeperChosen,
+          },
+        };
+      }
+    } else if (result.penaltyShootout && result.penaltyShootout.length > 0) {
+      const list = result.penaltyShootout;
+      const current = currentKickIndex >= 0 ? list[currentKickIndex] : undefined;
+      const last = completedAttempts[completedAttempts.length - 1];
+      const done = phase === 'finished';
+      view = {
+        attempts: completedAttempts,
+        scoreHome: last?.scoreHomeAfter ?? 0,
+        scoreAway: last?.scoreAwayAfter ?? 0,
+        stage: done
+          ? 'done'
+          : !current
+            ? 'waiting'
+            : kickState === 'aiming'
+              ? 'aiming'
+              : 'revealed',
+        round: current?.round ?? 1,
+        shooterTeamId: current?.teamId ?? null,
+        shooterName: current?.playerName ?? '',
+        keeperName:
+          current?.keeperName ?? (current ? scriptedKeeperName(result, current.teamId) : ''),
+        revealed: !done && kickState === 'revealed' && current ? current : null,
+        winnerId: done ? (result.winnerId ?? null) : null,
+        kickKey: Math.max(0, currentKickIndex),
+        live: null,
+      };
+    }
+  }
+
+  const selectable = Boolean(
+    view?.live && view.stage === 'aiming' && view.live.role !== 'spectator' && onChoose,
+  );
+
+  // Seçim: görünüm modeli her render'da yeniden kurulduğu için ref üzerinden okunur.
+  const viewRef = useRef(view);
+  viewRef.current = view;
+  const onChooseRef = useRef(onChoose);
+  onChooseRef.current = onChoose;
+  const choose = useCallback((direction: PenaltyDirection) => {
+    const v = viewRef.current;
+    const send = onChooseRef.current;
+    if (!v?.live || v.stage !== 'aiming' || v.live.role === 'spectator' || !send) return;
+    setMyChoice(direction);
+    setChooseError(null);
+    send(v.live.kickIndex, direction).catch((err: unknown) => {
+      setChooseError(err instanceof Error ? err.message : 'Seçim gönderilemedi.');
+    });
+  }, []);
+
+  // Klavye: ← ↑ → (ya da 1 2 3) ile seçim.
+  useEffect(() => {
+    if (!selectable) return;
+    const onKey = (e: KeyboardEvent) => {
+      const map: Record<string, PenaltyDirection> = {
+        ArrowLeft: 'left',
+        ArrowUp: 'center',
+        ArrowRight: 'right',
+        '1': 'left',
+        '2': 'center',
+        '3': 'right',
+      };
+      const dir = map[e.key];
+      if (!dir) return;
+      e.preventDefault();
+      choose(dir);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectable, choose]);
+
   const totalMinutes = result.extraTime ? 120 : 90;
   const progressPct = Math.min(100, Math.round((minute / totalMinutes) * 100));
 
-  const hasShootout = Boolean(result.penaltyShootout && result.penaltyShootout.length > 0);
+  const hasShootout = interactive || Boolean(result.penaltyShootout?.length);
+  const shootoutScore = view ? `${view.scoreHome} - ${view.scoreAway}` : '0 - 0';
+  const finalPenH = interactive ? (view?.scoreHome ?? 0) : result.penaltiesHome;
+  const finalPenA = interactive ? (view?.scoreAway ?? 0) : result.penaltiesAway;
+  const finalWinnerId = interactive ? view?.winnerId : result.winnerId;
+
   // Nokta sayısı serinin uzayıp uzamayacağını ELE VERMEMELİ: baştan yalnız
   // klasik 5 gösterilir; ani ölüm turları ancak sıra geldikçe eklenir.
-  const activeShootoutKick =
-    phase === 'shootout' && currentKickIndex >= 0
-      ? result.penaltyShootout?.[currentKickIndex]
-      : undefined;
   const revealedRound = Math.max(
     5,
-    ...completedAttempts.map((a) => a.round),
-    activeShootoutKick?.round ?? 0,
+    ...(view?.attempts.map((a) => a.round) ?? [0]),
+    view?.stage === 'aiming' || view?.stage === 'revealed' ? view.round : 0,
   );
   const shootoutRounds = Array.from({ length: revealedRound }, (_, i) => i + 1);
 
   const renderPenaltyDots = (teamId: string) => {
-    if (!hasShootout || phase === 'regular' || phase === 'extra') return null;
-    const shootout = result.penaltyShootout!;
+    if (!hasShootout || !view || phase === 'regular' || phase === 'extra') return null;
+    const current =
+      view.stage === 'aiming' && view.shooterTeamId
+        ? { teamId: view.shooterTeamId, round: view.round }
+        : null;
 
     return (
       <div className="penalty-dots-row">
         {shootoutRounds.map((rnd) => {
-          const attempt = completedAttempts.find((a) => a.teamId === teamId && a.round === rnd);
-          const activeKick =
-            phase === 'shootout' && currentKickIndex >= 0 ? shootout[currentKickIndex] : undefined;
-          const isCurrent =
-            activeKick !== undefined && activeKick.teamId === teamId && activeKick.round === rnd;
+          const attempt = view.attempts.find((a) => a.teamId === teamId && a.round === rnd);
+          const isCurrent = current !== null && current.teamId === teamId && current.round === rnd;
 
           let dotClass = 'penalty-dot pending';
           let dotLabel = '•';
@@ -325,7 +622,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               className={dotClass}
               title={
                 attempt
-                  ? `${attempt.playerName}: ${attempt.scored ? 'Gol' : 'Kaçtı'}`
+                  ? `${attempt.playerName}: ${attempt.outcome === 'goal' ? 'Gol' : attempt.outcome === 'saved' ? 'Kurtarıldı' : 'Dışarı'}`
                   : isCurrent
                     ? 'Vuruş yapılıyor...'
                     : `${rnd}. Penaltı`
@@ -338,6 +635,13 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       </div>
     );
   };
+
+  const teamNameOf = (id: string | null) =>
+    id === result.homeId ? homeName : id === result.awayId ? awayName : '';
+
+  const remainingMs = view?.live ? Math.max(0, view.live.endsAt - now) : 0;
+  const remainingSec = Math.ceil(remainingMs / 1000);
+  const remainingPct = Math.max(0, Math.min(100, (remainingMs / SHOOTOUT_CHOOSE_MS) * 100));
 
   return (
     <div
@@ -497,7 +801,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             }}
           >
             {phase === 'shootout'
-              ? `Penaltılar: ${shootoutHomeScore} - ${shootoutAwayScore}`
+              ? `Penaltılar: ${shootoutScore}`
               : isFinished
                 ? `Maç Sonu (${totalMinutes}')${result.extraTime ? ' · U.S.' : ''}`
                 : phase === 'extra'
@@ -565,62 +869,172 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         </div>
       )}
 
-      {/* Canlı Seri Penaltı Vuruşu Kartı */}
-      {phase === 'shootout' &&
-        currentKickIndex >= 0 &&
-        currentKickIndex < (result.penaltyShootout?.length ?? 0) &&
-        (() => {
-          const currentAttempt = result.penaltyShootout?.[currentKickIndex];
-          if (!currentAttempt) return null;
-          const isHome = currentAttempt.teamId === result.homeId;
-          const kickerTeamName = isHome ? homeName : awayName;
+      {/* Seri Penaltı — 2D sahne + seçim (canlı) ya da senaryolu oynatma */}
+      {phase === 'shootout' && view && view.stage !== 'done' && (
+        <div
+          className={`penalty-active-card pen-live ${
+            view.stage === 'revealed' && view.revealed
+              ? view.revealed.outcome === 'goal'
+                ? 'is-goal'
+                : 'is-miss'
+              : 'is-aiming'
+          }`}
+        >
+          <div className="penalty-active-header">
+            <span className="penalty-round-badge">
+              {view.stage === 'waiting' ? 'SERİ PENALTI' : `${view.round}. SERİ PENALTI`}
+            </span>
+            <span className="penalty-team-tag">{teamNameOf(view.shooterTeamId)}</span>
+          </div>
 
-          return (
-            <div
-              className={`penalty-active-card ${
-                kickState === 'revealed'
-                  ? currentAttempt.scored
-                    ? 'is-goal'
-                    : 'is-miss'
-                  : 'is-aiming'
-              }`}
-            >
-              <div className="penalty-active-header">
-                <span className="penalty-round-badge">{currentAttempt.round}. SERİ PENALTI</span>
-                <span className="penalty-team-tag">{kickerTeamName}</span>
+          {view.stage === 'waiting' ? (
+            <div className="penalty-kicker-name">Seri penaltılar başlıyor…</div>
+          ) : (
+            <div className="pen-matchup">
+              <span className="pen-matchup-side">
+                <span className="pen-matchup-icon">⚽</span>
+                <span>{view.shooterName}</span>
+              </span>
+              <span className="pen-vs">vs</span>
+              <span className="pen-matchup-side">
+                <span className="pen-matchup-icon">🧤</span>
+                <span>{view.keeperName}</span>
+              </span>
+            </div>
+          )}
+
+          <PenaltyScene
+            reveal={view.revealed}
+            selectable={selectable}
+            selected={myChoice}
+            onSelect={choose}
+            role={view.live?.role ?? 'spectator'}
+          />
+
+          {view.live && view.stage === 'aiming' && (
+            <div className="pen-controls">
+              <div className={`pen-role-banner role-${view.live.role}`}>
+                {view.live.role === 'shooter'
+                  ? '🎯 SEN ATIYORSUN — köşeyi seç'
+                  : view.live.role === 'keeper'
+                    ? '🧤 SEN KALEDESİN — bir tarafa uzan'
+                    : 'Taraflar köşe seçiyor…'}
               </div>
-              <div className="penalty-kicker-name">⚽ {currentAttempt.playerName}</div>
-              <div className="penalty-status-message">
-                {kickState === 'aiming' ? (
-                  <span className="penalty-aiming-text">
-                    <span className="pulse-indicator">●</span>{' '}
-                    {getPhrase(AIMING_PHRASES, currentAttempt.playerName + currentKickIndex)}
-                  </span>
-                ) : currentAttempt.scored ? (
-                  <span className="penalty-goal-text">
-                    ⚽ GOOOL!{' '}
-                    {getPhrase(
-                      GOAL_PHRASES,
-                      currentAttempt.playerName +
-                        currentKickIndex +
-                        (currentAttempt.playerId ?? ''),
-                    )}
-                  </span>
-                ) : (
-                  <span className="penalty-miss-text">
-                    ❌ KAÇIRDI!{' '}
-                    {getPhrase(
-                      MISS_PHRASES,
-                      currentAttempt.playerName +
-                        currentKickIndex +
-                        (currentAttempt.playerId ?? ''),
-                    )}
-                  </span>
-                )}
+
+              <div className="pen-countdown" aria-live="polite">
+                <div className="pen-countdown-track">
+                  <div
+                    className={`pen-countdown-bar${remainingSec <= 2 ? ' urgent' : ''}`}
+                    style={{ width: `${remainingPct}%` }}
+                  />
+                </div>
+                <span className={`pen-countdown-num${remainingSec <= 2 ? ' urgent' : ''}`}>
+                  {remainingSec}
+                </span>
+              </div>
+
+              {view.live.role !== 'spectator' && (
+                <>
+                  <div className="pen-btn-row">
+                    {(['left', 'center', 'right'] as const).map((dir) => (
+                      <button
+                        key={dir}
+                        type="button"
+                        className={`pen-btn${myChoice === dir ? ' selected' : ''}`}
+                        onClick={() => choose(dir)}
+                      >
+                        {dir === 'left' ? '◀ SOL' : dir === 'center' ? '▲ ORTA' : 'SAĞ ▶'}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="pen-hint">
+                    {myChoice
+                      ? `Seçimin: ${DIR_LABEL[myChoice].toUpperCase()} · süre dolana kadar değiştirebilirsin`
+                      : view.live.role === 'shooter'
+                        ? 'Süre dolarsa ortaya vurursun. Klavye: ← ↑ →'
+                        : 'Süre dolarsa ortada kalırsın. Klavye: ← ↑ →'}
+                  </div>
+                  {chooseError && <div className="pen-error">{chooseError}</div>}
+                </>
+              )}
+
+              <div className="pen-chips">
+                <span className={`pen-chip${view.live.shooterChosen ? ' done' : ''}`}>
+                  ⚽ {teamNameOf(view.shooterTeamId)}{' '}
+                  {view.live.shooterChosen ? '· köşeyi seçti' : '· seçiyor…'}
+                </span>
+                <span className={`pen-chip${view.live.keeperChosen ? ' done' : ''}`}>
+                  🧤{' '}
+                  {teamNameOf(view.shooterTeamId === result.homeId ? result.awayId : result.homeId)}{' '}
+                  {view.live.keeperChosen ? '· tarafını seçti' : '· seçiyor…'}
+                </span>
               </div>
             </div>
-          );
-        })()}
+          )}
+
+          {!view.live && view.stage === 'aiming' && (
+            <div className="penalty-status-message">
+              <span className="penalty-aiming-text">
+                <span className="pulse-indicator">●</span>{' '}
+                {getPhrase(AIMING_PHRASES, view.shooterName + view.kickKey)}
+              </span>
+            </div>
+          )}
+
+          {view.stage === 'revealed' && view.revealed && (
+            <div className="penalty-status-message">
+              {view.revealed.outcome === 'goal' ? (
+                <span className="penalty-goal-text">
+                  ⚽ GOOOL!{' '}
+                  {getPhrase(
+                    view.revealed.shotDirection === view.revealed.keeperDirection
+                      ? GOAL_SAME_SIDE_PHRASES
+                      : GOAL_PHRASES,
+                    view.revealed.playerName + view.kickKey + (view.revealed.playerId ?? ''),
+                  )}
+                </span>
+              ) : view.revealed.outcome === 'saved' ? (
+                <span className="penalty-miss-text">
+                  🧤 KURTARDI!{' '}
+                  {getPhrase(
+                    SAVE_PHRASES,
+                    view.revealed.playerName + view.kickKey + (view.revealed.playerId ?? ''),
+                  )}
+                </span>
+              ) : (
+                <span className="penalty-miss-text">
+                  ❌ DIŞARI!{' '}
+                  {getPhrase(
+                    MISS_PHRASES,
+                    view.revealed.playerName + view.kickKey + (view.revealed.playerId ?? ''),
+                  )}
+                </span>
+              )}
+            </div>
+          )}
+
+          {view.stage === 'revealed' && view.winnerId && (
+            <div className="penalty-final-banner pen-winner">
+              <span style={{ fontSize: '1.4rem' }}>🏆</span>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>
+                  Penaltı Atışları: {homeName} {view.scoreHome} - {view.scoreAway} {awayName}
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.82rem',
+                    color: 'var(--accent-green, #10b981)',
+                    marginTop: 2,
+                  }}
+                >
+                  ✓ {teamNameOf(view.winnerId)} penaltılar sonucunda galip geldi!
+                  {view.winnerId === youId ? ' Tebrikler!' : ''}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Penaltı Sonucu Özeti (Maç bittiğinde) */}
       {isFinished && hasShootout && (
@@ -628,8 +1042,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           <span style={{ fontSize: '1.4rem' }}>🏆</span>
           <div>
             <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>
-              Penaltı Atışları: {homeName} {result.penaltiesHome} - {result.penaltiesAway}{' '}
-              {awayName}
+              Penaltı Atışları: {homeName} {finalPenH} - {finalPenA} {awayName}
             </div>
             <div
               style={{
@@ -638,7 +1051,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
                 marginTop: 2,
               }}
             >
-              ✓ {result.winnerId === result.homeId ? homeName : awayName} penaltılar sonucunda galip
+              ✓ {finalWinnerId === result.homeId ? homeName : awayName} penaltılar sonucunda galip
               geldi!
             </div>
           </div>

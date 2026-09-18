@@ -143,6 +143,14 @@ export function HowToPlay({ onClose }: Props) {
                 <strong>seri penaltı</strong> vardır.
               </p>
               <p className="htp-note">
+                <strong>Seri penaltıyı sen atarsın.</strong> Her vuruşta atıcı ve kaleci aynı anda,
+                gizlice <strong>sol / orta / sağ</strong> seçer (5 saniye; ekrandaki kale ya da
+                butonlar, klavyede ← ↑ →). Kaleci yanlış köşeye giderse gol neredeyse kesin, doğru
+                köşeyi bilirse iyi kaleci çoğunu çeler. Üç köşe eşit güçte — kazandıran, rakibin
+                alışkanlığını okumak; botların da favori köşesi var ve seni okumaya çalışırlar. Süre
+                dolarsa ortaya vurursun / ortada kalırsın.
+              </p>
+              <p className="htp-note">
                 <strong>Maçı belirleyen sayı GÜÇ'tür</strong> ve tek girdisi futbolcunun{' '}
                 <strong>genel reytingi</strong>dir. Mevki, reytingin nereye aktığını belirler:{' '}
                 <strong>kaleci ve defans</strong> tamamen savunmaya, <strong>forvet</strong> tamamen
@@ -176,7 +184,8 @@ export function HowToPlay({ onClose }: Props) {
               </li>
               <li>
                 <strong>Kadro derinliği penaltıda işe yarar.</strong> Seri penaltıda 5. atışı bir
-                defans, uzayan seride kaleci atar.
+                defans, uzayan seride kaleci atar; iyi bir kaleci köşeyi bildiğinde neredeyse
+                hepsini çeler.
               </li>
             </ul>
           </div>

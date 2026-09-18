@@ -5,7 +5,12 @@ import {
   handleBotTakeover,
 } from '../auction/index.js';
 import type { RoomState } from '@fal/shared';
-import { cancelTournament, startTournamentImmediately } from '../tournament/runTournament.js';
+import {
+  cancelTournament,
+  resendLiveMatch,
+  startTournamentImmediately,
+} from '../tournament/runTournament.js';
+import { handlePenaltyChoose } from '../tournament/shootout.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
 import { emitRoomState, redactRoomState } from './broadcast.js';
 import { DISCONNECT_GRACE_MS, RoomError, roomStore } from './roomStore.js';
@@ -60,9 +65,15 @@ export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void
       // kendi bütçesini görür.
       ack({ ok: true, data: { roomState: redactRoomState(room, you.id), you } });
       broadcastRoomState(io, room);
+      // Canlı maç sürüyorsa kaçırdığı `matchLive`i tekrar al (ticker açılsın).
+      resendLiveMatch(socket, room.roomId);
     } catch (err) {
       ack({ ok: false, error: errorMessage(err) });
     }
+  });
+
+  socket.on('tournament:penaltyChoose', (payload, ack) => {
+    handlePenaltyChoose(io, socket, payload, ack);
   });
 
   socket.on('room:setReady', ({ ready }) => {

@@ -9,8 +9,11 @@ import type {
   LeagueState,
   MatchResult,
   Participant,
+  PenaltyDirection,
+  PenaltyShootoutAttempt,
   RoomConfig,
   RoomState,
+  ShootoutState,
   TournamentSize,
   TournamentState,
 } from './types.js';
@@ -64,6 +67,17 @@ export interface ClientToServerEvents {
    * veremem. Ack'te kalan hakkım döner.
    */
   'auction:pass': (ack: (res: AckResult<{ passesLeft: number }>) => void) => void;
+
+  /**
+   * CANLI SERİ PENALTI — köşe seçimi. Yalnız sıradaki vuruşun atıcı takımı
+   * (vuruş köşesi) ya da kaleci takımı (uzanış köşesi) olan İNSAN katılımcı
+   * gönderebilir; süre dolana kadar değiştirilebilir, iki taraf da seçince
+   * vuruş hemen çözülür. Ack'te üstlenilen rol döner.
+   */
+  'tournament:penaltyChoose': (
+    payload: { matchId: string; kickIndex: number; direction: PenaltyDirection },
+    ack: (res: AckResult<{ role: 'shooter' | 'keeper' }>) => void,
+  ) => void;
 }
 
 /* ---------- Sunucu -> İstemci ---------- */
@@ -129,7 +143,27 @@ export interface ServerToClientEvents {
    * `tournament:matchResult` gelene kadar işlenmez. Bot–bot maçlarında bu
    * event GÖNDERİLMEZ, doğrudan `tournament:matchResult` gelir.
    */
-  'tournament:matchLive': (payload: { matchId: string; result: MatchResult }) => void;
+  'tournament:matchLive': (payload: {
+    matchId: string;
+    result: MatchResult;
+    /**
+     * Maçın canlı oynatılmaya başlandığı sunucu zamanı (ms epoch). Yeniden
+     * bağlanan istemci dakikayı buradan türetir, maçı baştan oynatmaz.
+     */
+    startedAt?: number;
+  }) => void;
+  /**
+   * CANLI SERİ PENALTI — yeni vuruş: taraflar köşe seçiyor (`state.phase ===
+   * 'choosing'`, süre `state.endsAt`). `tournament:matchLive` ile gelen sonuç
+   * `pendingShootout` ise uzatma bitiminde bu event beklenir. Aynı durum
+   * `RoomState.shootout` içinde de yayınlanır (yeniden bağlanma).
+   */
+  'tournament:shootoutPrompt': (state: ShootoutState) => void;
+  /** Vuruş çözüldü: köşeler ve sonuç açıklandı (`state.phase === 'revealed'`). */
+  'tournament:shootoutKick': (payload: {
+    state: ShootoutState;
+    attempt: PenaltyShootoutAttempt;
+  }) => void;
   /** Bir turnuva maçı oynandığında — kazanan bir üst tura işlenmiş hâliyle. */
   'tournament:matchResult': (payload: { result: MatchResult; tournament: TournamentState }) => void;
   /** Final oynandı, şampiyon belli. */

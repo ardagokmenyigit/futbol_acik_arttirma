@@ -229,6 +229,8 @@ export interface RoomState {
   league: LeagueState | null;
   /** Turnuva ağacı sistemi (Kişi 2). */
   tournament?: TournamentState | null;
+  /** Canlı seri penaltı — yalnız insanlı bir maçın serisi oynanırken dolu. */
+  shootout?: ShootoutState | null;
 }
 
 /* ==========================================================================
@@ -434,7 +436,22 @@ export interface Fixture {
   awayId: string;
 }
 
-/** Seri penaltı atışlarındaki tek bir penaltı denemesi. */
+/** Penaltıda atıcının vurduğu / kalecinin uzandığı köşe. */
+export type PenaltyDirection = 'left' | 'center' | 'right';
+export const PENALTY_DIRECTIONS: readonly PenaltyDirection[] = ['left', 'center', 'right'];
+
+/** Bir penaltı vuruşunun sonucu: gol, kaleci kurtardı, dışarı/direk. */
+export type PenaltyOutcome = 'goal' | 'saved' | 'missed';
+
+/**
+ * Seri penaltı atışlarındaki tek bir penaltı denemesi.
+ *
+ * KÖŞE OYUNU (bkz. shared/simulation/penalty.ts): atıcı ve kaleci eş zamanlı
+ * bir köşe seçer. Farklı köşe → kaleci yanlış tarafta, yalnız isabet zarı
+ * (gol / dışarı). Aynı köşe → önce isabet, sonra kaleci GEN'ine bağlı
+ * kurtarma zarı (gol / kurtarış / dışarı). İnsan içeren maçlarda seçimler
+ * canlı yapılır (`ShootoutState`), bot–bot maçlarda botlar seçer.
+ */
 export interface PenaltyShootoutAttempt {
   /** Kaçıncı penaltı turu (1, 2, 3...) */
   round: number;
@@ -444,12 +461,56 @@ export interface PenaltyShootoutAttempt {
   playerId?: string;
   /** Atışı kullanan futbolcunun adı. */
   playerName: string;
-  /** Gol oldu mu? */
+  /** Kurtarmaya çalışan kalecinin ID'si / adı. */
+  keeperId?: string;
+  keeperName?: string;
+  /** Gol oldu mu? (`outcome === 'goal'`) */
   scored: boolean;
+  /** Vuruşun köşesi ve kalecinin uzandığı köşe. */
+  shotDirection: PenaltyDirection;
+  keeperDirection: PenaltyDirection;
+  outcome: PenaltyOutcome;
   /** Bu atıştan sonraki ev sahibi penaltı skoru. */
   scoreHomeAfter: number;
   /** Bu atıştan sonraki deplasman penaltı skoru. */
   scoreAwayAfter: number;
+}
+
+/**
+ * CANLI SERİ PENALTI — `RoomState.shootout`, yalnız insan içeren bir maçın
+ * serisi oynanırken dolu. Sunucu her vuruşta yeni durum yayınlar
+ * (`tournament:shootoutPrompt`), seçimler `tournament:penaltyChoose` ile
+ * gelir, süre dolunca ya da iki taraf da seçince vuruş çözülür
+ * (`tournament:shootoutKick`). Seçilen köşeler açıklanana kadar durumda YER
+ * ALMAZ — yalnız "seçti / seçmedi" bayrakları vardır.
+ */
+export interface ShootoutState {
+  matchId: string;
+  homeId: string;
+  awayId: string;
+  /** Şu ana kadarki penaltı skoru. */
+  penaltiesHome: number;
+  penaltiesAway: number;
+  /** Açıklanmış vuruşlar (sırayla). */
+  attempts: PenaltyShootoutAttempt[];
+  /** Sıradaki vuruş: 0 tabanlı sıra numarası ve tur. */
+  kickIndex: number;
+  round: number;
+  shooterTeamId: string;
+  keeperTeamId: string;
+  shooter: Footballer;
+  keeper: Footballer;
+  /** `choosing`: köşeler seçiliyor; `revealed`: vuruş açıklandı, kısa bekleme. */
+  phase: 'choosing' | 'revealed';
+  /** Seçim süresinin biteceği sunucu zamanı (ms epoch). */
+  endsAt: number;
+  /** Taraflar seçimini yaptı mı (yön gizli). */
+  shooterChosen: boolean;
+  keeperChosen: boolean;
+  /** Son açıklanan vuruş (phase === 'revealed' iken). */
+  lastAttempt: PenaltyShootoutAttempt | null;
+  /** Seri bitti mi? Son vuruş açıklandığında kazanan takım; sürerken null. */
+  winnerId: string | null;
 }
 
 export interface MatchResult {
@@ -473,6 +534,12 @@ export interface MatchResult {
   /** Turnuva maçında uzatma sonrası beraberlik durumunda penaltı skoru. */
   penaltiesHome?: number;
   penaltiesAway?: number;
+  /**
+   * Uzatma da berabere bitti ve seri penaltı HENÜZ OYNANMADI — insan içeren
+   * maçlarda seri canlı oynanır (`ShootoutState`); bu bayrak varken
+   * `winnerId` yoktur. Seri bitince sunucu tamamlanmış sonucu yayınlar.
+   */
+  pendingShootout?: boolean;
   /** Maçı kazanan ve bir üst tura yükselen takımın participantId'si. */
   winnerId?: string;
   /** Sıralı seri penaltı atışlarının detaylı dökümü. */

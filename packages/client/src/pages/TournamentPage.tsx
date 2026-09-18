@@ -11,6 +11,7 @@ import { PositionBadge } from '../components/PositionBadge.js';
 import { RematchPanel } from '../components/RematchPanel.js';
 import { SquadsOverview } from '../components/SquadsOverview.js';
 import { useSocket } from '../hooks/useSocket.js';
+import { choosePenalty } from '../lib/tournamentClient.js';
 import { useRoomStore } from '../store.js';
 
 interface Props {
@@ -21,6 +22,7 @@ interface Props {
 export function TournamentPage({ room, tournament }: Props) {
   const youId = useRoomStore((s) => s.youId);
   const liveMatch = useRoomStore((s) => s.liveMatch);
+  const shootout = useRoomStore((s) => s.shootout);
   const { socket } = useSocket();
   const [showSquads, setShowSquads] = useState(true);
 
@@ -128,6 +130,12 @@ export function TournamentPage({ room, tournament }: Props) {
           result={liveMatch.result}
           speedMs={140}
           serverPaced
+          shootout={shootout?.matchId === liveMatch.matchId ? shootout : null}
+          youId={youId}
+          startedAt={liveMatch.startedAt}
+          onChoose={(kickIndex, direction) =>
+            choosePenalty(liveMatch.matchId, kickIndex, direction)
+          }
         />
       )}
 

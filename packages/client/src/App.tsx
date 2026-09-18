@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
-import type { AuctionState, MatchResult, RoomState, TournamentState } from '@fal/shared';
+import type {
+  AuctionState,
+  MatchResult,
+  RoomState,
+  ShootoutState,
+  TournamentState,
+} from '@fal/shared';
 import { useSocket } from './hooks/useSocket.js';
 import { rejoinRoom } from './lib/roomClient.js';
 import { clearSession, loadSession } from './lib/session.js';
@@ -76,17 +82,33 @@ export function App() {
       useRoomStore.getState().setTournament(tournament);
     }
     // İnsan içeren maç canlı oynanmak üzere — LiveMatchTicker'ı aç.
-    function onTournamentMatchLive(payload: { matchId: string; result: MatchResult }) {
+    function onTournamentMatchLive(payload: {
+      matchId: string;
+      result: MatchResult;
+      startedAt?: number;
+    }) {
       useRoomStore.getState().setLiveMatch(payload);
     }
     function onTournamentMatch({ tournament }: { tournament: TournamentState }) {
-      useRoomStore.getState().setTournament(tournament);
+      const s = useRoomStore.getState();
+      s.setTournament(tournament);
       // Maç ağaca işlendi — canlı oynatmayı kapat (sonucu bracket'te görünür).
-      useRoomStore.getState().setLiveMatch(null);
+      s.setLiveMatch(null);
+      s.setShootout(null);
     }
     function onTournamentFinished({ tournament }: { tournament: TournamentState }) {
-      useRoomStore.getState().setTournament(tournament);
-      useRoomStore.getState().setLiveMatch(null);
+      const s = useRoomStore.getState();
+      s.setTournament(tournament);
+      s.setLiveMatch(null);
+      s.setShootout(null);
+    }
+    // Canlı seri penaltı: yeni vuruş (seçim evresi) ve açıklanan vuruş
+    // (`state.lastAttempt`). Tek doğruluk kaynağı sunucunun gönderdiği durum.
+    function onShootoutPrompt(state: ShootoutState) {
+      useRoomStore.getState().setShootout(state);
+    }
+    function onShootoutKick({ state }: { state: ShootoutState }) {
+      useRoomStore.getState().setShootout(state);
     }
 
     store.setConnected(connected);
@@ -102,6 +124,8 @@ export function App() {
     socket.on('tournament:matchLive', onTournamentMatchLive);
     socket.on('tournament:matchResult', onTournamentMatch);
     socket.on('tournament:finished', onTournamentFinished);
+    socket.on('tournament:shootoutPrompt', onShootoutPrompt);
+    socket.on('tournament:shootoutKick', onShootoutKick);
 
     return () => {
       socket.off('room:state', onRoomState);
@@ -116,6 +140,8 @@ export function App() {
       socket.off('tournament:matchLive', onTournamentMatchLive);
       socket.off('tournament:matchResult', onTournamentMatch);
       socket.off('tournament:finished', onTournamentFinished);
+      socket.off('tournament:shootoutPrompt', onShootoutPrompt);
+      socket.off('tournament:shootoutKick', onShootoutKick);
     };
   }, [socket, connected]);
 
