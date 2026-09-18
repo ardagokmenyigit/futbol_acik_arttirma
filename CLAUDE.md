@@ -183,8 +183,12 @@ alanları veri setinden kaldırıldı, kontrol scripti silindi.
   çözümüdür — sezgisel 1.0/1.0 paydaları 8/6 yapar ve forvetin GEN puanı
   stoperinkinden %33 değerli olur (GK/DEF 0.125, MID 0.146, FWD 0.167).
 - **Rol ayrımı bilinçli olarak yok:** aynı GEN'deki Rodri ile De Bruyne
-  takıma aynı şeyi katar. Kabul edilen sadeleştirme; kartta "reytingin nereye
-  aktığı" `powerSplit` ile gösterilir (MID 94 → HÜC 71 / SAV 24).
+  takıma aynı şeyi katar. Kabul edilen sadeleştirme. Draft kartında yalnız GEN
+  gösterilir — bir dönem `powerSplit` ile HÜC/SAV da yazılıyordu (MID 94 →
+  HÜC 71 / SAV 24), kullanıcı "tek girdi GEN'se sadece o görünsün" dedi
+  (18 Eylül 2026) ve kaldırıldı; kadro listesindeki "HÜC / SAV / HÜC+SAV"
+  etiketi (reytingin aktığı eksen, sayı değil) ve takım düzeyindeki HÜC/SAV
+  duruyor.
 - **Yan etki ve kalibrasyon:** eski modelde takım hücumu savunmadan %3.6
   yüksekti (78.3 / 75.6; forvetlerin HÜC'ü stoperlerin SAV'ından yüksek
   girilmişti), tehdit oranı^3.2 ile ~%12 fazla gol demekti. Yeni modelde iki
