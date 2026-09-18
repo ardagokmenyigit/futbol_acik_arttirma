@@ -58,12 +58,12 @@ function ballTarget(dir: PenaltyDirection, outcome: PenaltyOutcome): { x: number
         ? { x: 66, y: -136 }
         : { x: 0, y: -118 };
   }
-  // dışarı: direk dışı ya da üstten
+  // dışarı: direk dışı ya da üstten (orta: hafif sağa — üstteki köşe etiketiyle çakışmasın)
   return dir === 'left'
     ? { x: -152, y: -186 }
     : dir === 'right'
       ? { x: 152, y: -186 }
-      : { x: 0, y: -238 };
+      : { x: 34, y: -242 };
 }
 
 function keeperTransform(dir: PenaltyDirection | null): string {
@@ -188,37 +188,42 @@ export const PenaltyScene: FC<PenaltySceneProps> = ({
             );
           })}
 
-        {/* kaleci — ayaklar kale çizgisinde, kollar açık. Dış grup dalış geçişi,
-            iç grup bekleme sallanması: ikisi ayrı elemanda ki geçiş atlanmasın. */}
+        {/* kaleci — ayaklar kale çizgisinde, kollar açık. Üç grup, üç iş:
+            dış = dalış geçişi (CSS transform), orta = konum (SVG transform
+            niteliği), iç = bekleme sallanması (CSS animasyon). CSS transform
+            SVG niteliğini EZER — animasyon ve nitelik aynı grupta olursa kaleci
+            (0,0)'a, sahne dışına gider (18 Eylül 2026'da gerçek arayüzde görüldü). */}
         <g className="pen-keeper" style={keeperStyle}>
-          <g className="pen-keeper-sway" transform="translate(200 172)">
-            <ellipse cx="0" cy="2" rx="22" ry="4" fill="rgba(0,0,0,0.28)" />
-            {/* bacaklar + çoraplar + krampon */}
-            <rect x="-12" y="-24" width="9" height="18" rx="3" fill="#e6c39c" />
-            <rect x="3" y="-24" width="9" height="18" rx="3" fill="#e6c39c" />
-            <rect x="-13" y="-12" width="11" height="10" rx="2" fill="#b98338" />
-            <rect x="2" y="-12" width="11" height="10" rx="2" fill="#b98338" />
-            <rect x="-15" y="-4" width="13" height="5" rx="2" fill="#1b1f22" />
-            <rect x="2" y="-4" width="13" height="5" rx="2" fill="#1b1f22" />
-            {/* şort */}
-            <rect x="-14" y="-38" width="28" height="16" rx="3" fill="#1b1f22" />
-            {/* gövde (forma) */}
-            <rect x="-15" y="-70" width="30" height="34" rx="6" fill="#c9974a" />
-            <rect x="-6" y="-70" width="12" height="5" rx="2" fill="#8a5f2a" />
-            {/* kollar açık */}
-            <path d="M-15 -62 L-44 -52" stroke="#c9974a" strokeWidth="9" strokeLinecap="round" />
-            <path d="M15 -62 L44 -52" stroke="#c9974a" strokeWidth="9" strokeLinecap="round" />
-            <path d="M-30 -57 L-44 -52" stroke="#e6c39c" strokeWidth="8" strokeLinecap="round" />
-            <path d="M30 -57 L44 -52" stroke="#e6c39c" strokeWidth="8" strokeLinecap="round" />
-            {/* eldivenler */}
-            <circle cx="-48" cy="-51" r="7" fill="#6b4a2b" stroke="#3a2a17" strokeWidth="1" />
-            <circle cx="48" cy="-51" r="7" fill="#6b4a2b" stroke="#3a2a17" strokeWidth="1" />
-            {/* baş */}
-            <circle cx="0" cy="-82" r="11" fill="#e6c39c" />
-            <path d="M-11 -84 a11 11 0 0 1 22 0 v-2 a11 8 0 0 0 -22 0z" fill="#2a2523" />
-            <circle cx="-4" cy="-82" r="1.3" fill="#2a2523" />
-            <circle cx="4" cy="-82" r="1.3" fill="#2a2523" />
-            <path d="M-3 -77 q3 2 6 0" stroke="#2a2523" strokeWidth="1" fill="none" />
+          <g transform="translate(200 172)">
+            <g className="pen-keeper-sway">
+              <ellipse cx="0" cy="2" rx="22" ry="4" fill="rgba(0,0,0,0.28)" />
+              {/* bacaklar + çoraplar + krampon */}
+              <rect x="-12" y="-24" width="9" height="18" rx="3" fill="#e6c39c" />
+              <rect x="3" y="-24" width="9" height="18" rx="3" fill="#e6c39c" />
+              <rect x="-13" y="-12" width="11" height="10" rx="2" fill="#b98338" />
+              <rect x="2" y="-12" width="11" height="10" rx="2" fill="#b98338" />
+              <rect x="-15" y="-4" width="13" height="5" rx="2" fill="#1b1f22" />
+              <rect x="2" y="-4" width="13" height="5" rx="2" fill="#1b1f22" />
+              {/* şort */}
+              <rect x="-14" y="-38" width="28" height="16" rx="3" fill="#1b1f22" />
+              {/* gövde (forma) */}
+              <rect x="-15" y="-70" width="30" height="34" rx="6" fill="#c9974a" />
+              <rect x="-6" y="-70" width="12" height="5" rx="2" fill="#8a5f2a" />
+              {/* kollar açık */}
+              <path d="M-15 -62 L-44 -52" stroke="#c9974a" strokeWidth="9" strokeLinecap="round" />
+              <path d="M15 -62 L44 -52" stroke="#c9974a" strokeWidth="9" strokeLinecap="round" />
+              <path d="M-30 -57 L-44 -52" stroke="#e6c39c" strokeWidth="8" strokeLinecap="round" />
+              <path d="M30 -57 L44 -52" stroke="#e6c39c" strokeWidth="8" strokeLinecap="round" />
+              {/* eldivenler */}
+              <circle cx="-48" cy="-51" r="7" fill="#6b4a2b" stroke="#3a2a17" strokeWidth="1" />
+              <circle cx="48" cy="-51" r="7" fill="#6b4a2b" stroke="#3a2a17" strokeWidth="1" />
+              {/* baş */}
+              <circle cx="0" cy="-82" r="11" fill="#e6c39c" />
+              <path d="M-11 -84 a11 11 0 0 1 22 0 v-2 a11 8 0 0 0 -22 0z" fill="#2a2523" />
+              <circle cx="-4" cy="-82" r="1.3" fill="#2a2523" />
+              <circle cx="4" cy="-82" r="1.3" fill="#2a2523" />
+              <path d="M-3 -77 q3 2 6 0" stroke="#2a2523" strokeWidth="1" fill="none" />
+            </g>
           </g>
         </g>
 
