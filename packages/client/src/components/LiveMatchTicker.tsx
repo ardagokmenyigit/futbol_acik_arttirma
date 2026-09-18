@@ -857,16 +857,30 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           )}
 
           {view.stage === 'revealed' && view.revealed && (
-            <div className={`ticker pen-result is-${view.revealed.outcome}`}>
-              <b>
-                {view.revealed.outcome === 'goal'
-                  ? 'Gol'
-                  : view.revealed.outcome === 'saved'
-                    ? 'Kurtardı'
-                    : 'Dışarı'}
-              </b>
-              <span>{revealedPhrase(view.revealed)}</span>
-            </div>
+            <>
+              <div className={`ticker pen-result is-${view.revealed.outcome}`}>
+                <b>
+                  {view.revealed.outcome === 'goal'
+                    ? 'Gol'
+                    : view.revealed.outcome === 'saved'
+                      ? 'Kurtardı'
+                      : 'Dışarı'}
+                </b>
+                <span>{revealedPhrase(view.revealed)}</span>
+              </div>
+              {/* İki tarafın seçimi açıkça: atış köşesi ve kalecinin uzandığı taraf */}
+              <div className="pen-picks">
+                <span className="tag waiting">Atış · {DIR_LABEL[view.revealed.shotDirection]}</span>
+                <span
+                  className={`tag ${view.revealed.shotDirection === view.revealed.keeperDirection ? 'host' : 'waiting'}`}
+                >
+                  Kaleci · {DIR_LABEL[view.revealed.keeperDirection]}
+                  {view.revealed.shotDirection === view.revealed.keeperDirection
+                    ? ' · köşeyi bildi'
+                    : ' · ters köşe'}
+                </span>
+              </div>
+            </>
           )}
 
           {view.stage === 'revealed' && view.winnerId && (

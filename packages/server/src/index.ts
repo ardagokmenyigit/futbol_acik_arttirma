@@ -3,6 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import { Server } from 'socket.io';
 import { registerAuctionHandlers } from './auction/index.js';
+import { hardenSocket } from './harden.js';
 import { registerRoomHandlers } from './rooms/index.js';
 import type { InterServerEvents, SocketData, TypedServer } from './socketTypes.js';
 import type { ClientToServerEvents, ServerToClientEvents } from '@fal/shared';
@@ -72,8 +73,21 @@ const io: TypedServer = new Server<
   },
 });
 
+/**
+ * SON EMNİYET (bkz. harden.ts). Bir odanın / bir istemcinin hatası tüm
+ * odaları kapatmasın: loglanır, süreç yaşamaya devam eder. Handler'lar zaten
+ * zırhlı; buraya yalnız timer'lar ve beklenmeyen yollar düşer.
+ */
+process.on('uncaughtException', (err) => {
+  console.error('[process] yakalanmamış istisna (süreç devam ediyor):', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[process] işlenmemiş promise reddi (süreç devam ediyor):', reason);
+});
+
 io.on('connection', (socket) => {
   console.log(`[socket] connected: ${socket.id}`);
+  hardenSocket(socket);
 
   // Faz 0 hello-world: istemci "hello" gönderir, sunucu ack ile yanıtlar.
   socket.on('hello', (msg, ack) => {

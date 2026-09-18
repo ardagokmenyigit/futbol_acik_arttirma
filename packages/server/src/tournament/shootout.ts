@@ -359,11 +359,19 @@ export function handlePenaltyChoose(
 ): void {
   const { roomId, playerId } = socket.data;
   if (!roomId || !playerId) return ack({ ok: false, error: 'Odada değilsin.' });
+  // Payload istemciden gelir — şekli doğrulanmadan hiçbir alanına güvenilmez.
+  if (!payload || typeof payload !== 'object') {
+    return ack({ ok: false, error: 'Geçersiz istek.' });
+  }
   const active = activeShootouts.get(roomId);
-  if (!active || active.matchId !== payload?.matchId) {
+  if (!active || active.matchId !== payload.matchId) {
     return ack({ ok: false, error: 'Şu an oynanan bir seri penaltı yok.' });
   }
-  if (active.resolved || active.kickIndex !== payload.kickIndex) {
+  if (
+    active.resolved ||
+    !Number.isInteger(payload.kickIndex) ||
+    active.kickIndex !== payload.kickIndex
+  ) {
     return ack({ ok: false, error: 'Bu vuruş için süre doldu.' });
   }
   if (!PENALTY_DIRECTIONS.includes(payload.direction)) {
@@ -379,10 +387,12 @@ export function handlePenaltyChoose(
   if (!participant || participant.isBot)
     return ack({ ok: false, error: 'Takımın bot kontrolünde.' });
 
-  if (role === 'shooter') active.choices.shot = payload.direction;
-  else active.choices.keeper = payload.direction;
+  const slot = role === 'shooter' ? 'shot' : 'keeper';
+  const changed = active.choices[slot] !== payload.direction;
+  active.choices[slot] = payload.direction;
   ack({ ok: true, data: { role } });
 
-  publish(io, active, buildState(active, 'choosing', active.endsAt));
+  // Aynı köşe yeniden gönderildiyse odaya tekrar yayın yapma (spam koruması).
+  if (changed) publish(io, active, buildState(active, 'choosing', active.endsAt));
   maybeResolve(io, active);
 }

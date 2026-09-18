@@ -168,9 +168,30 @@ export const PenaltyScene: FC<PenaltySceneProps> = ({
             );
           })}
 
-        {/* kaleci — ayaklar kale çizgisinde, kollar açık */}
+        {/* açılış: iki tarafın seçtiği köşeler — aynıysa tek çerçeve */}
+        {reveal &&
+          PENALTY_DIRECTIONS.filter(
+            (dir) => dir === reveal.shotDirection || dir === reveal.keeperDirection,
+          ).map((dir) => {
+            const z = ZONES[dir];
+            const isShot = dir === reveal.shotDirection;
+            const isDive = dir === reveal.keeperDirection;
+            const kind = isShot && isDive ? 'both' : isShot ? 'shot' : 'dive';
+            return (
+              <g key={dir} className={`pen-pick pen-pick-${kind}`}>
+                <rect x={z.x + 3} y="54" width={z.w - 6} height="114" rx="8" />
+                {/* etiket üst direğin üstünde — kaleci/topla çakışmaz */}
+                <text x={z.x + z.w / 2} y="37" textAnchor="middle" className="pen-pick-label">
+                  {kind === 'both' ? 'VURUŞ · KALECİ' : kind === 'shot' ? 'VURUŞ' : 'KALECİ'}
+                </text>
+              </g>
+            );
+          })}
+
+        {/* kaleci — ayaklar kale çizgisinde, kollar açık. Dış grup dalış geçişi,
+            iç grup bekleme sallanması: ikisi ayrı elemanda ki geçiş atlanmasın. */}
         <g className="pen-keeper" style={keeperStyle}>
-          <g transform="translate(200 172)">
+          <g className="pen-keeper-sway" transform="translate(200 172)">
             <ellipse cx="0" cy="2" rx="22" ry="4" fill="rgba(0,0,0,0.28)" />
             {/* bacaklar + çoraplar + krampon */}
             <rect x="-12" y="-24" width="9" height="18" rx="3" fill="#e6c39c" />

@@ -456,6 +456,16 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
   - **Yeniden bağlanma:** `room:rejoin` → `resendLiveMatch` (`matchLive` +
     `startedAt`; ticker dakikayı buradan türetir, seri sürüyorsa doğrudan
     seriye geçer). Rövanş / oda kapanışı `cancelTournament → cancelShootout`.
+  - **Sahne animasyonu doğrulandı** (gerçek Chrome, puppeteer-core ile 45 ms
+    örnekleme): açılış sınıfı düştükten 0 ms sonra kaleci (0,0), ~230 ms'de
+    yolun yarısında, ~700 ms'de dalış pozisyonunda; top eş zamanlı uçar.
+    Headless Chrome'un `--virtual-time-budget` modu CSS geçişlerini ara kare
+    göstermeden sona atlar — animasyon kanıtı için kullanılamaz. Bekleme
+    sallanması (`.pen-keeper-sway`) ile dalış geçişi (`.pen-keeper`) ayrı
+    elemanlarda; aynı elemanda olsa tarayıcı geçişi atlayabilir. Açılışta iki
+    tarafın köşesi sahnede etiketli çerçeveyle (üst direğin üstünde
+    "VURUŞ" / "KALECİ", aynıysa tek çerçeve) ve sonuç şeridi altında `tag`
+    çipleriyle gösterilir ("Kaleci · sağ · köşeyi bildi" / "ters köşe").
   - **Doğrulama:** `caffeinate -i npx tsx packages/server/src/scripts/e2eShootout.ts`
     (gerçek sunucu + Socket.io istemcileri, `FAL_FORCE_SHOOTOUT=1` ile insanlı
     her maç için beraberlik veren tohum aranır — motor değişmez): insan–bot
@@ -466,6 +476,30 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
   client `ResultsPage.tsx` ve shared `LeagueState` / `league:*` eventleri
   kod tabanında DURUYOR ama hiçbir yerden çağrılmıyor — ileride geri açmak
   isteyen olursa diye. `config.tournamentSize` artık `null` olamaz.
+
+### 3.3.1 Sunucu sağlamlığı (`server/src/harden.ts`)
+
+Socket.io dinleyici içindeki istisnayı yakalamaz: **ack bekleyen bir event'e
+ack'siz gelen tek paket (`ack is not a function`) ya da handler'da patlayan
+herhangi bir hata süreci öldürüyordu** — bir istemci tüm odaları kapatabilirdi
+(18 Eylül 2026'da `tournament:penaltyChoose` ile ölçüldü; `room:create`,
+`auction:bid` vb. için de aynıydı). Üç katman:
+
+1. **Paket süzgeci** (`socket.use`): ack bekleyen event'lere (`ACK_EVENTS`
+   listesi — yeni ack'li event eklerken oraya da ekle) ack'siz gelen paket
+   düşürülür; soket başına saniyede 40+ paket kısılır (canlı seride her seçim
+   odaya `room:state` yayınlatır, spam tüm odayı sel altında bırakırdı).
+2. **Dinleyici zırhı**: her `socket.on` dinleyicisi try/catch'e alınır; hata
+   loglanır, ack varsa istemciye `{ ok:false }` döner.
+3. **Son emniyet** (`index.ts`): `uncaughtException` / `unhandledRejection`
+   loglanır, süreç düşmez (timer içinden gelen beklenmeyen hatalar için).
+
+Kural: handler'lar payload şekline asla güvenmez (`handlePenaltyChoose`
+`typeof payload === 'object'`, `Number.isInteger(kickIndex)`, köşe listede mi).
+Aynı seçim yeniden gönderilirse odaya tekrar yayın yapılmaz. Doğrulama:
+`npx tsx packages/server/src/scripts/e2eHardening.ts` (ack'siz paketler, null /
+string / yanlış tipli payload, handler içinde istisna, bilinmeyen event, 500
+paket spam, spam sonrası meşru istek — hepsinden sonra `/health` ayakta).
 
 ### 3.4 Rövanş (aynı odada yeni oyun)
 

@@ -1550,14 +1550,50 @@ button:disabled {
 .pen-ball {
   transform-box: fill-box;
   transform-origin: center;
-  transition: transform 0.55s cubic-bezier(0.22, 0.9, 0.3, 1);
+  transition: transform 0.7s cubic-bezier(0.3, 0.6, 0.35, 1);
+}
+.pen-keeper {
+  transition-delay: 0.06s; /* kaleci vuruşa tepki verir: topun bir kare gerisinde */
 }
 .pen-keeper {
   transform-origin: 50% 70%;
 }
 .pen-scene.is-idle .pen-keeper,
 .pen-scene.is-select .pen-keeper {
+  transition: none; /* seçim evresine dönüşte dalıştan geri "yüzmesin" */
+}
+.pen-keeper-sway {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.pen-scene.is-idle .pen-keeper-sway,
+.pen-scene.is-select .pen-keeper-sway {
   animation: penKeeperSway 1.6s ease-in-out infinite alternate;
+}
+/* açılışta seçilen köşeler */
+.pen-pick rect {
+  fill: rgba(242, 239, 230, 0.06);
+  stroke: rgba(242, 239, 230, 0.55);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.pen-pick-dive rect,
+.pen-pick-both rect {
+  stroke: var(--gold-bright);
+  fill: rgba(201, 151, 74, 0.16);
+  stroke-dasharray: none;
+}
+.pen-pick-label {
+  font-family: var(--font-cond);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  fill: rgba(242, 239, 230, 0.8);
+  pointer-events: none;
+}
+.pen-pick-dive .pen-pick-label,
+.pen-pick-both .pen-pick-label {
+  fill: var(--gold-bright);
 }
 .pen-scene.is-goal .pen-net-group {
   animation: penNetShake 0.5s ease-out 0.45s 1;
@@ -1698,6 +1734,12 @@ button:disabled {
 }
 .pen-result.is-missed b {
   color: #d98d93;
+}
+.pen-picks {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
 }
 
 /* seri sonucu — champion bloğunun küçük hâli */
