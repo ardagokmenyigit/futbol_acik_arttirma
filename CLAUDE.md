@@ -262,6 +262,33 @@ yatırım küçük yatırımdan ayırt edilemez oluyor. Canlı ekranda uzatma ~4
 (`EXTRA_TIME_LIVE_MS`), ilerleme çubuğu altına döner, kartlarda "U.S."
 etiketi görünür.
 
+**SENS 2.4 → 3.3 (18 Eylül 2026).** Oyuncu geri bildirimi (7 puan güçlü
+takımla yenilen arkadaş): "7 fark yapmak çok zor; 3–4 puan farkta güç daha
+belirgin olsun, dengeyi bozmadan". İki gerçek not: (1) eğri her ayarda
+düzdür, 3p→4p adımı ~5 puandır — duyarlılık eğrinin tamamını kaldırır,
+"keskin eşik" hiçbir ayarla olmaz ve istenmemeli (küçük draft avantajını
+değersizleştirir); (2) asıl tavan draft'tır (fark ort. ~5.3), 7'ye ulaşmak
+zaten çok iyi draft demek. Tarama, **artık repoda olan**
+`scripts/measureBalance.ts` ile (motoru birebir izleyen çevrimdışı bot
+draft'ı + 4 bracket; taban çizgisini %41.6/%12.6, gol 3.68, fark 5.28 ile
+belgeyle uyumlu üretir), gol/maç her satırda 3.67'ye kalibre:
+
+| sens    | baseConv  | 3p      | 4p      | 5p      | 7p      | en güçlü (4 t.)  | en zayıf (4 t.) | 8 takım        |
+| ------- | --------- | ------- | ------- | ------- | ------- | ---------------- | --------------- | -------------- |
+| 2.4     | 0.116     | %62–65  | %66–67  | %70–72  | %76–79  | %41.6            | %12.6           | %30 / %2.5     |
+| 2.8     | 0.110\*   | %64     | %69     | %74     | %81     | ~%45             | ~%10            | —              |
+| 3.2     | 0.107\*   | %66     | %71     | %76     | %84     | %47.5 (eski öl.) | %9.3            | —              |
+| **3.3** | **0.110** | **%65** | **%71** | **%75** | **%84** | **%46.4**        | **%9.0**        | **%36 / %1.9** |
+| 3.4     | 0.105\*   | %66     | %72     | %77     | %85     | ~%48             | ~%8             | —              |
+| 3.6     | 0.103\*   | %67     | %73     | %78     | %86     | ~%50             | —               | —              |
+
+(\* rastgele kadro taramasındaki kalibrasyon; gerçek draft kadrolarında
+aynı sens için baseConv ~0.004 yüksek çıkar — draft kadroları güçlendirip
+birbirine yaklaştırır. 3.2–3.4 arası ölçüm gürültüsü içinde aynıdır; 3.3
+kullanıcı tercihi.) Sonuç: 1–2 puanlık farklar yazı-turaya yakın kalır
+(%54/%60), 4 puan %71, 7 puan %84; uzatma %26, penaltı %11.7 (değişmedi),
+gol/maç 3.68. 8 takımlıda en zayıfın şansı %1.9 — bilinçli kabul.
+
 Uzatma da berabereyse (`isTournament`) seri penaltı — **KÖŞE OYUNU**
 (`shared/src/simulation/penalty.ts`, 17 Eylül 2026). Atıcı ve kaleci eş
 zamanlı SOL / ORTA / SAĞ seçer; vuruş iki bağımsız zara ayrılır:
@@ -326,20 +353,22 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 (12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
 (rastgele olsa %25):
 
-| ayar                                                   | en güçlü  | en zayıf  | oran     | gol/maç          |
-| ------------------------------------------------------ | --------- | --------- | -------- | ---------------- |
-| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1     | 2.0x     | 2.77             |
-| sens 2.5 + saha av. yok                                | %37.7     | %15.0     | 2.5x     | 2.92             |
-| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2     | 3.0x     | 3.48             |
-| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7     | 4.0x     | 3.53             |
-| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3**  | **5.6x** | **3.54**         |
-| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9     | 4.0x     | 3.66             |
-| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1     | 4.5x     | 3.68             |
-| + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9      | 5.3x     | 4.04             |
-| **+ sens 2.4 + baseConv 0.116 (güncel)**               | **%42.8** | **%11.6** | **3.7x** | **3.67 (90 dk)** |
+| ayar                                                   | en güçlü  | en zayıf | oran     | gol/maç          |
+| ------------------------------------------------------ | --------- | -------- | -------- | ---------------- |
+| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1    | 2.0x     | 2.77             |
+| sens 2.5 + saha av. yok                                | %37.7     | %15.0    | 2.5x     | 2.92             |
+| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2    | 3.0x     | 3.48             |
+| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7    | 4.0x     | 3.53             |
+| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3** | **5.6x** | **3.54**         |
+| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9    | 4.0x     | 3.66             |
+| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1    | 4.5x     | 3.68             |
+| + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9     | 5.3x     | 4.04             |
+| + sens 2.4 + baseConv 0.116                            | %42.8     | %11.6    | 3.7x     | 3.67 (90 dk)     |
+| **+ sens 3.3 + baseConv 0.110 (güncel)**               | **%46.4** | **%9.0** | **5.2x** | **3.68 (90 dk)** |
 
-(Son üç satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
-ayarla en güçlü %36.6, en zayıf %1.8 — oran 20.3x.)
+(Son dört satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
+ayarla en güçlü %35.8, en zayıf %1.9 — oran 19.4x. Ölçüm aracı:
+`npx tsx packages/server/src/scripts/measureBalance.ts [draft] [sens] [baseConv]`.)
 
 **İki kolun birlikte ayarlanması gerekir.** `strengthSensitivity` tek başına
 zayıftır: yükseltmek gol sayısını da şişirir (`threat ** sens` dışbükey),
@@ -386,8 +415,9 @@ beraberliği yalnız 6.5 puan düşürüyor) — uzatma zaten bunun için var.
   değerindeydi — ortalama draft güç farkının (~5.2) %60'ı kadar bedava
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
 - `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
-  ~3.48 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
-  kayar ve bununla geri kalibre edilmelidir (güncel: 0.116, sens 2.4 için).
+  ~3.67 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
+  kayar ve bununla geri kalibre edilmelidir (güncel: 0.110, sens 3.3 için;
+  kalibrasyonu gerçek draft kadrolarıyla — `measureBalance.ts` — yapın).
 - **ASIL TAVAN MOTOR DEĞİL, DRAFT.** Gerçek draft'larda takımlar arası güç
   farkı ortalama yalnızca **5.25 puan** (medyan 5.0, p10 3.0, p90 8.0, max 13;
   ölçüm: 3000 gerçek bot draft'ı). Havuz tam denk (§3.1) olduğu için herkes
