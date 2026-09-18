@@ -71,7 +71,13 @@ export function hardenSocket(socket: TypedSocket): void {
       if (count === RATE_LIMIT + 1) {
         console.warn(`[socket] ${socket.id}: saniyede ${RATE_LIMIT}+ paket — kısıldı`);
       }
-      return; // paket düşer, dinleyici çalışmaz
+      // Paket düşer, dinleyici çalışmaz; ack bekliyorsa istemci sonsuza kadar
+      // beklemesin diye hata ack'i döner.
+      const ack = args[args.length - 1];
+      if (typeof ack === 'function') {
+        (ack as (res: unknown) => void)({ ok: false, error: 'Çok hızlı istek, biraz bekle.' });
+      }
+      return;
     }
     if (
       ACK_EVENTS.has(event as keyof ClientToServerEvents) &&

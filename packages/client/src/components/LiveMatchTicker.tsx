@@ -35,7 +35,11 @@ interface LiveMatchTickerProps {
   youId?: string | null;
   /** Köşe seçimini sunucuya gönderir; reddedilirse reject olur. */
   onChoose?: (kickIndex: number, direction: PenaltyDirection) => Promise<unknown>;
-  /** Maçın sunucudaki başlangıç anı — yeniden bağlanınca dakika buradan türer. */
+  /**
+   * Canlı oynatmanın YEREL saate göre başlangıç anı (alınma anı − sunucuda
+   * geçen süre) — yeniden bağlanınca dakika buradan türer. Sunucu saati
+   * kullanılmaz: saat kayması olan cihazda maç "anında bitmiş" görünmesin.
+   */
   startedAt?: number;
 }
 
@@ -433,8 +437,19 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   }, [liveShootout, homeName, awayName, youId, log, result.homeId]);
 
   // Her yeni vuruşta seçim sıfırlanır; seçim evresinde geri sayım için saat işler.
+  // Son tarih YEREL saate göre kurulur: durum geldiği anda `remainingMs` kadar
+  // ileri (sunucu `endsAt`i kullanılmaz — saat kayması sayacı bozmasın).
   const liveKickIndex = liveShootout?.kickIndex ?? -1;
   const livePhase = liveShootout?.phase ?? null;
+  const deadlineRef = useRef<{ kickIndex: number; at: number } | null>(null);
+  if (liveShootout && liveShootout.phase === 'choosing') {
+    if (deadlineRef.current?.kickIndex !== liveShootout.kickIndex) {
+      deadlineRef.current = {
+        kickIndex: liveShootout.kickIndex,
+        at: Date.now() + Math.min(SHOOTOUT_CHOOSE_MS, Math.max(0, liveShootout.remainingMs)),
+      };
+    }
+  }
   useEffect(() => {
     setMyChoice(null);
     setChooseError(null);
@@ -629,7 +644,10 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   const teamNameOf = (id: string | null) =>
     id === result.homeId ? homeName : id === result.awayId ? awayName : '';
 
-  const remainingMs = view?.live ? Math.max(0, view.live.endsAt - now) : 0;
+  const remainingMs =
+    view?.live && deadlineRef.current?.kickIndex === view.live.kickIndex
+      ? Math.max(0, deadlineRef.current.at - now)
+      : 0;
   const remainingSec = Math.ceil(remainingMs / 1000);
   const ringDeg = Math.round(Math.max(0, Math.min(1, remainingMs / SHOOTOUT_CHOOSE_MS)) * 360);
   const ringLead = remainingSec <= 2 ? 'var(--crimson)' : 'var(--gold)';

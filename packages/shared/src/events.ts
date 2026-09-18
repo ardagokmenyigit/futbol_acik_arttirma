@@ -147,10 +147,12 @@ export interface ServerToClientEvents {
     matchId: string;
     result: MatchResult;
     /**
-     * Maçın canlı oynatılmaya başlandığı sunucu zamanı (ms epoch). Yeniden
-     * bağlanan istemci dakikayı buradan türetir, maçı baştan oynatmaz.
+     * Canlı oynatmanın başlamasından bu yana geçen süre (ms) — ilk yayında 0,
+     * yeniden bağlanana tekrar gönderilirken gerçek değer. Süre olarak
+     * gönderilir (mutlak zaman değil) ki istemcinin saat kayması dakikayı
+     * bozmasın; istemci maçı baştan değil kaldığı dakikadan oynatır.
      */
-    startedAt?: number;
+    elapsedMs?: number;
   }) => void;
   /**
    * CANLI SERİ PENALTI — yeni vuruş: taraflar köşe seçiyor (`state.phase ===

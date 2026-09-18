@@ -132,7 +132,11 @@ export function TournamentPage({ room, tournament }: Props) {
           serverPaced
           shootout={shootout?.matchId === liveMatch.matchId ? shootout : null}
           youId={youId}
-          startedAt={liveMatch.startedAt}
+          startedAt={
+            liveMatch.elapsedMs != null && liveMatch.receivedAt != null
+              ? liveMatch.receivedAt - liveMatch.elapsedMs
+              : undefined
+          }
           onChoose={(kickIndex, direction) =>
             choosePenalty(liveMatch.matchId, kickIndex, direction)
           }

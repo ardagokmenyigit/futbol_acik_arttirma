@@ -194,6 +194,7 @@ function buildState(
     keeper: k.keeper,
     phase,
     endsAt,
+    remainingMs: phase === 'choosing' ? Math.max(0, endsAt - Date.now()) : 0,
     shooterChosen: active.choices.shot !== null,
     keeperChosen: active.choices.keeper !== null,
     lastAttempt: phase === 'revealed' ? last : null,
@@ -336,10 +337,11 @@ function resolve(io: TypedServer, active: ActiveShootout): void {
     active.revealTimer = null;
     if (activeShootouts.get(active.roomId) !== active) return;
     if (decided) {
+      // `room.shootout` burada TEMİZLENMEZ: kazanan banner'ı sonuç ağaca
+      // işlenene kadar kalır (araya giren bir `room:state` yayını istemcide
+      // seriyi "başlıyor…" durumuna düşürmesin). `finalize` / `cancelShootout` siler.
       const done = active.progress;
       activeShootouts.delete(active.roomId);
-      const room2 = roomStore.getRoom(active.roomId);
-      if (room2) room2.shootout = null;
       active.onDone(done);
       return;
     }

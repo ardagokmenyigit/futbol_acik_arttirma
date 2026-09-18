@@ -73,7 +73,9 @@ export function startTournamentImmediately(roomId: string): void {
  */
 export function resendLiveMatch(socket: TypedSocket, roomId: string): void {
   const active = activeTournaments.get(roomId);
-  if (active?.liveMatch) socket.emit('tournament:matchLive', active.liveMatch);
+  if (!active?.liveMatch) return;
+  const { matchId, result, startedAt } = active.liveMatch;
+  socket.emit('tournament:matchLive', { matchId, result, elapsedMs: Date.now() - startedAt });
 }
 
 /**
@@ -242,6 +244,7 @@ export function runTournament(io: TypedServer, roomId: string): void {
         return;
       }
       setLive(null);
+      room2.shootout = null;
       live = advanceTournament(live, finalResult);
       room2.tournament = live;
       io.to(roomId).emit('tournament:matchResult', { result: finalResult, tournament: live });
@@ -255,9 +258,8 @@ export function runTournament(io: TypedServer, roomId: string): void {
     }
 
     // `live.currentMatchId` bu maçı gösteriyor; istemci LiveMatchTicker açar.
-    const livePayload = { matchId: result.matchId, result, startedAt: Date.now() };
-    setLive(livePayload);
-    io.to(roomId).emit('tournament:matchLive', livePayload);
+    setLive({ matchId: result.matchId, result, startedAt: Date.now() });
+    io.to(roomId).emit('tournament:matchLive', { matchId: result.matchId, result, elapsedMs: 0 });
     const extraTimeDelay = result.extraTime ? EXTRA_TIME_LIVE_MS : 0;
 
     if (!result.pendingShootout) {

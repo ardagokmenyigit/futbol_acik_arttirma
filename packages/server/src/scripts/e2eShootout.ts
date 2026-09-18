@@ -221,7 +221,7 @@ try {
     ok(live.result.pendingShootout === true, 'matchLive pendingShootout ile geldi');
     ok(live.result.winnerId === undefined, 'pendingShootout iken winnerId yok');
     ok(live.result.extraTime === true, 'uzatma oynandı (extraTime)');
-    ok(typeof live.startedAt === 'number', 'matchLive.startedAt var');
+    ok(live.elapsedMs === 0, 'matchLive ilk yayında elapsedMs 0');
     ok(live.result.scoreHome === live.result.scoreAway, 'skor berabere');
 
     const t0 = Date.now();
@@ -379,8 +379,12 @@ try {
         await B.waitFor((p) => p.lives.length > before, 'B matchLive tekrar aldı', 5000);
         const relive = B.lives[B.lives.length - 1]!;
         ok(
-          relive.matchId === live.matchId && relive.startedAt === live.startedAt,
-          'yeniden gönderilen matchLive aynı maç + aynı startedAt',
+          relive.matchId === live.matchId && (relive.elapsedMs ?? 0) > 15_000,
+          `yeniden gönderilen matchLive aynı maç + geçen süre (${relive.elapsedMs} ms)`,
+        );
+        ok(
+          typeof B.state?.shootout?.remainingMs === 'number',
+          'room:state.shootout remainingMs taşıyor',
         );
         await B.waitFor(
           (p) => !!p.state?.shootout && p.state.shootout.matchId === live.matchId,

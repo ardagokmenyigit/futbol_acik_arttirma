@@ -419,8 +419,12 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
   **Penaltı noktaları sonucu ele vermez:** `LiveMatchTicker` baştan yalnız
   klasik 5 nokta gösterir; ani ölüm turları ancak sırası gelince eklenir
   (`revealedRound`). Eskiden tüm seri uzunluğu baştan çiziliyor, uzayıp
-  uzamayacağı belli oluyordu. `tournament:matchLive` `startedAt` taşır:
-  yeniden bağlanan istemci maçı baştan değil kaldığı dakikadan izler.
+  uzamayacağı belli oluyordu. `tournament:matchLive` `elapsedMs` taşır (ilk
+  yayında 0, yeniden bağlanana gerçek değer): istemci maçı baştan değil
+  kaldığı dakikadan izler. **Süre, mutlak zaman değil** — istemci saatine
+  güvenilmez (telefon saati 3 sn ileri olsa `startedAt` ile maç "anında
+  bitmiş" görünürdü). Aynı ilke seri geri sayımında: `ShootoutState.remainingMs`,
+  istemci sayacı alınma anı + kalan süre olarak kurar; `endsAt` yalnız bilgi.
 - **CANLI SERİ PENALTI** (`server/src/tournament/shootout.ts` + client
   `LiveMatchTicker` / `PenaltyScene`, 17 Eylül 2026): insan içeren maç uzatma
   sonunda berabereyse (`MatchResult.pendingShootout`) istemci 120. dakikaya
@@ -454,8 +458,11 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
     (`SimulationPage`) serisini de senaryolu oynatır. Noktalar yine baştan 5
     tane, ani ölüm sırası gelince eklenir.
   - **Yeniden bağlanma:** `room:rejoin` → `resendLiveMatch` (`matchLive` +
-    `startedAt`; ticker dakikayı buradan türetir, seri sürüyorsa doğrudan
-    seriye geçer). Rövanş / oda kapanışı `cancelTournament → cancelShootout`.
+    `elapsedMs`; ticker dakikayı buradan türetir, seri sürüyorsa doğrudan
+    seriye geçer). Seri bitince `room.shootout` sonuç ağaca işlenene kadar
+    (`finalize`) dolu kalır — kutlama penceresinde araya giren bir `room:state`
+    kazanan banner'ını silmesin. Rövanş / oda kapanışı
+    `cancelTournament → cancelShootout`.
   - **Sahne animasyonu doğrulandı** (gerçek Chrome, puppeteer-core ile 45 ms
     örnekleme): açılış sınıfı düştükten 0 ms sonra kaleci (0,0), ~230 ms'de
     yolun yarısında, ~700 ms'de dalış pozisyonunda; top eş zamanlı uçar.

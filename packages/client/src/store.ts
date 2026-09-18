@@ -12,8 +12,10 @@ import type {
 export interface LiveMatch {
   matchId: string;
   result: MatchResult;
-  /** Sunucuda canlı oynatmanın başladığı an — yeniden bağlanınca dakika buradan türer. */
-  startedAt?: number;
+  /** Sunucuda geçen süre (ms) — yeniden bağlanınca dakika buradan türer. */
+  elapsedMs?: number;
+  /** Payload'ın istemciye ulaştığı an (yerel saat) — geçen süre buna eklenir. */
+  receivedAt?: number;
 }
 
 /** Bu turdaki son açılış pası (Draft ekranındaki duyuru için). */
@@ -143,7 +145,8 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   setLastPass: (lastPass) => set({ lastPass }),
   setLeague: (league) => set({ league }),
   setTournament: (tournament) => set({ tournament }),
-  setLiveMatch: (liveMatch) => set({ liveMatch }),
+  setLiveMatch: (liveMatch) =>
+    set({ liveMatch: liveMatch ? { ...liveMatch, receivedAt: Date.now() } : null }),
   setShootout: (shootout) => set({ shootout }),
 }));
 

@@ -504,6 +504,12 @@ export interface ShootoutState {
   phase: 'choosing' | 'revealed';
   /** Seçim süresinin biteceği sunucu zamanı (ms epoch). */
   endsAt: number;
+  /**
+   * Bu durum yayınlanırken seçime kalan süre (ms). İstemci geri sayımı
+   * `endsAt − Date.now()` yerine buradan kurar — saat kayması olan cihazda
+   * (telefon saati 3 sn ileri) sayaç 0'dan başlamasın.
+   */
+  remainingMs: number;
   /** Taraflar seçimini yaptı mı (yön gizli). */
   shooterChosen: boolean;
   keeperChosen: boolean;

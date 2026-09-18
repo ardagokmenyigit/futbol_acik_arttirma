@@ -85,7 +85,7 @@ export function App() {
     function onTournamentMatchLive(payload: {
       matchId: string;
       result: MatchResult;
-      startedAt?: number;
+      elapsedMs?: number;
     }) {
       useRoomStore.getState().setLiveMatch(payload);
     }
