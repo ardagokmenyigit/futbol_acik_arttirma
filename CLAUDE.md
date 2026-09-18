@@ -278,16 +278,20 @@ belgeyle uyumlu üretir), gol/maç her satırda 3.67'ye kalibre:
 | 2.4     | 0.116     | %62–65  | %66–67  | %70–72  | %76–79  | %41.6            | %12.6           | %30 / %2.5     |
 | 2.8     | 0.110\*   | %64     | %69     | %74     | %81     | ~%45             | ~%10            | —              |
 | 3.2     | 0.107\*   | %66     | %71     | %76     | %84     | %47.5 (eski öl.) | %9.3            | —              |
-| **3.3** | **0.110** | **%65** | **%71** | **%75** | **%84** | **%46.4**        | **%9.0**        | **%36 / %1.9** |
+| 3.3     | 0.110     | %65     | %71     | %75     | %84     | %46.4            | %9.0            | %36 / %1.9     |
 | 3.4     | 0.105\*   | %66     | %72     | %77     | %85     | ~%48             | ~%8             | —              |
+| **3.5** | **0.108** | **%67** | **%72** | **%76** | **%85** | **%47.9**        | **%8.3**        | **%38 / %1.2** |
 | 3.6     | 0.103\*   | %67     | %73     | %78     | %86     | ~%50             | —               | —              |
 
 (\* rastgele kadro taramasındaki kalibrasyon; gerçek draft kadrolarında
 aynı sens için baseConv ~0.004 yüksek çıkar — draft kadroları güçlendirip
-birbirine yaklaştırır. 3.2–3.4 arası ölçüm gürültüsü içinde aynıdır; 3.3
-kullanıcı tercihi.) Sonuç: 1–2 puanlık farklar yazı-turaya yakın kalır
-(%54/%60), 4 puan %71, 7 puan %84; uzatma %26, penaltı %11.7 (değişmedi),
-gol/maç 3.68. 8 takımlıda en zayıfın şansı %1.9 — bilinçli kabul.
+birbirine yaklaştırır. 3.2–3.4 arası ölçüm gürültüsü içinde aynıdır.) Önce
+3.3 seçildi, aynı gün kullanıcı **3.5**'e çıkardı (baseConv 0.108). Sonuç:
+1–2 puanlık farklar yazı-turaya yakın kalır (%55/%61), 4 puan %72, 5 puan
+%76, 7 puan %85; uzatma %26, penaltı %12 (değişmedi), gol/maç 3.66. 8
+takımlıda en zayıfın şansı %1.2 — bilinçli kabul. `baseConversion` yalnız
+gol sıklığını ölçekler (güç ayrımına dokunmaz); sens değişince gol
+ortalamasını, dolayısıyla beraberlik/penaltı payını sabit tutmak için ayarlanır.
 
 Uzatma da berabereyse (`isTournament`) seri penaltı — **KÖŞE OYUNU**
 (`shared/src/simulation/penalty.ts`, 17 Eylül 2026). Atıcı ve kaleci eş
@@ -364,10 +368,11 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 | sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1    | 4.5x     | 3.68             |
 | + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9     | 5.3x     | 4.04             |
 | + sens 2.4 + baseConv 0.116                            | %42.8     | %11.6    | 3.7x     | 3.67 (90 dk)     |
-| **+ sens 3.3 + baseConv 0.110 (güncel)**               | **%46.4** | **%9.0** | **5.2x** | **3.68 (90 dk)** |
+| + sens 3.3 + baseConv 0.110                            | %46.4     | %9.0     | 5.2x     | 3.68 (90 dk)     |
+| **+ sens 3.5 + baseConv 0.108 (güncel)**               | **%47.9** | **%8.3** | **5.7x** | **3.66 (90 dk)** |
 
-(Son dört satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
-ayarla en güçlü %35.8, en zayıf %1.9 — oran 19.4x. Ölçüm aracı:
+(Son beş satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
+ayarla en güçlü %37.8, en zayıf %1.2 — oran 32x. Ölçüm aracı:
 `npx tsx packages/server/src/scripts/measureBalance.ts [draft] [sens] [baseConv]`.)
 
 **İki kolun birlikte ayarlanması gerekir.** `strengthSensitivity` tek başına
@@ -416,7 +421,7 @@ beraberliği yalnız 6.5 puan düşürüyor) — uzatma zaten bunun için var.
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
 - `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
   ~3.67 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
-  kayar ve bununla geri kalibre edilmelidir (güncel: 0.110, sens 3.3 için;
+  kayar ve bununla geri kalibre edilmelidir (güncel: 0.108, sens 3.5 için;
   kalibrasyonu gerçek draft kadrolarıyla — `measureBalance.ts` — yapın).
 - **ASIL TAVAN MOTOR DEĞİL, DRAFT.** Gerçek draft'larda takımlar arası güç
   farkı ortalama yalnızca **5.25 puan** (medyan 5.0, p10 3.0, p90 8.0, max 13;
