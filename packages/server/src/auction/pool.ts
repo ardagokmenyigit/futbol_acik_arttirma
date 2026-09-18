@@ -46,8 +46,7 @@ export const TOP_TIER_OVR_THRESHOLD = 90;
 
 /**
  * Draft havuzundaki üst seviye oyuncu oranı (%25).
- * 4 katılımcılı 28 turluk bir oyunda tam 7 adet (1 GK, 2 DEF, 2 MID, 2 FWD)
- * üst seviye oyuncunun gelmesini sağlar.
+ * 4 katılımcılı 28 turluk bir oyunda tam 7 üst seviye futbolcu gelir.
  */
 export const TOP_TIER_DRAFT_RATIO = 0.25;
 
@@ -63,38 +62,59 @@ export const TOP_TIER_DRAFT_RATIO = 0.25;
  *    tükeniyor, elde kalan gerçekten kimsenin istemediği oluyor. Eski geniş
  *    havuzda (28 slot için 108 futbolcu) beklemenin hiçbir maliyeti yoktu.
  *
- * Seçim sırasında mevkisel olarak %25 oranında üst seviye (93+ GEN) futbolcular
- * dahil edilir (4 kişilik oyunda tam 7 adet: 1 GK, 2 DEF, 2 MID, 2 FWD).
+ * YILDIZ PAYI: havuzun %25'i (28'de 7) üst seviye (GEN 90+) futbolcudur ve bu
+ * 7 kişi **mevkiye bakılmaksızın** tüm 90+'lar arasından rastgele seçilir —
+ * bir oyunda 4 yıldız forvet gelebilir, başka bir oyunda 2 yıldız kaleci.
+ * Tek sınır mevkinin toplam ihtiyacı (4 GK'nin hepsi yıldız olabilir, 5'i
+ * olamaz). Kalan yerler mevki başına 90 altından rastgele doldurulur. Eskiden
+ * yıldızlar mevkiye dağıtılıyordu (1 GK, 2 DEF, 2 MID, 2 FWD — her oyunda aynı
+ * kalıp); kullanıcı 18 Eylül 2026'da "oran korunsun, mevkiye göre olmasın"
+ * dedi — böylece hangi mevkinin kıymetli olacağı oyundan oyuna değişir.
  *
  * Pozisyonda yeterli futbolcu yoksa hata verir — veri seti bunu karşılamalıdır.
  */
 export function buildDraftPool(config: RoomConfig, participantCount: number): Footballer[] {
   const all = loadFootballers();
-  const picked: Footballer[] = [];
-
+  const need: Record<Position, number> = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
+  let totalNeed = 0;
   for (const position of VALID_POSITIONS) {
-    const need = config.squad[position] * participantCount;
-    if (need <= 0) continue;
-    const candidates = all.filter((f) => f.position === position);
-    if (candidates.length < need) {
+    need[position] = config.squad[position] * participantCount;
+    totalNeed += need[position];
+    const available = all.filter((f) => f.position === position).length;
+    if (available < need[position]) {
       throw new Error(
-        `players.json: ${position} için ${need} futbolcu gerekiyor, havuzda ${candidates.length} var`,
+        `players.json: ${position} için ${need[position]} futbolcu gerekiyor, havuzda ${available} var`,
       );
     }
+  }
 
-    const topCandidates = candidates.filter((f) => f.overall >= TOP_TIER_OVR_THRESHOLD);
-    const normalCandidates = candidates.filter((f) => f.overall < TOP_TIER_OVR_THRESHOLD);
+  // 1) Yıldızlar: tüm 90+'lar arasından, mevki ihtiyacını aşmadan, rastgele.
+  const topAll = shuffled(all.filter((f) => f.overall >= TOP_TIER_OVR_THRESHOLD));
+  const topNeed = Math.min(topAll.length, Math.round(totalNeed * TOP_TIER_DRAFT_RATIO));
+  const picked: Footballer[] = [];
+  const count: Record<Position, number> = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
+  for (const f of topAll) {
+    if (picked.length >= topNeed) break;
+    if (count[f.position] >= need[f.position]) continue;
+    picked.push(f);
+    count[f.position]++;
+  }
 
-    // Her mevkide ihtiyacın %25'i kadar üst seviye oyuncu seç (örn. 4 GK için 1, 8 DEF için 2).
-    const topNeed = Math.min(topCandidates.length, Math.round(need * TOP_TIER_DRAFT_RATIO));
-    const normalNeed = need - topNeed;
-
-    if (normalCandidates.length < normalNeed) {
-      picked.push(...shuffled(candidates).slice(0, need));
-    } else {
-      picked.push(...shuffled(topCandidates).slice(0, topNeed));
-      picked.push(...shuffled(normalCandidates).slice(0, normalNeed));
-    }
+  // 2) Kalan yerler: mevki başına 90 altından rastgele (yetmezse yıldızlardan tamamlanır).
+  const pickedIds = new Set(picked.map((f) => f.id));
+  for (const position of VALID_POSITIONS) {
+    const remaining = need[position] - count[position];
+    if (remaining <= 0) continue;
+    const normal = shuffled(
+      all.filter((f) => f.position === position && f.overall < TOP_TIER_OVR_THRESHOLD),
+    );
+    const extra = shuffled(
+      all.filter(
+        (f) =>
+          f.position === position && !pickedIds.has(f.id) && f.overall >= TOP_TIER_OVR_THRESHOLD,
+      ),
+    );
+    picked.push(...[...normal, ...extra].slice(0, remaining));
   }
   // Turların sırası da rastgele olsun — pozisyonlar bloklar hâlinde gelmesin.
   return shuffled(picked);

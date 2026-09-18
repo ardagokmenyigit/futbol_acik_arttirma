@@ -28,7 +28,7 @@ export interface SimulateMatchOptions {
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
   /**
-   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.108).
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.104).
    *
    * MAÇ BAŞINA GOL bu değere neredeyse doğrusal bağlı — heyecan kolu budur.
    * Hedef maç başı ~3.5 gol; `strengthSensitivity`, `FORM_SPREAD` ya da
@@ -41,7 +41,8 @@ export interface SimulateMatchOptions {
    * düştüğü için 0.111'e çıkarıldı (3.68 gol/maç). `strengthSensitivity`
    * 3.2 → 2.4'e inince gol 3.67'de kalsın diye 0.116'ya alındı; 2.4 → 3.3'e
    * çıkınca (18 Eylül 2026) yine 3.67 için 0.110'a, aynı gün 3.5'e çıkınca
-   * 0.108'e çekildi — kalibrasyon
+   * 0.108'e, yıldızlar havuza mevkisiz dağılınca (forvet yıldızı daha sık →
+   * hücum ölçeği yükseldi, gol 3.82) 0.104'e çekildi — kalibrasyon
    * GERÇEK bot draft kadrolarıyla yapılır (`scripts/measureBalance.ts`);
    * rastgele kadrolar aynı sens'te 0.106 verir, fark draft'ın kadroları
    * güçlendirip birbirine yaklaştırmasından.
@@ -233,7 +234,7 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.0,
     chanceRate = 0.3,
-    baseConversion = 0.108,
+    baseConversion = 0.104,
     strengthSensitivity = 3.5,
     isTournament = true,
     interactiveShootout = false,
