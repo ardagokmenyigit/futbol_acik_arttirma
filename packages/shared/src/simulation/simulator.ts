@@ -28,7 +28,7 @@ export interface SimulateMatchOptions {
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
   /**
-   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.110).
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.108).
    *
    * MAÇ BAŞINA GOL bu değere neredeyse doğrusal bağlı — heyecan kolu budur.
    * Hedef maç başı ~3.5 gol; `strengthSensitivity`, `FORM_SPREAD` ya da
@@ -40,7 +40,8 @@ export interface SimulateMatchOptions {
    * tehdit oranı^3.2 ile ~%12 fazla gol üretiyordu). Gol/maç 3.66 → 3.27'ye
    * düştüğü için 0.111'e çıkarıldı (3.68 gol/maç). `strengthSensitivity`
    * 3.2 → 2.4'e inince gol 3.67'de kalsın diye 0.116'ya alındı; 2.4 → 3.3'e
-   * çıkınca (18 Eylül 2026) yine 3.67 için 0.110'a çekildi — kalibrasyon
+   * çıkınca (18 Eylül 2026) yine 3.67 için 0.110'a, aynı gün 3.5'e çıkınca
+   * 0.108'e çekildi — kalibrasyon
    * GERÇEK bot draft kadrolarıyla yapılır (`scripts/measureBalance.ts`);
    * rastgele kadrolar aynı sens'te 0.106 verir, fark draft'ın kadroları
    * güçlendirip birbirine yaklaştırmasından.
@@ -57,7 +58,7 @@ export interface SimulateMatchOptions {
    */
   baseConversion?: number;
   /**
-   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 3.3).
+   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 3.5).
    * Hem pozisyon payına hem de gole çevirme oranına uygulanır.
    *
    * ⚠️ TEK BAŞINA ZAYIF BİR KOL. Yükseltmek gol sayısını da şişirdiği için
@@ -89,7 +90,12 @@ export interface SimulateMatchOptions {
    * 5p %70→%75, 7p %76→%85; en güçlü şampiyon (4 takım) %41.6→%46.5, en
    * zayıf %12.6→%8.9; 8 takımda %30→%35 / %2.5→%1.5. 1–2 puanlık farklar
    * hâlâ yazı-turaya yakın (%55/%61) — küçük şans farkı oyunu belirlemiyor.
-   * 3.2–3.4 arası ölçüm gürültüsü içinde aynıdır; 3.3 kullanıcı tercihi.
+   * 3.2–3.4 arası ölçüm gürültüsü içinde aynıdır. Aynı gün kullanıcı 3.5
+   * istedi (baseConv 0.108, gol/maç 3.66): 4p %72, 5p %76, 7p %85; en güçlü
+   * %47.9 / en zayıf %8.3 (4 takım), %37.8 / %1.2 (8 takım). `baseConversion`
+   * yalnız gol sıklığını ölçekler, güç ayrımına dokunmaz — sens değişince
+   * gol ortalamasını (ve dolayısıyla beraberlik/penaltı payını) sabit tutmak
+   * için ayarlanır.
    *
    * ⚠️ ASIL TAVAN MOTOR DEĞİL, DRAFT. Gerçek draft'larda takımlar arası güç
    * farkı ortalama sadece ~5.2 puan (ölçüm: 3000 gerçek bot draft'ı; medyan
@@ -227,8 +233,8 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.0,
     chanceRate = 0.3,
-    baseConversion = 0.11,
-    strengthSensitivity = 3.3,
+    baseConversion = 0.108,
+    strengthSensitivity = 3.5,
     isTournament = true,
     interactiveShootout = false,
   } = options;
