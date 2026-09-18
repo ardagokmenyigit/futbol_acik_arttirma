@@ -3,7 +3,6 @@ import {
   calculateTeamStats,
   isBudgetHidden,
   powerRoleLabel,
-  powerSplit,
   type Footballer,
   type Position,
   type RoomState,
@@ -242,10 +241,10 @@ export function DraftPage({ room }: Props) {
             })}
           </div>
 
+          {/* Takım gücüne giren tek sayı GEN'dir (CLAUDE.md §3.2); oyuncu başına
+              HÜC/SAV gösterimi kaldırıldı — kullanıcı isteği, kafa karıştırıyordu. */}
           <div className="stat-row">
             <StatItem label="GEN" value={f.overall} />
-            <StatItem label="HÜC" value={powerSplit(f).attack} />
-            <StatItem label="SAV" value={powerSplit(f).defense} />
           </div>
 
           <div className="top-bid-row">
