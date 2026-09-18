@@ -12,7 +12,8 @@ import { PENALTY_DIRECTIONS, type PenaltyDirection, type PenaltyOutcome } from '
  *    ağzındaki üç bölge tıklanır (seçilen altın çerçeveyle vurgulanır).
  *  - açılış (`outcome` dolu): kaleci `keeperDirection`e dalar, top
  *    `shotDirection`e uçar — gol: fileye; kurtarış: kalecinin eldivenine;
- *    dışarı: direk dışına / üstten aut. CSS geçişleriyle (~0.5 sn).
+ *    dışarı: direk dışına / üstten aut. CSS geçişleriyle (~0.5 sn). Sonuç
+ *    yazısı sahnede değil, kartın altındaki bildirim şeridinde (tek kaynak).
  *
  * Yalnız görsel; hiçbir karar burada verilmez (CLAUDE.md §5).
  */
@@ -96,8 +97,8 @@ export const PenaltyScene: FC<PenaltySceneProps> = ({
             <path d="M0 0H9M0 0V9" stroke="rgba(242,239,230,0.42)" strokeWidth="0.8" />
           </pattern>
           <linearGradient id="pen-sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#14382a" />
-            <stop offset="1" stopColor="#1d5238" />
+            <stop offset="0" stopColor="#12322a" />
+            <stop offset="1" stopColor="#1b4a35" />
           </linearGradient>
           <radialGradient id="pen-vignette" cx="0.5" cy="0.6" r="0.75">
             <stop offset="0.6" stopColor="rgba(0,0,0,0)" />
@@ -114,7 +115,7 @@ export const PenaltyScene: FC<PenaltySceneProps> = ({
             y={i * 50}
             width="400"
             height="50"
-            fill={i % 2 === 0 ? '#2b6a44' : '#26603e'}
+            fill={i % 2 === 0 ? '#265d3d' : '#225437'}
             opacity={i === 0 ? 0.55 : 1}
           />
         ))}
@@ -218,16 +219,6 @@ export const PenaltyScene: FC<PenaltySceneProps> = ({
           </g>
         </g>
       </svg>
-
-      {reveal && (
-        <div className={`pen-scene-badge is-${reveal.outcome}`}>
-          {reveal.outcome === 'goal'
-            ? 'GOL!'
-            : reveal.outcome === 'saved'
-              ? 'KURTARDI!'
-              : 'DIŞARI!'}
-        </div>
-      )}
     </div>
   );
 };

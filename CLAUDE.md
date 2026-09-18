@@ -443,11 +443,16 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
     seçer. Maçta olmayan insanlar izler (seçim reddedilir: "rolün yok").
   - **İstemci:** `PenaltyScene` 2D sahne (kale, file, kollarını açmış kaleci,
     noktadaki top; atıcının gözünden — SOL/ORTA/SAĞ her iki taraf için ekran
-    yönüdür), seçimde kale ağzındaki üç bölge + üç büyük buton + ← ↑ → / 1 2 3
-    klavye, geri sayım çubuğu, "seçti/seçiyor" çipleri; açılışta kaleci dalar,
-    top fileye / eldivene / dışarı uçar, sonuç rozeti, anlatım akışı. Aynı
-    sahne bot–bot / önizleme (`SimulationPage`) serisini de senaryolu oynatır.
-    Noktalar yine baştan 5 tane, ani ölüm sırası gelince eklenir.
+    yönüdür), seçimde kale ağzındaki üç bölge + lobideki `format-btn`
+    deseniyle üç buton + ← ↑ → / 1 2 3 klavye, draft'taki `timer-ring` geri
+    sayımı, `tag` çipleriyle "seçti/seçiyor"; açılışta kaleci dalar, top
+    fileye / eldivene / dışarı uçar, sonuç `ticker` şeridinde, kazanan
+    `champion` bloğunun küçük hâlinde. Canlı maç kartının tamamı (skor
+    `scoreline`, üst şerit crimson/gold/ready, anlatım listesi) sitenin
+    editorial dilinde — eski lacivert degrade / hap rozet / Tailwind renkleri
+    kaldırıldı, tek tasarım dili. Aynı sahne bot–bot / önizleme
+    (`SimulationPage`) serisini de senaryolu oynatır. Noktalar yine baştan 5
+    tane, ani ölüm sırası gelince eklenir.
   - **Yeniden bağlanma:** `room:rejoin` → `resendLiveMatch` (`matchLive` +
     `startedAt`; ticker dakikayı buradan türetir, seri sürüyorsa doğrudan
     seriye geçer). Rövanş / oda kapanışı `cancelTournament → cancelShootout`.

@@ -189,8 +189,13 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
 
   const log = useCallback((line: string) => setTickerLogs((prev) => [line, ...prev]), []);
 
+  // Seriye geçiş iki yoldan tetiklenebilir (saat 120'ye geldi / sunucu seriyi
+  // başlattı); anons ve faz değişimi maç başına bir kez uygulanır.
+  const enteredRef = useRef<string | null>(null);
   const enterShootout = useCallback(
     (silent: boolean) => {
+      if (enteredRef.current === result.matchId) return;
+      enteredRef.current = result.matchId;
       setPhase('shootout');
       const endLabel = result.extraTime ? 'Uzatma da' : '90 Dakika';
       if (!silent) {
@@ -199,11 +204,12 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         );
       }
     },
-    [lastMinute, log, result.extraTime, result.scoreAway, result.scoreHome],
+    [lastMinute, log, result.extraTime, result.matchId, result.scoreAway, result.scoreHome],
   );
 
   // 90 dakikalık normal süre + (beraberlikte) 30 dakikalık uzatma simülasyonu
   useEffect(() => {
+    enteredRef.current = null;
     setPhase('regular');
     setMinute(1);
     setLiveHomeScore(0);
@@ -573,7 +579,6 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   const progressPct = Math.min(100, Math.round((minute / totalMinutes) * 100));
 
   const hasShootout = interactive || Boolean(result.penaltyShootout?.length);
-  const shootoutScore = view ? `${view.scoreHome} - ${view.scoreAway}` : '0 - 0';
   const finalPenH = interactive ? (view?.scoreHome ?? 0) : result.penaltiesHome;
   const finalPenA = interactive ? (view?.scoreAway ?? 0) : result.penaltiesAway;
   const finalWinnerId = interactive ? view?.winnerId : result.winnerId;
@@ -595,41 +600,26 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         : null;
 
     return (
-      <div className="penalty-dots-row">
+      <div className="pen-dots" aria-label="Penaltı atışları">
         {shootoutRounds.map((rnd) => {
           const attempt = view.attempts.find((a) => a.teamId === teamId && a.round === rnd);
           const isCurrent = current !== null && current.teamId === teamId && current.round === rnd;
-
-          let dotClass = 'penalty-dot pending';
-          let dotLabel = '•';
-
-          if (attempt) {
-            if (attempt.scored) {
-              dotClass = 'penalty-dot scored';
-              dotLabel = '✓';
-            } else {
-              dotClass = 'penalty-dot missed';
-              dotLabel = '✕';
-            }
-          } else if (isCurrent) {
-            dotClass = 'penalty-dot active';
-            dotLabel = '⚽';
-          }
-
+          const cls = attempt
+            ? attempt.scored
+              ? 'pen-dot scored'
+              : 'pen-dot missed'
+            : isCurrent
+              ? 'pen-dot current'
+              : 'pen-dot';
+          const title = attempt
+            ? `${attempt.playerName}: ${attempt.outcome === 'goal' ? 'Gol' : attempt.outcome === 'saved' ? 'Kurtarıldı' : 'Dışarı'}`
+            : isCurrent
+              ? 'Vuruş yapılıyor'
+              : `${rnd}. penaltı`;
           return (
-            <div
-              key={rnd}
-              className={dotClass}
-              title={
-                attempt
-                  ? `${attempt.playerName}: ${attempt.outcome === 'goal' ? 'Gol' : attempt.outcome === 'saved' ? 'Kurtarıldı' : 'Dışarı'}`
-                  : isCurrent
-                    ? 'Vuruş yapılıyor...'
-                    : `${rnd}. Penaltı`
-              }
-            >
-              {dotLabel}
-            </div>
+            <span key={rnd} className={cls} title={title}>
+              {attempt ? (attempt.scored ? '✓' : '✕') : ''}
+            </span>
           );
         })}
       </div>
@@ -641,265 +631,144 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
 
   const remainingMs = view?.live ? Math.max(0, view.live.endsAt - now) : 0;
   const remainingSec = Math.ceil(remainingMs / 1000);
-  const remainingPct = Math.max(0, Math.min(100, (remainingMs / SHOOTOUT_CHOOSE_MS) * 100));
+  const ringDeg = Math.round(Math.max(0, Math.min(1, remainingMs / SHOOTOUT_CHOOSE_MS)) * 360);
+  const ringLead = remainingSec <= 2 ? 'var(--crimson)' : 'var(--gold)';
+
+  const cardState = phase === 'shootout' ? 'gold' : isFinished ? 'ready' : 'crimson';
+  const statusLabel =
+    phase === 'shootout'
+      ? 'Seri penaltı atışları'
+      : isFinished
+        ? 'Maç tamamlandı'
+        : phase === 'extra'
+          ? 'Uzatma · canlı'
+          : 'Canlı maç';
+  const clockText =
+    phase === 'shootout'
+      ? view
+        ? `${view.scoreHome} – ${view.scoreAway}`
+        : '0 – 0'
+      : `${minute}'`;
+  const clockLabel =
+    phase === 'shootout'
+      ? 'Penaltılar'
+      : isFinished
+        ? `Maç sonu${result.extraTime ? ' · u.s.' : ''}`
+        : phase === 'extra'
+          ? 'Uzatma'
+          : 'Dakika';
+
+  const revealedPhrase = (a: PenaltyShootoutAttempt): string => {
+    const key = a.playerName + (view?.kickKey ?? 0) + (a.playerId ?? '');
+    if (a.outcome === 'goal') {
+      return getPhrase(
+        a.shotDirection === a.keeperDirection ? GOAL_SAME_SIDE_PHRASES : GOAL_PHRASES,
+        key,
+      );
+    }
+    return getPhrase(a.outcome === 'saved' ? SAVE_PHRASES : MISS_PHRASES, key);
+  };
 
   return (
-    <div
-      className="card"
-      style={{
-        background: 'linear-gradient(145deg, #131d27 0%, #0d1117 100%)',
-        border:
-          phase === 'shootout'
-            ? '1px solid var(--accent-gold)'
-            : isFinished
-              ? '1px solid var(--accent-green, #10b981)'
-              : '1px solid var(--accent-gold)',
-        boxShadow:
-          phase === 'shootout'
-            ? '0 0 24px rgba(245, 158, 11, 0.3)'
-            : '0 0 20px var(--accent-gold-glow, rgba(201, 151, 74, 0.2))',
-        padding: 24,
-        marginBottom: 24,
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 14,
-          flexWrap: 'wrap',
-          gap: 8,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          {roundTitle && (
-            <span
-              style={{
-                backgroundColor: 'rgba(201, 151, 74, 0.22)',
-                color: 'var(--accent-gold, #f59e0b)',
-                border: '1px solid rgba(201, 151, 74, 0.45)',
-                padding: '4px 12px',
-                borderRadius: 16,
-                fontSize: '0.8rem',
-                fontWeight: 900,
-                letterSpacing: 1,
-                textTransform: 'uppercase',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              🏆 {roundTitle}
-            </span>
-          )}
-          <span
-            style={{
-              backgroundColor:
-                phase === 'shootout'
-                  ? 'rgba(245, 158, 11, 0.3)'
-                  : isFinished
-                    ? 'rgba(16, 185, 129, 0.2)'
-                    : 'rgba(245, 158, 11, 0.2)',
-              color:
-                phase === 'shootout'
-                  ? 'var(--accent-gold)'
-                  : isFinished
-                    ? 'var(--accent-green, #10b981)'
-                    : 'var(--accent-gold)',
-              padding: '4px 14px',
-              borderRadius: 16,
-              fontSize: '0.8rem',
-              fontWeight: 800,
-              letterSpacing: 1,
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            {phase === 'shootout' ? (
-              <>
-                <span className="live-pulse-dot" />⚡ SERİ PENALTI ATIŞLARI
-              </>
-            ) : isFinished ? (
-              '✓ MAÇ TAMAMLANDI'
-            ) : (
-              '● CANLI MAÇ OYNANIYOR'
-            )}
-          </span>
+    <div className={`panel ${cardState} live-card`}>
+      {/* Başlık: tur · durum · saat */}
+      <div className="live-head lm-head">
+        <div>
+          <div className={`round-label lm-label ${cardState}`}>
+            <span className={`lm-dot ${cardState}`} />
+            {roundTitle ? `${roundTitle} · ` : ''}
+            {statusLabel}
+          </div>
+          <div className="lm-title">
+            {homeName} <span className="lm-title-vs">–</span> {awayName}
+          </div>
+        </div>
+        <div className="lm-clock-block">
+          <div className="lm-clock">{clockText}</div>
+          <div className="lm-clock-label">{clockLabel}</div>
         </div>
       </div>
 
-      {/* Büyük Canlı Skor Tabelası */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
-          alignItems: 'center',
-          gap: 20,
-          margin: '16px 0',
-        }}
-      >
-        <div style={{ textAlign: 'right' }}>
-          <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>{homeName}</h3>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-end',
-              gap: 8,
-              marginTop: 4,
-              flexWrap: 'wrap',
-            }}
-          >
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>EV SAHİBİ</span>
-            {homePower != null && (
-              <span
-                style={{
-                  fontSize: '0.78rem',
-                  fontWeight: 800,
-                  backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                  color: '#93c5fd',
-                  border: '1px solid rgba(147, 197, 253, 0.3)',
-                  padding: '2px 8px',
-                  borderRadius: 12,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                ⚡ Kadro Gücü: {homePower}
-              </span>
-            )}
+      {/* Skor tabelası — sitenin scoreline bileşeni */}
+      <div className="scoreline lm-scoreline">
+        <div className="side home">
+          <div className="name">{homeName}</div>
+          <div className="score">{liveHomeScore}</div>
+          <div className="lm-side-meta">
+            <span>Ev sahibi</span>
+            {homePower != null && <span className="lm-power">Güç {homePower}</span>}
           </div>
           {hasShootout && renderPenaltyDots(result.homeId)}
         </div>
-
-        <div style={{ textAlign: 'center' }}>
-          <div
-            style={{
-              fontSize: '2.8rem',
-              fontWeight: 900,
-              letterSpacing: 4,
-              backgroundColor: 'var(--bg-tertiary)',
-              padding: '6px 28px',
-              borderRadius: 12,
-              boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)',
-            }}
-          >
-            {liveHomeScore} - {liveAwayScore}
-          </div>
-
-          <div
-            style={{
-              fontSize: '0.95rem',
-              color: 'var(--accent-gold)',
-              fontWeight: 700,
-              marginTop: 6,
-            }}
-          >
-            {phase === 'shootout'
-              ? `Penaltılar: ${shootoutScore}`
-              : isFinished
-                ? `Maç Sonu (${totalMinutes}')${result.extraTime ? ' · U.S.' : ''}`
-                : phase === 'extra'
-                  ? `Uzatma: ${minute}'`
-                  : `Dakika: ${minute}'`}
-          </div>
-        </div>
-
-        <div style={{ textAlign: 'left' }}>
-          <h3 style={{ fontSize: '1.4rem', fontWeight: 800, margin: 0 }}>{awayName}</h3>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'flex-start',
-              gap: 8,
-              marginTop: 4,
-              flexWrap: 'wrap',
-            }}
-          >
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>DEPLASMAN</span>
-            {awayPower != null && (
-              <span
-                style={{
-                  fontSize: '0.78rem',
-                  fontWeight: 800,
-                  backgroundColor: 'rgba(59, 130, 246, 0.2)',
-                  color: '#93c5fd',
-                  border: '1px solid rgba(147, 197, 253, 0.3)',
-                  padding: '2px 8px',
-                  borderRadius: 12,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
-              >
-                ⚡ Kadro Gücü: {awayPower}
-              </span>
-            )}
+        <div className="sep" />
+        <div className="side away">
+          <div className="name">{awayName}</div>
+          <div className="score">{liveAwayScore}</div>
+          <div className="lm-side-meta">
+            <span>Deplasman</span>
+            {awayPower != null && <span className="lm-power">Güç {awayPower}</span>}
           </div>
           {hasShootout && renderPenaltyDots(result.awayId)}
         </div>
       </div>
 
-      {/* Süre İlerleme Çubuğu (normal süre + uzatma) */}
+      {/* Süre ilerleme çubuğu (normal süre + uzatma) */}
       {(phase === 'regular' || phase === 'extra') && (
-        <div
-          style={{
-            height: 6,
-            backgroundColor: 'var(--bg-tertiary)',
-            borderRadius: 3,
-            overflow: 'hidden',
-            margin: '16px 0',
-          }}
-        >
+        <div className="stat-track lm-track">
           <div
-            style={{
-              width: `${progressPct}%`,
-              height: '100%',
-              backgroundColor:
-                phase === 'extra' ? 'var(--accent-gold)' : 'var(--accent-green, #10b981)',
-              transition: 'width 0.1s linear',
-            }}
+            className={`stat-fill${phase === 'extra' ? ' extra' : ''}`}
+            style={{ width: `${progressPct}%` }}
           />
         </div>
       )}
 
-      {/* Seri Penaltı — 2D sahne + seçim (canlı) ya da senaryolu oynatma */}
+      {/* Son gol anonsu (oyun sürerken) — sitenin ticker bildirimi */}
+      {latestGoal && (phase === 'regular' || phase === 'extra') && (
+        <div className="ticker lm-notice">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7l4.5 3.3-1.7 5.4H9.2L7.5 10.3z" />
+          </svg>
+          <span>{latestGoal}</span>
+        </div>
+      )}
+
+      {/* Seri penaltı — 2D sahne + seçim (canlı) ya da senaryolu oynatma */}
       {phase === 'shootout' && view && view.stage !== 'done' && (
         <div
-          className={`penalty-active-card pen-live ${
-            view.stage === 'revealed' && view.revealed
-              ? view.revealed.outcome === 'goal'
-                ? 'is-goal'
-                : 'is-miss'
-              : 'is-aiming'
+          className={`player-card pen-card${
+            view.stage === 'revealed' && view.revealed ? ` is-${view.revealed.outcome}` : ''
           }`}
         >
-          <div className="penalty-active-header">
-            <span className="penalty-round-badge">
-              {view.stage === 'waiting' ? 'SERİ PENALTI' : `${view.round}. SERİ PENALTI`}
+          <div className="pen-head">
+            <span className="section-label">
+              {view.stage === 'waiting' ? 'Seri penaltı' : `${view.round}. seri penaltı`}
             </span>
-            <span className="penalty-team-tag">{teamNameOf(view.shooterTeamId)}</span>
+            {view.shooterTeamId && (
+              <span className="tag waiting">{teamNameOf(view.shooterTeamId)}</span>
+            )}
           </div>
 
           {view.stage === 'waiting' ? (
-            <div className="penalty-kicker-name">Seri penaltılar başlıyor…</div>
+            <div className="pen-waiting">Seri penaltılar başlıyor…</div>
           ) : (
             <div className="pen-matchup">
-              <span className="pen-matchup-side">
-                <span className="pen-matchup-icon">⚽</span>
-                <span>{view.shooterName}</span>
-              </span>
-              <span className="pen-vs">vs</span>
-              <span className="pen-matchup-side">
-                <span className="pen-matchup-icon">🧤</span>
-                <span>{view.keeperName}</span>
-              </span>
+              <div className="pen-side">
+                <div className="lbl">Atıyor</div>
+                <div className="nm">{view.shooterName}</div>
+              </div>
+              <div className="pen-vs">vs</div>
+              <div className="pen-side right">
+                <div className="lbl">Kalede</div>
+                <div className="nm">{view.keeperName}</div>
+              </div>
             </div>
           )}
 
@@ -913,228 +782,142 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
 
           {view.live && view.stage === 'aiming' && (
             <div className="pen-controls">
-              <div className={`pen-role-banner role-${view.live.role}`}>
-                {view.live.role === 'shooter'
-                  ? '🎯 SEN ATIYORSUN — köşeyi seç'
-                  : view.live.role === 'keeper'
-                    ? '🧤 SEN KALEDESİN — bir tarafa uzan'
-                    : 'Taraflar köşe seçiyor…'}
-              </div>
-
-              <div className="pen-countdown" aria-live="polite">
-                <div className="pen-countdown-track">
-                  <div
-                    className={`pen-countdown-bar${remainingSec <= 2 ? ' urgent' : ''}`}
-                    style={{ width: `${remainingPct}%` }}
-                  />
+              <div className="pen-role-row">
+                <div className={`pen-role${view.live.role !== 'spectator' ? ' mine' : ''}`}>
+                  {view.live.role === 'shooter'
+                    ? 'Sen atıyorsun — köşeyi seç'
+                    : view.live.role === 'keeper'
+                      ? 'Sen kaledesin — bir tarafa uzan'
+                      : 'Taraflar köşe seçiyor'}
+                  {view.live.role === 'spectator' && (
+                    <span className="pen-role-sub">İzleyicisin, seçimler gizli yapılıyor.</span>
+                  )}
                 </div>
-                <span className={`pen-countdown-num${remainingSec <= 2 ? ' urgent' : ''}`}>
-                  {remainingSec}
-                </span>
+                <div
+                  className="timer-ring"
+                  style={{
+                    background: `conic-gradient(${ringLead} 0deg ${ringDeg}deg, var(--panel) ${ringDeg}deg 360deg)`,
+                  }}
+                  aria-live="polite"
+                >
+                  <div className="timer-ring-inner pen-ring-inner">{remainingSec}</div>
+                </div>
               </div>
 
               {view.live.role !== 'spectator' && (
                 <>
-                  <div className="pen-btn-row">
+                  <div className="format-row pen-choice">
                     {(['left', 'center', 'right'] as const).map((dir) => (
                       <button
                         key={dir}
                         type="button"
-                        className={`pen-btn${myChoice === dir ? ' selected' : ''}`}
+                        className={`format-btn${myChoice === dir ? ' active' : ''}`}
                         onClick={() => choose(dir)}
                       >
-                        {dir === 'left' ? '◀ SOL' : dir === 'center' ? '▲ ORTA' : 'SAĞ ▶'}
+                        <span className="ft">{DIR_LABEL[dir]}</span>
+                        <span className="fs">
+                          {dir === 'left'
+                            ? '← ya da 1'
+                            : dir === 'center'
+                              ? '↑ ya da 2'
+                              : '→ ya da 3'}
+                        </span>
                       </button>
                     ))}
                   </div>
-                  <div className="pen-hint">
+                  <p className="footnote pen-footnote">
                     {myChoice
-                      ? `Seçimin: ${DIR_LABEL[myChoice].toUpperCase()} · süre dolana kadar değiştirebilirsin`
+                      ? `Seçimin ${DIR_LABEL[myChoice]} — süre dolana kadar değiştirebilirsin.`
                       : view.live.role === 'shooter'
-                        ? 'Süre dolarsa ortaya vurursun. Klavye: ← ↑ →'
-                        : 'Süre dolarsa ortada kalırsın. Klavye: ← ↑ →'}
-                  </div>
-                  {chooseError && <div className="pen-error">{chooseError}</div>}
+                        ? 'Süre dolarsa ortaya vurursun. Kaleci yanlış köşeye giderse gol neredeyse kesin.'
+                        : 'Süre dolarsa ortada kalırsın. Doğru köşeyi bilirsen kurtarma şansın yüksek.'}
+                  </p>
+                  {chooseError && <p className="error pen-error">{chooseError}</p>}
                 </>
               )}
 
-              <div className="pen-chips">
-                <span className={`pen-chip${view.live.shooterChosen ? ' done' : ''}`}>
-                  ⚽ {teamNameOf(view.shooterTeamId)}{' '}
-                  {view.live.shooterChosen ? '· köşeyi seçti' : '· seçiyor…'}
+              <div className="pen-tags">
+                <span className={`tag ${view.live.shooterChosen ? 'ready' : 'waiting'}`}>
+                  {teamNameOf(view.shooterTeamId)} ·{' '}
+                  {view.live.shooterChosen ? 'köşeyi seçti' : 'seçiyor…'}
                 </span>
-                <span className={`pen-chip${view.live.keeperChosen ? ' done' : ''}`}>
-                  🧤{' '}
+                <span className={`tag ${view.live.keeperChosen ? 'ready' : 'waiting'}`}>
                   {teamNameOf(view.shooterTeamId === result.homeId ? result.awayId : result.homeId)}{' '}
-                  {view.live.keeperChosen ? '· tarafını seçti' : '· seçiyor…'}
+                  · {view.live.keeperChosen ? 'tarafını seçti' : 'seçiyor…'}
                 </span>
               </div>
             </div>
           )}
 
           {!view.live && view.stage === 'aiming' && (
-            <div className="penalty-status-message">
-              <span className="penalty-aiming-text">
-                <span className="pulse-indicator">●</span>{' '}
-                {getPhrase(AIMING_PHRASES, view.shooterName + view.kickKey)}
-              </span>
+            <div className="pen-aim">
+              <span className="lm-dot crimson" />
+              {getPhrase(AIMING_PHRASES, view.shooterName + view.kickKey)}
             </div>
           )}
 
           {view.stage === 'revealed' && view.revealed && (
-            <div className="penalty-status-message">
-              {view.revealed.outcome === 'goal' ? (
-                <span className="penalty-goal-text">
-                  ⚽ GOOOL!{' '}
-                  {getPhrase(
-                    view.revealed.shotDirection === view.revealed.keeperDirection
-                      ? GOAL_SAME_SIDE_PHRASES
-                      : GOAL_PHRASES,
-                    view.revealed.playerName + view.kickKey + (view.revealed.playerId ?? ''),
-                  )}
-                </span>
-              ) : view.revealed.outcome === 'saved' ? (
-                <span className="penalty-miss-text">
-                  🧤 KURTARDI!{' '}
-                  {getPhrase(
-                    SAVE_PHRASES,
-                    view.revealed.playerName + view.kickKey + (view.revealed.playerId ?? ''),
-                  )}
-                </span>
-              ) : (
-                <span className="penalty-miss-text">
-                  ❌ DIŞARI!{' '}
-                  {getPhrase(
-                    MISS_PHRASES,
-                    view.revealed.playerName + view.kickKey + (view.revealed.playerId ?? ''),
-                  )}
-                </span>
-              )}
+            <div className={`ticker pen-result is-${view.revealed.outcome}`}>
+              <b>
+                {view.revealed.outcome === 'goal'
+                  ? 'Gol'
+                  : view.revealed.outcome === 'saved'
+                    ? 'Kurtardı'
+                    : 'Dışarı'}
+              </b>
+              <span>{revealedPhrase(view.revealed)}</span>
             </div>
           )}
 
           {view.stage === 'revealed' && view.winnerId && (
-            <div className="penalty-final-banner pen-winner">
-              <span style={{ fontSize: '1.4rem' }}>🏆</span>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>
-                  Penaltı Atışları: {homeName} {view.scoreHome} - {view.scoreAway} {awayName}
-                </div>
-                <div
-                  style={{
-                    fontSize: '0.82rem',
-                    color: 'var(--accent-green, #10b981)',
-                    marginTop: 2,
-                  }}
-                >
-                  ✓ {teamNameOf(view.winnerId)} penaltılar sonucunda galip geldi!
-                  {view.winnerId === youId ? ' Tebrikler!' : ''}
-                </div>
+            <div className="pen-winner">
+              <div className="section-label">
+                Penaltılar {view.scoreHome} – {view.scoreAway}
+              </div>
+              <div className="pen-winner-name">{teamNameOf(view.winnerId)}</div>
+              <div className="pen-winner-meta">
+                penaltılar sonucunda tur atladı{view.winnerId === youId ? ' · tebrikler' : ''}
               </div>
             </div>
           )}
         </div>
       )}
 
-      {/* Penaltı Sonucu Özeti (Maç bittiğinde) */}
+      {/* Penaltı sonucu özeti (maç bittiğinde) */}
       {isFinished && hasShootout && (
-        <div className="penalty-final-banner">
-          <span style={{ fontSize: '1.4rem' }}>🏆</span>
-          <div>
-            <div style={{ fontWeight: 800, fontSize: '0.95rem' }}>
-              Penaltı Atışları: {homeName} {finalPenH} - {finalPenA} {awayName}
-            </div>
-            <div
-              style={{
-                fontSize: '0.82rem',
-                color: 'var(--accent-green, #10b981)',
-                marginTop: 2,
-              }}
-            >
-              ✓ {finalWinnerId === result.homeId ? homeName : awayName} penaltılar sonucunda galip
-              geldi!
-            </div>
+        <div className="pen-winner lm-final">
+          <div className="section-label">
+            Penaltılar {finalPenH} – {finalPenA}
           </div>
+          <div className="pen-winner-name">
+            {finalWinnerId === result.homeId ? homeName : awayName}
+          </div>
+          <div className="pen-winner-meta">penaltılar sonucunda tur atladı</div>
         </div>
       )}
 
-      {/* Son Gol Anonsu (oyun sürerken) */}
-      {latestGoal && (phase === 'regular' || phase === 'extra') && (
-        <div
-          style={{
-            backgroundColor: 'rgba(245, 158, 11, 0.15)',
-            border: '1px solid var(--accent-gold)',
-            color: 'var(--accent-gold)',
-            padding: '8px 16px',
-            borderRadius: 8,
-            textAlign: 'center',
-            fontWeight: 700,
-            marginBottom: 12,
-          }}
-        >
-          {latestGoal}
-        </div>
-      )}
-
-      {/* Canlı Anlatım Akışı */}
-      <div
-        style={{
-          maxHeight: 120,
-          overflowY: 'auto',
-          backgroundColor: 'var(--bg-tertiary)',
-          borderRadius: 8,
-          padding: 12,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 6,
-          marginTop: 12,
-        }}
-      >
-        {tickerLogs.slice(0, 4).map((log, idx) => (
-          <div
-            key={idx}
-            style={{
-              fontSize: '0.85rem',
-              color: idx === 0 ? 'var(--text-primary)' : 'var(--text-secondary)',
-            }}
-          >
-            {log}
+      {/* Canlı anlatım akışı */}
+      <div className="lm-feed">
+        {tickerLogs.slice(0, 4).map((line, idx) => (
+          <div key={idx} className={`lm-feed-row${idx === 0 ? ' latest' : ''}`}>
+            {line}
           </div>
         ))}
       </div>
 
-      {/* Devam Butonu — yalnız yerel önizlemede */}
+      {/* Devam butonu — yalnız yerel önizlemede */}
       {isFinished && !serverPaced && (
-        <div style={{ textAlign: 'center', marginTop: 16 }}>
+        <div className="btn-row">
           <button
+            type="button"
+            className="btn-primary"
             onClick={() => onCompleteRef.current?.(resultRef.current)}
-            style={{
-              backgroundColor: 'var(--accent-green, #10b981)',
-              color: '#000',
-              fontWeight: 800,
-              padding: '10px 24px',
-              fontSize: '0.95rem',
-              borderRadius: 8,
-              border: 'none',
-              cursor: 'pointer',
-            }}
           >
-            Ağaca İşle ve Sonraki Tura Geç ✓
+            Ağaca işle ve sonraki tura geç
           </button>
         </div>
       )}
-      {isFinished && serverPaced && (
-        <div
-          style={{
-            textAlign: 'center',
-            marginTop: 16,
-            fontSize: '0.85rem',
-            color: 'var(--text-secondary)',
-          }}
-        >
-          Sonraki maç birazdan…
-        </div>
-      )}
+      {isFinished && serverPaced && <p className="footnote lm-next">Sonraki maç birazdan…</p>}
     </div>
   );
 };
