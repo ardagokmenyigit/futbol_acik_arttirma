@@ -5,6 +5,7 @@ import { createPRNG } from '../simulation/random.js';
 import { simulateMatch } from '../simulation/simulator.js';
 import { buildTeam } from '../simulation/teamStats.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
+import { logMatch } from './matchLog.js';
 import { cancelShootout, startInteractiveShootout } from './shootout.js';
 import {
   advanceTournament,
@@ -245,6 +246,7 @@ export function runTournament(io: TypedServer, roomId: string): void {
       }
       setLive(null);
       room2.shootout = null;
+      logMatch(room2, finalResult, homeTeam, awayTeam);
       live = advanceTournament(live, finalResult);
       room2.tournament = live;
       io.to(roomId).emit('tournament:matchResult', { result: finalResult, tournament: live });
