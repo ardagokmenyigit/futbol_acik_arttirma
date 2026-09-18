@@ -122,3 +122,23 @@ Temiz `git clone` + `npm ci` + `render.yaml`'daki tam build/start komutlarıyla:
 - Vercel origin'inden WebSocket bağlantısı ✓, oda kur ✓, katıl ✓,
   format seç ✓, draft başlat (2 insan + 2 bot) ✓, canlı açık artırma olayları ✓
 - İstemci `VITE_SERVER_URL` ile derlenip adresi bundle'a gömüyor ✓
+
+## 5. Maç denge logu → özel GitHub deposu (ücretsiz, yalnız bize görünür)
+
+Sunucu her turnuva maçını `ardagokmenyigit/futbol-match-log` **özel** deposuna
+bir satır olarak yazar (güç/hücum/savunma, beklenen vs gerçek — bkz.
+CLAUDE.md §3.2.1). Render ücretsiz planda dosya sistemi kalıcı olmadığı için
+tek kalıcı yer budur. Token yoksa yalnız konsola yazar; oyun etkilenmez.
+
+1. GitHub → **Settings → Developer settings → Personal access tokens →
+   Fine-grained tokens → Generate new token.**
+   - Repository access: **Only select repositories → futbol-match-log**
+   - Permissions → Repository permissions → **Contents: Read and write**
+   - Expiration: en uzun süre (1 yıl); bitince aynı adımla yenilenir.
+2. Render → **fal-server → Environment** → `MATCH_LOG_GITHUB_TOKEN` = token.
+   (`MATCH_LOG_GITHUB_REPO` render.yaml'da hazır.) Kaydet → servis yeniden başlar.
+3. Doğrula: bir turnuva oyna; depoda `match-log-YYYY-MM.jsonl` oluşmalı.
+   Okuma: `npx tsx packages/server/src/scripts/analyzeMatchLog.ts --remote`
+   (bilgisayarında `gh auth login` yapılmış olmalı — zaten var).
+
+Token yalnız o depoya, yalnız dosya içeriğine yetkilidir; ana repoya erişemez.

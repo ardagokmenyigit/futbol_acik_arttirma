@@ -18,3 +18,9 @@ services:
       # Birden fazla origin virgülle ayrılır. Hızlı deneme için "*" verilebilir.
       - key: CLIENT_ORIGIN
         sync: false
+      # Maç denge logu → özel GitHub deposu (bkz. DEPLOY.md §5). Boş bırakılırsa
+      # yalnız konsola yazılır.
+      - key: MATCH_LOG_GITHUB_TOKEN
+        sync: false
+      - key: MATCH_LOG_GITHUB_REPO
+        value: ardagokmenyigit/futbol-match-log

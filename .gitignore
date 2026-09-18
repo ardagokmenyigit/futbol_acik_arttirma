@@ -11,3 +11,5 @@ npm-debug.log*
 *.tsbuildinfo
 .vite/
 *.csv
+# geliştiriciye özel maç denge logu (server/tournament/matchLog.ts)
+packages/server/data/match-log.jsonl
