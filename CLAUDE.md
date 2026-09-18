@@ -472,7 +472,8 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
   "seçti/seçmedi" bayrakları — **köşeler açıklanana kadar yalnız sunucuda**),
   taraflar `tournament:penaltyChoose {matchId, kickIndex, direction}` gönderir
   (ack'te rol; süre dolana kadar değiştirilebilir), iki taraf da seçince ya
-  da `SHOOTOUT_CHOOSE_MS` (5 sn) dolunca `resolveKick` ile çözülür ve
+  da `SHOOTOUT_CHOOSE_MS` (8 sn; 18 Eylül'de 5'ten çıkarıldı, kullanıcı
+  isteği) dolunca `resolveKick` ile çözülür ve
   `tournament:shootoutKick {state, attempt}` yayınlanır, `SHOOTOUT_REVEAL_MS`
   (3.4 sn) animasyon payından sonra sıradaki vuruş; seri bitince 3 sn kazanan
   banner'ı, sonra mevcut `finalize` → `tournament:matchResult`. Aynı durum

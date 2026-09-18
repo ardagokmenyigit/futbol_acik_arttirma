@@ -114,11 +114,13 @@ export const SHOOTOUT_MAX_ROUNDS = 30;
 
 /**
  * CANLI SERİ ZAMANLAMASI (sunucu motoru + istemci geri sayımı aynı sabitleri
- * kullanır). Köşe seçimi 5 sn — kısa ama refleks oyunu; iki taraf da seçince
- * beklemeden çözülür. Açılış 3.4 sn: dalış/top animasyonu (~0.6 sn) + sonucu
- * okuma payı. 10 vuruşluk seri ≈ 60–80 sn.
+ * kullanır). Köşe seçimi 8 sn (18 Eylül 2026'da 5'ten çıkarıldı — kullanıcı
+ * isteği, 5 sn insan–insan maçta dar geldi); iki taraf da seçince beklemeden
+ * çözülür, bot 1–4 sn'de seçtiği için insan–bot vuruşları çoğunlukla insanın
+ * tıkladığı anda biter. Açılış 3.4 sn: dalış/top animasyonu (~0.7 sn) +
+ * sonucu okuma payı. 10 vuruşluk seri en çok ≈ 2 dk, pratikte 60–90 sn.
  */
-export const SHOOTOUT_CHOOSE_MS = 5000;
+export const SHOOTOUT_CHOOSE_MS = 8000;
 export const SHOOTOUT_REVEAL_MS = 3400;
 
 /** Serinin saf durumu — vuruş vuruş ilerletilir. */

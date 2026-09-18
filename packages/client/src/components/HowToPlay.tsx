@@ -144,7 +144,7 @@ export function HowToPlay({ onClose }: Props) {
               </p>
               <p className="htp-note">
                 <strong>Seri penaltıyı sen atarsın.</strong> Her vuruşta atıcı ve kaleci aynı anda,
-                gizlice <strong>sol / orta / sağ</strong> seçer (5 saniye; ekrandaki kale ya da
+                gizlice <strong>sol / orta / sağ</strong> seçer (8 saniye; ekrandaki kale ya da
                 butonlar, klavyede ← ↑ →). Kaleci yanlış köşeye giderse gol neredeyse kesin, doğru
                 köşeyi bilirse iyi kaleci çoğunu çeler. Üç köşe eşit güçte — kazandıran, rakibin
                 alışkanlığını okumak; botların da favori köşesi var ve seni okumaya çalışırlar. Süre
