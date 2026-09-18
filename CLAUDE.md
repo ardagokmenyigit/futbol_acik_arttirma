@@ -258,17 +258,56 @@ yatırım küçük yatırımdan ayırt edilemez oluyor. Canlı ekranda uzatma ~4
 (`EXTRA_TIME_LIVE_MS`), ilerleme çubuğu altına döner, kartlarda "U.S."
 etiketi görünür.
 
-Uzatma da berabereyse (`isTournament`) seri penaltı. **Atıcı becerisi `GEN − mevki
-cezası`** (`penaltySkill`; FWD 0, MID 3, DEF 26, GK 37); atıcılar buna göre
-iyiden kötüye sıralanır (forvetler önce, kaleci en son), başarı oranı aynı
-beceri ile rakip kalecinin GEN'inden türer. Cezalar, eski `0.7·HÜC + 0.3·GEN`
-becerisinin GEN'den mevki ortalaması sapmasıdır — ölçek ve oranlar korundu.
-Daha eski model GEN + mevki payıydı ve 92 GEN kaleci 87 GEN defanstan önce
-atıyordu (kullanıcı "iyiden kötüye görünmüyor" dedi); HÜC ağırlıklı ölçek daha
-geniş olduğu için (ilk 5 atıcı ort. 76 / sd 10, eski 84 / 5) formül o zaman
-yeniden merkezlenmişti (merkez 74, eğim 0.0035). Güncel ölçüm (5000 bot draft,
-60k maç): mevki bazında FWD %73.7 · MID %73.0 · DEF %64.5 · GK %61.1;
-penaltıya giden maç %11.5 (uzatma sonrası).
+Uzatma da berabereyse (`isTournament`) seri penaltı — **KÖŞE OYUNU**
+(`shared/src/simulation/penalty.ts`, 17 Eylül 2026). Atıcı ve kaleci eş
+zamanlı SOL / ORTA / SAĞ seçer; vuruş iki bağımsız zara ayrılır:
+
+- **İsabet** — yalnız atıcıya bağlı: `p_kaçırma = clamp(0.05 + 0.003·(80 −
+beceri), 0.02, 0.25)`, beceri = `GEN − mevki cezası` (FWD 0, MID 3, DEF 26,
+  GK 37; cezalar eski `0.7·HÜC + 0.3·GEN` becerisinin GEN'den mevki sapması).
+  Atıcılar bu beceriye göre iyiden kötüye sıralanır (forvetler önce, kaleci
+  en son); kadro tükenince başa dönülür.
+- **Kurtarış** — yalnız kaleci DOĞRU köşeyi seçtiyse: `p_kurtarma = clamp(0.76
+  - 0.012·(kaleci_GEN − 82) − 0.004·(beceri − 74), 0.35, 0.92)`.
+- Farklı köşe → gol `1 − p_kaçırma`, dışarı `p_kaçırma`. Aynı köşe → gol
+  `(1 − p_kaçırma)(1 − p_kurtarma)`, kurtarış, dışarı.
+
+Üç seçenek **simetriktir** (ortanın özel gücü yok): denge stratejisi rastgele
+dağıtmak, kimse formülü ezberleyerek avantaj alamaz; tek avantaj rakibin
+alışkanlığını okumak. Kalecinin etkisi "her vuruşta biraz" değil "köşeyi
+bildiğinde çok": GEN 90 kaleci doğru köşede FWD'ye karşı %79–82, DEF'e karşı
+%92 kurtarır. Ölçüm (`scripts/measurePenalty.ts`, analitik + 200k MC):
+
+| atıcı  | beceri | p_kaçırma | kurtarma (doğru köşe, GK 82 / 90) | gol farklı | gol aynı (GK 82 / 90) | gol rastgele (GK 82 / 90) |
+| ------ | ------ | --------- | --------------------------------- | ---------- | --------------------- | ------------------------- |
+| FWD 90 | 90     | %2        | %70 / %79                         | %98        | %30 / %20             | %75 / %72                 |
+| FWD 84 | 84     | %4        | %72 / %82                         | %96        | %27 / %18             | %73 / %70                 |
+| MID 85 | 82     | %4        | %73 / %82                         | %96        | %26 / %17             | %72 / %69                 |
+| DEF 83 | 57     | %12       | %83 / %92                         | %88        | %15 / %7              | %64 / %61                 |
+| GK 82  | 45     | %16       | %88 / %92                         | %84        | %10 / %7              | %60 / %59                 |
+
+Rastgele köşelerle (bot–bot maçlar böyle oynanır) gerçek kadro dağılımında
+mevki bazında gol: **FWD %72.5 · MID %71.3 · DEF %63.9 · GK %59.9**; eski tek
+zarlı model aynı kadrolarda %74.3 / %73.1 / %65.2 / %61.2 verirdi — yani
+~1.5 puan daha az gol, kurtarış %23.6, dışarı %6.3, ev sahibi %49.8 (adil),
+seri ort. 10.4 vuruş, ani ölüme giden %27. Denge açısından ihmal edilebilir;
+taban 0.74 olsa eski modelle birebir örtüşürdü, 0.76 "köşeyi bilen kaleci
+gerçekten caydırıcı olsun" diye bilinçli seçildi. **Bot–bot seri anında ve
+rastgele köşelerle** çözülür (`simulateShootout`); insan içeren maçta seri
+CANLI oynanır (bkz. §3.3), yani `simulateMatch` `interactiveShootout: true`
+ile `pendingShootout: true` döner ve kazanan belirlemez.
+
+**BOT PENALTI ZEKÂSI** (`server/src/tournament/penaltyBot.ts`) — botlar
+rastgele DEĞİL, "insan gibi" seçer: id'den türeyen sabit kişilik (favori
+köşe ve bağlılık, okuma gücü, blöf payı, düşünme süresi), rakibin bu serideki
+dizisini `predictNext` ile okur (dönüşüm sol-sağ-sol → sağ; seri iki kez aynı
+→ yine; favori ≥%60), okuduğunun bilinçli tersini yapma payı (blöf) ve
+gürültü. Kararlar seed'li (bot + maç + vuruş), gecikme kişiliğe bağlı
+0.9–4.2 sn (+ seriyi bitirebilecek vuruşta baskı payı). Ölçüm (30k seri):
+rastgele oynayana karşı %49.6, bot–bot %50.1 (**simetri korunur**), hep aynı
+köşeye oynayana karşı %54, sol-sağ-sol sırayla oynayana karşı %57. İlk sürüm
+yalnız "atıcının son köşesine yat" diyordu ve dönüşümlü oynayana karşı %32'ye
+düşüyordu — okuma katmanı bu yüzden örüntü tabanlı yazıldı.
 
 **Saf ve deterministik.** Aynı girdi + aynı seed → aynı sonuç.
 `simulateFullTournament` seed'i katılımcı id'lerinden türetir: her oda kendi
@@ -364,8 +403,11 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
 
 - Format her zaman **eleme usulü turnuva ağacı**: 4 takım (yarı final) ya da
   8 takım (çeyrek final). Draft bitince `finishDraft` → `runTournament`.
-- Maçlar sunucuda önceden simüle edilir (`simulateFullTournament`), sonuçlar
-  tur tur yayınlanır; beraberlikte önce uzatma, sonra penaltı.
+- Maçlar sunucuda **sırayla (tembel)** simüle edilip yayınlanır
+  (`runTournament`: `drawSeed + n·777` tohumlarıyla, `simulateFullTournament`
+  ile aynı şema); beraberlikte önce uzatma, sonra penaltı. Eskiden tüm
+  turnuva baştan hesaplanıyordu; canlı seri penaltı bunu kırdı — insanlı maç
+  uzatma sonunda berabereyse sonraki eşleşme ancak seri bitince belli olur.
 - **CANLI MAÇ EKRANI** (`server/src/tournament/runTournament.ts` +
   client `LiveMatchTicker`): bir maçın iki tarafından biri bile **insan**sa
   sunucu önce `tournament:matchLive { matchId, result }` yayınlar, istemci
@@ -377,11 +419,94 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
   **Penaltı noktaları sonucu ele vermez:** `LiveMatchTicker` baştan yalnız
   klasik 5 nokta gösterir; ani ölüm turları ancak sırası gelince eklenir
   (`revealedRound`). Eskiden tüm seri uzunluğu baştan çiziliyor, uzayıp
-  uzamayacağı belli oluyordu.
+  uzamayacağı belli oluyordu. `tournament:matchLive` `elapsedMs` taşır (ilk
+  yayında 0, yeniden bağlanana gerçek değer): istemci maçı baştan değil
+  kaldığı dakikadan izler. **Süre, mutlak zaman değil** — istemci saatine
+  güvenilmez (telefon saati 3 sn ileri olsa `startedAt` ile maç "anında
+  bitmiş" görünürdü). Aynı ilke seri geri sayımında: `ShootoutState.remainingMs`,
+  istemci sayacı alınma anı + kalan süre olarak kurar; `endsAt` yalnız bilgi.
+- **CANLI SERİ PENALTI** (`server/src/tournament/shootout.ts` + client
+  `LiveMatchTicker` / `PenaltyScene`, 17 Eylül 2026): insan içeren maç uzatma
+  sonunda berabereyse (`MatchResult.pendingShootout`) istemci 120. dakikaya
+  gelince sunucu seriyi vuruş vuruş oynatır. Her vuruşta
+  `tournament:shootoutPrompt {ShootoutState}` (atıcı, kaleci, tur, `endsAt`,
+  "seçti/seçmedi" bayrakları — **köşeler açıklanana kadar yalnız sunucuda**),
+  taraflar `tournament:penaltyChoose {matchId, kickIndex, direction}` gönderir
+  (ack'te rol; süre dolana kadar değiştirilebilir), iki taraf da seçince ya
+  da `SHOOTOUT_CHOOSE_MS` (5 sn) dolunca `resolveKick` ile çözülür ve
+  `tournament:shootoutKick {state, attempt}` yayınlanır, `SHOOTOUT_REVEAL_MS`
+  (3.4 sn) animasyon payından sonra sıradaki vuruş; seri bitince 3 sn kazanan
+  banner'ı, sonra mevcut `finalize` → `tournament:matchResult`. Aynı durum
+  `RoomState.shootout` içinde de yayınlanır (yeniden bağlanma).
+  - **Zaman aşımı kuralı:** seçmeyen BAĞLI insan → **orta** (dikkatsizlik
+    cezası, öngörülebilir); kopuk insan ya da bot → **bot zekâsı** (aksi
+    halde rakip kopan oyuncuya karşı her vuruşu ortaya atarak bedava kazanır).
+    Kopan oyuncu 60 sn içinde dönmezse zaten bota dönüşür.
+  - İnsan–bot maçında insan hem kendi vuruşlarının köşesini hem kalecisinin
+    dalış yönünü seçer; insan–insan maçında iki taraf eş zamanlı ve gizli
+    seçer. Maçta olmayan insanlar izler (seçim reddedilir: "rolün yok").
+  - **İstemci:** `PenaltyScene` 2D sahne (kale, file, kollarını açmış kaleci,
+    noktadaki top; atıcının gözünden — SOL/ORTA/SAĞ her iki taraf için ekran
+    yönüdür), seçimde kale ağzındaki üç bölge + lobideki `format-btn`
+    deseniyle üç buton + ← ↑ → / 1 2 3 klavye, draft'taki `timer-ring` geri
+    sayımı, `tag` çipleriyle "seçti/seçiyor"; açılışta kaleci dalar, top
+    fileye / eldivene / dışarı uçar, sonuç `ticker` şeridinde, kazanan
+    `champion` bloğunun küçük hâlinde. Canlı maç kartının tamamı (skor
+    `scoreline`, üst şerit crimson/gold/ready, anlatım listesi) sitenin
+    editorial dilinde — eski lacivert degrade / hap rozet / Tailwind renkleri
+    kaldırıldı, tek tasarım dili. Aynı sahne bot–bot / önizleme
+    (`SimulationPage`) serisini de senaryolu oynatır. Noktalar yine baştan 5
+    tane, ani ölüm sırası gelince eklenir.
+  - **Yeniden bağlanma:** `room:rejoin` → `resendLiveMatch` (`matchLive` +
+    `elapsedMs`; ticker dakikayı buradan türetir, seri sürüyorsa doğrudan
+    seriye geçer). Seri bitince `room.shootout` sonuç ağaca işlenene kadar
+    (`finalize`) dolu kalır — kutlama penceresinde araya giren bir `room:state`
+    kazanan banner'ını silmesin. Rövanş / oda kapanışı
+    `cancelTournament → cancelShootout`.
+  - **Sahne animasyonu doğrulandı** (gerçek Chrome, puppeteer-core ile 45 ms
+    örnekleme): açılış sınıfı düştükten 0 ms sonra kaleci (0,0), ~230 ms'de
+    yolun yarısında, ~700 ms'de dalış pozisyonunda; top eş zamanlı uçar.
+    Headless Chrome'un `--virtual-time-budget` modu CSS geçişlerini ara kare
+    göstermeden sona atlar — animasyon kanıtı için kullanılamaz. Bekleme
+    sallanması (`.pen-keeper-sway`) ile dalış geçişi (`.pen-keeper`) ayrı
+    elemanlarda; aynı elemanda olsa tarayıcı geçişi atlayabilir. Açılışta iki
+    tarafın köşesi sahnede etiketli çerçeveyle (üst direğin üstünde
+    "VURUŞ" / "KALECİ", aynıysa tek çerçeve) ve sonuç şeridi altında `tag`
+    çipleriyle gösterilir ("Kaleci · sağ · köşeyi bildi" / "ters köşe").
+  - **Doğrulama:** `caffeinate -i npx tsx packages/server/src/scripts/e2eShootout.ts`
+    (gerçek sunucu + Socket.io istemcileri, `FAL_FORCE_SHOOTOUT=1` ile insanlı
+    her maç için beraberlik veren tohum aranır — motor değişmez): insan–bot
+    (rol ack'leri, seçim değiştirme, yanlış vuruş/köşe reddi, seçmeme → orta,
+    nihai döküm), insan–insan (eş zamanlı seçim ~25 ms'de çözülür, kopma →
+    süre sonunda çözüm, yeniden bağlanma), 4 takım (izleyici reddi, şampiyon).
 - **Lig formatı akıştan kaldırıldı** (kullanıcı isteği). `server/src/league/`,
   client `ResultsPage.tsx` ve shared `LeagueState` / `league:*` eventleri
   kod tabanında DURUYOR ama hiçbir yerden çağrılmıyor — ileride geri açmak
   isteyen olursa diye. `config.tournamentSize` artık `null` olamaz.
+
+### 3.3.1 Sunucu sağlamlığı (`server/src/harden.ts`)
+
+Socket.io dinleyici içindeki istisnayı yakalamaz: **ack bekleyen bir event'e
+ack'siz gelen tek paket (`ack is not a function`) ya da handler'da patlayan
+herhangi bir hata süreci öldürüyordu** — bir istemci tüm odaları kapatabilirdi
+(18 Eylül 2026'da `tournament:penaltyChoose` ile ölçüldü; `room:create`,
+`auction:bid` vb. için de aynıydı). Üç katman:
+
+1. **Paket süzgeci** (`socket.use`): ack bekleyen event'lere (`ACK_EVENTS`
+   listesi — yeni ack'li event eklerken oraya da ekle) ack'siz gelen paket
+   düşürülür; soket başına saniyede 40+ paket kısılır (canlı seride her seçim
+   odaya `room:state` yayınlatır, spam tüm odayı sel altında bırakırdı).
+2. **Dinleyici zırhı**: her `socket.on` dinleyicisi try/catch'e alınır; hata
+   loglanır, ack varsa istemciye `{ ok:false }` döner.
+3. **Son emniyet** (`index.ts`): `uncaughtException` / `unhandledRejection`
+   loglanır, süreç düşmez (timer içinden gelen beklenmeyen hatalar için).
+
+Kural: handler'lar payload şekline asla güvenmez (`handlePenaltyChoose`
+`typeof payload === 'object'`, `Number.isInteger(kickIndex)`, köşe listede mi).
+Aynı seçim yeniden gönderilirse odaya tekrar yayın yapılmaz. Doğrulama:
+`npx tsx packages/server/src/scripts/e2eHardening.ts` (ack'siz paketler, null /
+string / yanlış tipli payload, handler içinde istisna, bilinmeyen event, 500
+paket spam, spam sonrası meşru istek — hepsinden sonra `/health` ayakta).
 
 ### 3.4 Rövanş (aynı odada yeni oyun)
 
@@ -591,3 +716,6 @@ Açık artırma sönmüyor.
 - Devir noktası: `phase === 'simulation'` + `auction:finished(roomState)`;
   kadrolar `participant.squad` içinde, bütçeler düşülmüş.
 - Sonra: ortak uçtan uca entegrasyon + deploy (CLAUDE.md §4 son faz).
+- Canlı seri penaltı (§3.3) v1: üç köşe simetrik, botlar kişilikli. Olası
+  v2: ortanın kaleci lehine hafif asimetrisi, kişiliğe bağlı köşe eğilimi
+  botlar için görünür ipucu — ikisi de dengeyi bozar, ölçmeden açmayın.

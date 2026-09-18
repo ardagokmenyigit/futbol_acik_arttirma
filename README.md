@@ -63,9 +63,11 @@ npm run dev
 - [x] Futbolcu veri seti (504 futbolcu)
 - [x] Açık artırma (draft) motoru — zorunlu açılış, anti-snipe, açılış pası
 - [x] Kadro kuralları ve validasyon
-- [x] Maç simülasyon algoritması (deterministik, seri penaltı)
+- [x] Maç simülasyon algoritması (deterministik, uzatma + seri penaltı)
 - [x] Eleme turnuvası (2 / 4 / 8 takım) ve rövanş
 - [x] UI/UX ve canlı maç anlatımı
+- [x] Canlı seri penaltı — köşe oyunu: atıcı ve kaleci eş zamanlı sol/orta/sağ
+      seçer, 2D sahnede dalış/vuruş animasyonu, botlar rakibin alışkanlığını okur
 - [x] Deploy (Vercel + Render) — canlı: <https://futbol-acik-arttirma.vercel.app/>
 
 ## 👥 Katkı (Contributing)

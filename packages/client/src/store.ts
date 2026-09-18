@@ -4,6 +4,7 @@ import type {
   MatchResult,
   Participant,
   RoomState,
+  ShootoutState,
   TournamentState,
 } from '@fal/shared';
 
@@ -11,6 +12,10 @@ import type {
 export interface LiveMatch {
   matchId: string;
   result: MatchResult;
+  /** Sunucuda geçen süre (ms) — yeniden bağlanınca dakika buradan türer. */
+  elapsedMs?: number;
+  /** Payload'ın istemciye ulaştığı an (yerel saat) — geçen süre buna eklenir. */
+  receivedAt?: number;
 }
 
 /** Bu turdaki son açılış pası (Draft ekranındaki duyuru için). */
@@ -48,6 +53,11 @@ interface RoomStoreState {
   tournament: TournamentState | null;
   /** Şu an canlı oynatılan maç (yoksa null). */
   liveMatch: LiveMatch | null;
+  /**
+   * Canlı seri penaltı durumu (sunucu `tournament:shootoutPrompt/Kick` ve
+   * `room:state.shootout` ile günceller; seri bitip sonuç işlenince null).
+   */
+  shootout: ShootoutState | null;
 
   setConnected: (connected: boolean) => void;
   enterRoom: (roomState: RoomState, youId: string) => void;
@@ -64,6 +74,7 @@ interface RoomStoreState {
   setLeague: (league: LeagueState) => void;
   setTournament: (tournament: TournamentState) => void;
   setLiveMatch: (liveMatch: LiveMatch | null) => void;
+  setShootout: (shootout: ShootoutState | null) => void;
 }
 
 export const useRoomStore = create<RoomStoreState>((set) => ({
@@ -78,9 +89,19 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   league: null,
   tournament: null,
   liveMatch: null,
+  shootout: null,
 
   setConnected: (connected) => set({ connected }),
-  enterRoom: (roomState, youId) => set({ roomState, youId, error: null, notice: null }),
+  // Yeniden bağlanmada turnuva ve sürüyorsa seri penaltı durumu da odayla gelir.
+  enterRoom: (roomState, youId) =>
+    set({
+      roomState,
+      youId,
+      error: null,
+      notice: null,
+      tournament: roomState.tournament ?? null,
+      shootout: roomState.shootout ?? null,
+    }),
   updateRoom: (roomState) =>
     set((s) => {
       // Oda lobiye döndüyse (rövanş) önceki oyunun turnuva/draft izleri silinsin;
@@ -90,6 +111,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
           roomState,
           tournament: null,
           liveMatch: null,
+          shootout: null,
           lastWon: null,
           lastPass: null,
           league: null,
@@ -97,7 +119,8 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
           error: null,
         };
       }
-      return { roomState };
+      // Seri penaltı durumu oda durumuyla gelir (yeniden bağlanma dahil).
+      return { roomState, shootout: roomState.shootout ?? null };
     }),
   exitRoom: (notice) =>
     set({
@@ -111,6 +134,7 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
       league: null,
       tournament: null,
       liveMatch: null,
+      shootout: null,
     }),
   setError: (error) => set({ error }),
   setNotice: (notice) => set({ notice }),
@@ -121,7 +145,9 @@ export const useRoomStore = create<RoomStoreState>((set) => ({
   setLastPass: (lastPass) => set({ lastPass }),
   setLeague: (league) => set({ league }),
   setTournament: (tournament) => set({ tournament }),
-  setLiveMatch: (liveMatch) => set({ liveMatch }),
+  setLiveMatch: (liveMatch) =>
+    set({ liveMatch: liveMatch ? { ...liveMatch, receivedAt: Date.now() } : null }),
+  setShootout: (shootout) => set({ shootout }),
 }));
 
 /** Store'dan türetilen "sen" katılımcısı. */
