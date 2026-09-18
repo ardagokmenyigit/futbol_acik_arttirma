@@ -90,6 +90,20 @@ OLARAK ihtiyaç kadar futbolcu seçer: 4 katılımcı → 4 kaleci, 8 defans,
 - "Beklersem ucuza kaparım" bedava olmaktan çıkar: beklerken iyiler tükenir,
   elde kalan gerçekten kimsenin istemediğidir. (Eski geniş havuzda 28 slot
   için 108 futbolcu vardı; beklemenin hiçbir maliyeti yoktu.)
+- **Yıldız payı %25, mevkisiz** (18 Eylül 2026): havuzun çeyreği (28'de 7)
+  GEN 90+ futbolcudur ve bu 7 kişi **tüm 90+'lar arasından mevkiye
+  bakılmaksızın** rastgele seçilir (tek sınır mevkinin toplam ihtiyacı);
+  kalan yerler mevki başına 90 altından. Eskiden yıldızlar her oyunda aynı
+  kalıpla mevkiye dağıtılıyordu (1 GK, 2 DEF, 2 MID, 2 FWD); kullanıcı "oran
+  korunsun, mevkiye göre olmasın" dedi — hangi mevkinin kıymetli olacağı artık
+  oyundan oyuna değişir (4 takımda 80 farklı dağılım; veri setinde 14 FWD / 9
+  MID / 7 DEF / 4 GK yıldız olduğu için forvet yıldızı en sık). Ölçüm
+  (`measureBalance.ts`): draft güç farkı 5.28 → 4.97, gol/maç 3.66 → 3.82
+  (hücum ağırlıklı yıldızlar) → `baseConversion` 0.108 → 0.104 ile 3.68'e
+  geri alındı; en güçlü şampiyon %47.9 → %45.1, en zayıf %8.3 → %9.4 —
+  yıldız kümelenmesi kadroları biraz daha eşitliyor. Kullanıcı bunu telafi
+  için `strengthSensitivity` 3.5 → 3.7 istedi (baseConv 0.102): 4p %72, 5p
+  %77, 7p %86; en güçlü ~%46, en zayıf ~%9.
 
 **Draft `squadSize × katılımcı` TUR sürer** (4 oyuncu → 28 tur). Her tur bir
 futbolcunun açık artırmasıdır ve iki evrelidir:
@@ -357,22 +371,24 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 (12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
 (rastgele olsa %25):
 
-| ayar                                                   | en güçlü  | en zayıf | oran     | gol/maç          |
-| ------------------------------------------------------ | --------- | -------- | -------- | ---------------- |
-| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1    | 2.0x     | 2.77             |
-| sens 2.5 + saha av. yok                                | %37.7     | %15.0    | 2.5x     | 2.92             |
-| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2    | 3.0x     | 3.48             |
-| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7    | 4.0x     | 3.53             |
-| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3** | **5.6x** | **3.54**         |
-| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9    | 4.0x     | 3.66             |
-| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1    | 4.5x     | 3.68             |
-| + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9     | 5.3x     | 4.04             |
-| + sens 2.4 + baseConv 0.116                            | %42.8     | %11.6    | 3.7x     | 3.67 (90 dk)     |
-| + sens 3.3 + baseConv 0.110                            | %46.4     | %9.0     | 5.2x     | 3.68 (90 dk)     |
-| **+ sens 3.5 + baseConv 0.108 (güncel)**               | **%47.9** | **%8.3** | **5.7x** | **3.66 (90 dk)** |
+| ayar                                                   | en güçlü  | en zayıf | oran     | gol/maç           |
+| ------------------------------------------------------ | --------- | -------- | -------- | ----------------- |
+| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1    | 2.0x     | 2.77              |
+| sens 2.5 + saha av. yok                                | %37.7     | %15.0    | 2.5x     | 2.92              |
+| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2    | 3.0x     | 3.48              |
+| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7    | 4.0x     | 3.53              |
+| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3** | **5.6x** | **3.54**          |
+| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9    | 4.0x     | 3.66              |
+| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1    | 4.5x     | 3.68              |
+| + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9     | 5.3x     | 4.04              |
+| + sens 2.4 + baseConv 0.116                            | %42.8     | %11.6    | 3.7x     | 3.67 (90 dk)      |
+| + sens 3.3 + baseConv 0.110                            | %46.4     | %9.0     | 5.2x     | 3.68 (90 dk)      |
+| + sens 3.5 + baseConv 0.108                            | %47.9     | %8.3     | 5.7x     | 3.66 (90 dk)      |
+| + yıldızlar mevkisiz + baseConv 0.104                  | %45.1     | %9.4     | 4.8x     | 3.68 (90 dk)      |
+| **+ sens 3.7 + baseConv 0.102 (güncel)**               | **~%46**  | **~%9**  | **5.1x** | **~3.67 (90 dk)** |
 
-(Son beş satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
-ayarla en güçlü %37.8, en zayıf %1.2 — oran 32x. Ölçüm aracı:
+(Son yedi satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
+ayarla en güçlü ~%36.5, en zayıf ~%1.3. Ölçüm aracı:
 `npx tsx packages/server/src/scripts/measureBalance.ts [draft] [sens] [baseConv]`.)
 
 **İki kolun birlikte ayarlanması gerekir.** `strengthSensitivity` tek başına
@@ -421,7 +437,8 @@ beraberliği yalnız 6.5 puan düşürüyor) — uzatma zaten bunun için var.
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
 - `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
   ~3.67 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
-  kayar ve bununla geri kalibre edilmelidir (güncel: 0.108, sens 3.5 için;
+  kayar ve bununla geri kalibre edilmelidir (güncel: 0.102, sens 3.7 +
+  mevkisiz yıldız havuzu için;
   kalibrasyonu gerçek draft kadrolarıyla — `measureBalance.ts` — yapın).
 - **ASIL TAVAN MOTOR DEĞİL, DRAFT.** Gerçek draft'larda takımlar arası güç
   farkı ortalama yalnızca **5.25 puan** (medyan 5.0, p10 3.0, p90 8.0, max 13;
