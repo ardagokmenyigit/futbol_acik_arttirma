@@ -18,9 +18,16 @@ import {
  * olasılığı) ve gerçek sonuç. Belli bir kullanımdan sonra
  * `scripts/analyzeMatchLog.ts` beklenen ile gerçeği bant bant karşılaştırır.
  *
- * Çıktı: konsola tek satır (Render'da log panelinde görünür) + JSONL dosyası
- * (`MATCH_LOG_FILE`, varsayılan `packages/server/data/match-log.jsonl`;
- * git'e girmez). Oyunculara hiçbir şey gönderilmez.
+ * Çıktı: konsola tek satır (Render'da log panelinde görünür) + yerel JSONL
+ * (`MATCH_LOG_FILE`, varsayılan `packages/server/data/match-log.jsonl`; git'e
+ * girmez) + **GitHub deposu** (`MATCH_LOG_GITHUB_TOKEN` verilmişse): Render
+ * ücretsiz planda dosya sistemi her uykuda sıfırlanır, oyun da canlıda
+ * oynanır — kalıcı ve yalnız bize görünür yer, özel depo
+ * `ardagokmenyigit/futbol-match-log` (ücretsiz). Aylık dosya
+ * (`match-log-2026-09.jsonl`, Contents API'nin 1 MB sınırının altında kalır),
+ * yazmalar sıralı kuyrukta, çakışmada (409/422) yeniden okuyup dener; hata
+ * oyunu asla etkilemez. Okuma: `scripts/analyzeMatchLog.ts --remote`.
+ * Oyunculara hiçbir şey gönderilmez.
  */
 export interface MatchLogEntry {
   at: string;
@@ -58,6 +65,83 @@ interface TeamSnapshot {
 
 const DEFAULT_FILE = fileURLToPath(new URL('../../data/match-log.jsonl', import.meta.url));
 const FILE = process.env.MATCH_LOG_FILE ?? DEFAULT_FILE;
+
+/* ------------------------- GitHub deposuna yazma ------------------------- */
+
+const GH_TOKEN = process.env.MATCH_LOG_GITHUB_TOKEN;
+const GH_REPO = process.env.MATCH_LOG_GITHUB_REPO ?? 'ardagokmenyigit/futbol-match-log';
+const GH_PREFIX = process.env.MATCH_LOG_GITHUB_PREFIX ?? 'match-log';
+const GH_API = 'https://api.github.com';
+
+const pending: string[] = [];
+let chain: Promise<void> = Promise.resolve();
+
+function monthlyPath(): string {
+  return `${GH_PREFIX}-${new Date().toISOString().slice(0, 7)}.jsonl`;
+}
+
+async function gh(path: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(`${GH_API}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${GH_TOKEN}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      'User-Agent': 'fal-server-match-log',
+      ...(init.headers ?? {}),
+    },
+  });
+}
+
+/** Dosyanın mevcut içeriği + sha (yoksa boş). 1 MB üstünde Contents içerik vermez → blob. */
+async function readRemote(path: string): Promise<{ sha: string | null; text: string }> {
+  const res = await gh(`/repos/${GH_REPO}/contents/${path}`);
+  if (res.status === 404) return { sha: null, text: '' };
+  if (!res.ok) throw new Error(`GitHub GET ${res.status}`);
+  const body = (await res.json()) as { sha: string; content?: string; encoding?: string };
+  if (body.content && body.encoding === 'base64') {
+    return { sha: body.sha, text: Buffer.from(body.content, 'base64').toString('utf8') };
+  }
+  const blob = await gh(`/repos/${GH_REPO}/git/blobs/${body.sha}`);
+  if (!blob.ok) throw new Error(`GitHub blob ${blob.status}`);
+  const b = (await blob.json()) as { content: string };
+  return { sha: body.sha, text: Buffer.from(b.content, 'base64').toString('utf8') };
+}
+
+async function flushRemote(): Promise<void> {
+  if (pending.length === 0) return;
+  const lines = pending.splice(0);
+  const path = monthlyPath();
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const { sha, text } = await readRemote(path);
+      const next =
+        (text.endsWith('\n') || text === '' ? text : text + '\n') + lines.join('\n') + '\n';
+      const res = await gh(`/repos/${GH_REPO}/contents/${path}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          message: `maç logu: +${lines.length} (${new Date().toISOString()})`,
+          content: Buffer.from(next, 'utf8').toString('base64'),
+          ...(sha ? { sha } : {}),
+        }),
+      });
+      if (res.ok) return;
+      if (res.status === 409 || res.status === 422) continue; // eşzamanlı yazma — yeniden oku
+      throw new Error(`GitHub PUT ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    } catch (err) {
+      if (attempt === 3) {
+        console.error('[maç] GitHub logu yazılamadı (satırlar düştü):', err);
+        return;
+      }
+    }
+  }
+}
+
+function enqueueRemote(line: string): void {
+  if (!GH_TOKEN) return;
+  pending.push(line);
+  chain = chain.then(flushRemote).catch(() => undefined);
+}
 
 function snapshot(room: RoomState, team: Team): TeamSnapshot {
   const p = room.participants.find((x) => x.id === team.participantId);
@@ -124,8 +208,10 @@ export function logMatch(
           result.winnerId === h.id ? h.nickname : a.nickname
         }`,
     );
+    const line = JSON.stringify(entry);
     mkdirSync(dirname(FILE), { recursive: true });
-    appendFileSync(FILE, JSON.stringify(entry) + '\n');
+    appendFileSync(FILE, line + '\n');
+    enqueueRemote(line);
   } catch (err) {
     console.error('[maç] log yazılamadı:', err);
   }

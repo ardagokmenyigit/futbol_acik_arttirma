@@ -536,10 +536,14 @@ ve gerçek sonuç (skor, 90 dk golleri, uzatma/penaltı, kazanan). Konsola tek
 satır (`[maç] KOD semi-1: Arda güç 84 (H85/S83) vs Bot(bot) güç 80 … beklenen
 2.4–1.3 (ev tur geçer %74) · skor 2-3 · 90' · kazanan Bot`) + JSONL
 (`MATCH_LOG_FILE`, varsayılan `packages/server/data/match-log.jsonl`,
-gitignore'da). Render'da dosya kalıcı değildir, konsol satırları log
-panelinde görünür. Oyunculara hiçbir şey gönderilmez.
+gitignore'da) + **özel GitHub deposu** `ardagokmenyigit/futbol-match-log`
+(`MATCH_LOG_GITHUB_TOKEN` verilmişse; Render'da dosya sistemi her uykuda
+sıfırlandığı ve oyun canlıda oynandığı için tek kalıcı yer bu — ücretsiz,
+aylık dosya, sıralı kuyruk, çakışmada yeniden dener; kurulum DEPLOY.md §5).
+Oyunculara hiçbir şey gönderilmez.
 
-İnceleme: `npx tsx packages/server/src/scripts/analyzeMatchLog.ts [dosya]` —
+İnceleme: `npx tsx packages/server/src/scripts/analyzeMatchLog.ts --remote`
+(canlı; `gh` ile özel depodan okur) ya da `[dosya]` (yerel) —
 maç listesi; güç farkı bandına göre güçlünün beklenen→gerçek tur geçme oranı,
 beklenen→gerçek gol (güçlü/zayıf), zayıfın 2+ gol attığı maç payı ve "bu
 sapma tesadüf mü" p-değeri; insan katılımcı başına G-B-M, beklenen vs gerçek.

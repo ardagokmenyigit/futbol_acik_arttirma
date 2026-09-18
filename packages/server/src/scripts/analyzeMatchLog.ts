@@ -11,23 +11,59 @@
  *  - İnsan katılımcı başına: maç, ort. güç/hücum/savunma, G-B-M, beklenen
  *    vs gerçek galibiyet, atılan/yenilen gol.
  *
- * Kullanım: npx tsx packages/server/src/scripts/analyzeMatchLog.ts [dosya]
- *          (varsayılan packages/server/data/match-log.jsonl)
+ * Kullanım:
+ *   npx tsx packages/server/src/scripts/analyzeMatchLog.ts --remote   ← CANLI sunucu
+ *       (özel depo ardagokmenyigit/futbol-match-log, `gh` CLI ile okunur;
+ *        MATCH_LOG_GITHUB_REPO ile başka depo)
+ *   npx tsx packages/server/src/scripts/analyzeMatchLog.ts [dosya]    ← yerel JSONL
+ *       (varsayılan packages/server/data/match-log.jsonl)
  */
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { MatchLogEntry } from '../tournament/matchLog.js';
 
+const REMOTE = process.argv.includes('--remote');
+const REPO = process.env.MATCH_LOG_GITHUB_REPO ?? 'ardagokmenyigit/futbol-match-log';
+const PREFIX = process.env.MATCH_LOG_GITHUB_PREFIX ?? 'match-log';
 const FILE =
-  process.argv[2] ?? fileURLToPath(new URL('../../data/match-log.jsonl', import.meta.url));
-if (!existsSync(FILE)) {
-  console.log(`Log yok: ${FILE} — önce birkaç turnuva oynanmalı.`);
-  process.exit(0);
+  process.argv.find((a, i) => i >= 2 && !a.startsWith('--')) ??
+  fileURLToPath(new URL('../../data/match-log.jsonl', import.meta.url));
+
+function readRemote(): string {
+  const list = JSON.parse(
+    execFileSync('gh', ['api', `repos/${REPO}/contents`], { encoding: 'utf8' }),
+  ) as { name: string }[];
+  const files = list
+    .map((f) => f.name)
+    .filter((n) => n.startsWith(`${PREFIX}-`) && n.endsWith('.jsonl'))
+    .sort();
+  return files
+    .map((n) =>
+      execFileSync(
+        'gh',
+        ['api', '-H', 'Accept: application/vnd.github.raw', `repos/${REPO}/contents/${n}`],
+        { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+      ),
+    )
+    .join('\n');
 }
-const entries: MatchLogEntry[] = readFileSync(FILE, 'utf8')
+
+let raw: string;
+if (REMOTE) {
+  raw = readRemote();
+} else {
+  if (!existsSync(FILE)) {
+    console.log(`Log yok: ${FILE} — önce birkaç turnuva oynanmalı.`);
+    process.exit(0);
+  }
+  raw = readFileSync(FILE, 'utf8');
+}
+const entries: MatchLogEntry[] = raw
   .split('\n')
   .filter(Boolean)
   .map((l) => JSON.parse(l) as MatchLogEntry);
+const SOURCE = REMOTE ? `${REPO} (canlı)` : FILE;
 
 const pct = (x: number) => `%${Math.round(x * 100)}`;
 const f1 = (x: number) => x.toFixed(1);
@@ -51,7 +87,7 @@ function binomP(k: number, n: number, p: number): number {
   return Math.max(0, Math.min(1, 1 - erf(z / Math.SQRT2)));
 }
 
-console.log(`${entries.length} maç — ${FILE}\n`);
+console.log(`${entries.length} maç — ${SOURCE}\n`);
 console.log('=== MAÇLAR (yeniden eskiye)');
 for (const e of [...entries].reverse().slice(0, 40)) {
   const tag = (t: MatchLogEntry['home']) =>
