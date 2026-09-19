@@ -9,6 +9,7 @@ import type {
 import { useSocket } from './hooks/useSocket.js';
 import { rejoinRoom } from './lib/roomClient.js';
 import { clearSession, loadSession } from './lib/session.js';
+import { LogoIntro } from './components/LogoIntro.js';
 import { DraftPage } from './pages/DraftPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { LobbyPage } from './pages/LobbyPage.js';
@@ -160,6 +161,7 @@ export function App() {
 
   return (
     <>
+      <LogoIntro />
       <div className="pitch-mark" />
       <div className="app">
         <div
