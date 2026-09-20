@@ -60,12 +60,14 @@ export function App() {
       passerNickname: string;
       nextOpenerNickname: string;
       endsAt: number;
+      autoAssigned: boolean;
     }) {
       const store = useRoomStore.getState();
       store.setRemainingMs(Math.max(0, payload.endsAt - Date.now()));
       store.setLastPass({
         passerNickname: payload.passerNickname,
         nextOpenerNickname: payload.nextOpenerNickname,
+        autoAssigned: payload.autoAssigned,
       });
     }
     function onAuctionTick({ remainingMs }: { remainingMs: number }) {

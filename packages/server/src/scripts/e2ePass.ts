@@ -113,7 +113,7 @@ async function mustFail(p: Promise<unknown>, msg: string, pattern?: RegExp): Pro
   }
 }
 
-const server = spawn(`${REPO}node_modules/.bin/tsx`, ['packages/server/src/index.ts'], {
+const server = spawn(process.execPath, ['packages/server/dist/index.js'], {
   cwd: REPO,
   detached: true,
   env: { ...process.env, PORT: String(PORT), CLIENT_ORIGIN: '*' },
@@ -152,59 +152,46 @@ try {
   await mustFail(other.pass(), 'sırası olmayan pas geçemedi', /sırası sende değil/);
 
   const round1 = first.round;
-  const endsBefore = first.endsAt;
   await sleep(300);
   const { passesLeft } = await opener.pass();
   ok(passesLeft === 0, `${opener.name} pas geçti, hak 0'a düştü`);
   await other.waitFor(
     (p) => p.state?.auction?.openerId === other.youId && p.state.auction.round === round1,
-    'açılış diğerine geçti',
+    'tek uygun alıcıya otomatik atama başladı',
   );
   const afterPass = other.state!.auction!;
-  ok(afterPass.phase === 'opening', 'evre hâlâ açılış');
+  ok(afterPass.phase === 'bidding', 'evre otomatik atama için teklif evresine geçti');
   ok(afterPass.footballer.id === first.footballer.id, 'futbolcu masada kaldı');
   ok(afterPass.passedIds.join() === opener.youId, 'pas diyen passedIds içinde');
   ok(!afterPass.eligibleIds.includes(opener.youId), 'pas diyen eligibleIds dışında');
-  ok(afterPass.endsAt > endsBefore, 'açılış süresi yenilendi');
+  ok(afterPass.eligibleIds.join() === other.youId, 'yalnız diğer katılımcı uygun alıcı');
+  ok(afterPass.highestBid?.playerId === other.youId, 'otomatik teklif diğer katılımcı adına');
+  ok(afterPass.endsAt - Date.now() > 4000, 'otomatik atama ekranı yaklaşık beş saniye kalıyor');
   ok(other.me()!.passesLeft === 1 && opener.me()!.passesLeft === 0, 'haklar doğru yayınlandı');
   const ev = other.passed.at(-1)!;
   ok(
-    ev.passerId === opener.youId && ev.nextOpenerId === other.youId && ev.passesLeft === 0,
-    'auction:passed event doğru',
+    ev.passerId === opener.youId &&
+      ev.nextOpenerId === other.youId &&
+      ev.passesLeft === 0 &&
+      ev.autoAssigned,
+    'auction:passed otomatik atamayı doğru bildiriyor',
   );
-  await mustFail(opener.pass(), 'pas diyen tekrar pas geçemedi (sıra değil)', /sırası sende değil/);
+  await mustFail(
+    opener.pass(),
+    'pas diyen tekrar pas geçemedi (tur otomatik atamada)',
+    /yalnızca açılış/,
+  );
 
-  // Diğeri de pas geçer → kimsede hak yok → biri açmak zorunda (rastgele).
-  await other.pass();
+  await mustFail(other.pass(), 'tek uygun alıcı serbest evrede pas geçemedi', /yalnızca açılış/);
+  await mustFail(opener.bid(2), 'pas diyen teklif veremedi', /pas geçtin/);
+  const fid = afterPass.footballer.id;
   await other.waitFor(
-    (p) => p.state?.auction?.passedIds.length === 2 && p.state.auction.round === round1,
-    'ikinci pas işlendi',
-  );
-  const forced = other.state!.auction!;
-  ok(forced.phase === 'opening', 'herkes pas dedi → yine açılış evresi');
-  ok(
-    forced.openerId === youA.id || forced.openerId === youB.id,
-    'kimsede hak kalmadı → uygun birine (rastgele) açılış düştü',
-  );
-  ok(forced.eligibleIds.length === 0, 'pas diyenler teklif veremez (eligible boş)');
-  const forcedOpener = forced.openerId === youA.id ? A : B;
-  await mustFail(forcedOpener.pass(), 'hakkı biten pas geçemedi', /Pas hakkın kalmadı/);
-  // Süre dolunca sunucu asgariden açar; kimse teklif veremeyince o alır.
-  await forcedOpener.waitFor(
-    (p) => p.state?.auction?.phase === 'bidding' && p.state.auction.round === round1,
-    'zorunlu açılış yapıldı',
-  );
-  await mustFail(forcedOpener.pass(), 'serbest evrede pas reddedildi', /yalnızca açılış/);
-  const nonOpener = forcedOpener === A ? B : A;
-  await mustFail(nonOpener.bid(2), 'pas diyen teklif veremedi', /pas geçtin/);
-  const fid = forced.footballer.id;
-  await forcedOpener.waitFor(
     (p) => !!p.me()?.squad.some((f) => f.id === fid),
-    'futbolcu zorunlu açıcının kadrosuna girdi',
+    'futbolcu tek uygun alıcının kadrosuna girdi',
   );
   ok(
-    forcedOpener.me()!.budget === r0.config.startingBudget - r0.config.minBidIncrement,
-    'asgari fiyattan (1M) aldı',
+    other.me()!.budget === r0.config.startingBudget - r0.config.minBidIncrement,
+    'otomatik atamada asgari fiyatı (1M) ödedi',
   );
 
   await A.waitFor((p) => p.state?.phase !== 'draft', 'draft bitti', 300_000);

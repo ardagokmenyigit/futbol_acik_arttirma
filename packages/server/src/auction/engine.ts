@@ -38,10 +38,9 @@ import { bidFloor, positionCount, validateBid } from './validateBid.js';
  *  AÇILIŞ PASI: açılışı yapacak kişinin pas hakkı (`passesLeft`) varsa pas
  *  diyebilir. Futbolcu masada kalır, açılış görevi bu turda pas demeyen uygun
  *  katılımcılardan RASTGELE birine geçer ve açılış süresi yeniden başlar; pas
- *  diyen o turda teklif veremez (eligibleIds'den düşer). Herkes pas derse
- *  dışlama sıfırlanır, son pas diyen hariç uygun herkesten rastgele biri
- *  seçilir (hakkı varsa yine pas diyebilir, yoksa açmak zorunda). Tur başına
- *  sınır yok — haklar sonlu olduğu için zincir her zaman biter.
+ *  diyen o turda teklif veremez (eligibleIds'den düşer). Pas sonrası tek
+ *  uygun alıcı kaldığında futbolcu doğrudan ona atanır; böylece aynı kişi
+ *  aynı turda ikinci kez pas veremez.
  *
  *  TABAN FİYAT YOK: açılış `minBidIncrement` kadardır, fiyatı rekabet belirler.
  *
@@ -53,6 +52,9 @@ import { bidFloor, positionCount, validateBid } from './validateBid.js';
  */
 
 const TICK_MS = 1000;
+
+/** Son iki uygun alıcıdan biri pas verince otomatik atamanın ekranda kalma süresi. */
+const PASS_AUTO_ASSIGNMENT_DURATION_MS = 5000;
 
 /**
  * Serbest teklif evresinde bitişe bu süreden az kala gelen teklif turu uzatır.
@@ -349,19 +351,15 @@ function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
 /* ------------------------------- pas ------------------------------- */
 
 /**
- * Pas sonrası açılışı yapacak kişi. Önce bu turda pas demeyen uygun
- * katılımcılar; hepsi pas dediyse dışlama sıfırlanır ve SON pas diyen hariç
- * uygun herkesten rastgele seçilir (hakkı olan yeniden pas diyebilir, hakkı
- * olmayan açmak ZORUNDA). Uygun tek kişi son pas diyense o açar. Rastgele
- * seçim sıra adaletine dokunmaz: pas gönüllü bir vazgeçiştir.
+ * Pas sonrası açılışı yapacak kişi. Bu fonksiyon yalnızca en az iki uygun
+ * alıcı kaldığında çağrılır; tek alıcı kaldığında futbolcu otomatik atanır.
+ * Böylece daha önce pas veren hiç kimse aynı turda tekrar açılış sırası almaz.
  */
 function pickNextOpener(room: RoomState, footballer: Footballer, passedIds: string[]): Participant {
   const passed = new Set(passedIds);
-  const lastPasser = passedIds[passedIds.length - 1];
   const able = room.participants.filter((p) => canTake(room, p, footballer));
-  let candidates = able.filter((p) => !passed.has(p.id));
-  if (candidates.length === 0) candidates = able.filter((p) => p.id !== lastPasser);
-  if (candidates.length === 0) candidates = able;
+  const candidates = able.filter((p) => !passed.has(p.id));
+  if (candidates.length === 0) throw new Error('Pas sonrası açılış yapacak katılımcı kalmadı');
   return candidates[Math.floor(Math.random() * candidates.length)]!;
 }
 
@@ -375,6 +373,37 @@ function applyPass(io: TypedServer, roomId: string, passer: Participant): void {
   passer.passesLeft = Math.max(0, passer.passesLeft - 1);
   auction.passedIds.push(passer.id);
   auction.eligibleIds = auction.eligibleIds.filter((id) => id !== passer.id);
+
+  // Son iki uygun alıcıdan biri pas verdiyse, kalan kişi futbolcuyu doğrudan
+  // alır. Beş saniyelik bekleme, herkesin sonucu görmesini sağlar.
+  if (auction.eligibleIds.length === 1) {
+    const winner = room.participants.find((p) => p.id === auction.eligibleIds[0])!;
+    const amount = Math.min(room.config.minBidIncrement, Math.max(0, winner.budget));
+    const autoBid: Bid = { playerId: winner.id, amount, at: Date.now() };
+    auction.openerId = winner.id;
+    auction.phase = 'bidding';
+    auction.highestBid = autoBid;
+    auction.history = [autoBid];
+    auction.endsAt = Date.now() + PASS_AUTO_ASSIGNMENT_DURATION_MS;
+
+    clearTimers(rt.timers);
+    rt.timers = freshTimers();
+    rt.timers.tick = setInterval(() => emitTick(io, roomId), TICK_MS);
+    rt.timers.end = setTimeout(() => endRound(io, roomId), PASS_AUTO_ASSIGNMENT_DURATION_MS);
+
+    io.to(roomId).emit('auction:passed', {
+      passerId: passer.id,
+      passerNickname: passer.nickname,
+      passesLeft: passer.passesLeft,
+      nextOpenerId: winner.id,
+      nextOpenerNickname: winner.nickname,
+      endsAt: auction.endsAt,
+      autoAssigned: true,
+    });
+    io.to(roomId).emit('auction:bid', { highestBid: autoBid, history: auction.history });
+    emitRoomState(io, room);
+    return;
+  }
 
   const next = pickNextOpener(room, auction.footballer, auction.passedIds);
   const durationMs = room.config.turnDurationSec * 1000;
@@ -393,6 +422,7 @@ function applyPass(io: TypedServer, roomId: string, passer: Participant): void {
     nextOpenerId: next.id,
     nextOpenerNickname: next.nickname,
     endsAt: auction.endsAt,
+    autoAssigned: false,
   });
   emitRoomState(io, room);
 
@@ -432,6 +462,10 @@ export function handlePass(
   }
   if (passer.passesLeft <= 0) {
     ack({ ok: false, error: 'Pas hakkın kalmadı' });
+    return;
+  }
+  if (room.auction.passedIds.includes(playerId)) {
+    ack({ ok: false, error: 'Bu turda zaten pas geçtin' });
     return;
   }
   applyPass(io, roomId, passer);

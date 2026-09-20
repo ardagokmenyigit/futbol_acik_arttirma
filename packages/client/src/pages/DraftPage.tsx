@@ -184,7 +184,11 @@ export function DraftPage({ room }: Props) {
         {lastWon && <Ticker text={wonText(lastWon, lastWonFootballer)} />}
         {lastPass && (
           <Ticker
-            text={`${lastPass.passerNickname} pas geçti — açılış ${lastPass.nextOpenerNickname}'e geçti.`}
+            text={
+              lastPass.autoAssigned
+                ? `${lastPass.passerNickname} pas geçti — ${lastPass.nextOpenerNickname} tek uygun alıcı olduğu için futbolcu otomatik olarak ona atandı.`
+                : `${lastPass.passerNickname} pas geçti — açılış ${lastPass.nextOpenerNickname}'e geçti.`
+            }
           />
         )}
 

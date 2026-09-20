@@ -22,6 +22,7 @@ export interface LiveMatch {
 export interface PassInfo {
   passerNickname: string;
   nextOpenerNickname: string;
+  autoAssigned: boolean;
 }
 
 /** Son biten round'un özeti (Draft ekranındaki kısa bildirim için). */

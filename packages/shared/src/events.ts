@@ -117,6 +117,8 @@ export interface ServerToClientEvents {
     nextOpenerId: string;
     nextOpenerNickname: string;
     endsAt: number;
+    /** Pas sonrası tek uygun alıcı kaldığı için otomatik atama yapıldı mı? */
+    autoAssigned: boolean;
   }) => void;
   'auction:tick': (payload: { round: number; remainingMs: number }) => void;
   'auction:bid': (payload: { highestBid: Bid | null; history: Bid[] }) => void;

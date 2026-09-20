@@ -147,9 +147,8 @@ export type AuctionPhase = 'opening' | 'bidding';
  *     İSTİSNA — AÇILIŞ PASI: açılışı yapacak kişinin `passesLeft` hakkı
  *     varsa pas diyebilir (`auction:pass`); futbolcu masada kalır, açılış
  *     pas demeyen uygun katılımcılardan rastgele birine geçer, pas diyen o
- *     turda teklif veremez. Herkes pas derse dışlama sıfırlanır: son pas
- *     diyen hariç uygun herkesten rastgele biri seçilir (hakkı yoksa açmak
- *     zorunda kalır).
+ *     turda teklif veremez. Pas sonrası tek uygun alıcı kalırsa futbolcu
+ *     doğrudan ona atanır; bu nedenle kimse aynı turda ikinci kez pas veremez.
  *  2. `bidding` — teklif serbesttir; pozisyona girebilen herkes teklif
  *     verebilir. Serbest evrede pas yoktur: istemeyen teklif vermez, fikri
  *     değişirse geri girebilir. Süre bitiminde en yüksek teklif kazanır.
