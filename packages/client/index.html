@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Açık Artırma Ligi — Futbolcu Açık Artırması ve Turnuva Oyunu</title>
+    <title>Futbol Açık Artırma Oyunu — Açık Artırma Ligi</title>
     <meta
       name="description"
-      content="Arkadaşlarınla çevrim içi futbolcu açık artırması yap. Bütçenle kadronu kur, eleme turnuvasında şampiyon ol. 4 veya 8 takım, kurulum yok, tarayıcıdan oynanır."
+      content="Ücretsiz futbol açık artırma oyunu. Arkadaşlarınla çevrim içi futbolcu açık arttırmasına katıl, 150M bütçeyle kadronu kur, eleme turnuvasında şampiyon ol. Kurulum yok, tarayıcıdan oynanır."
     />
     <link rel="canonical" href="https://futbol-acik-arttirma.vercel.app/" />
     <meta name="theme-color" content="#071613" />
@@ -24,10 +24,7 @@
     <meta property="og:site_name" content="Açık Artırma Ligi" />
     <meta property="og:locale" content="tr_TR" />
     <meta property="og:url" content="https://futbol-acik-arttirma.vercel.app/" />
-    <meta
-      property="og:title"
-      content="Açık Artırma Ligi — Futbolcu Açık Artırması ve Turnuva Oyunu"
-    />
+    <meta property="og:title" content="Futbol Açık Artırma Oyunu — Açık Artırma Ligi" />
     <meta
       property="og:description"
       content="Bütçenle kadronu kur, eleme turnuvasında şampiyon ol. Arkadaşlarınla çevrim içi, kurulum yok."
@@ -41,10 +38,7 @@
     />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Açık Artırma Ligi — Futbolcu Açık Artırması ve Turnuva Oyunu"
-    />
+    <meta name="twitter:title" content="Futbol Açık Artırma Oyunu — Açık Artırma Ligi" />
     <meta
       name="twitter:description"
       content="Bütçenle kadronu kur, eleme turnuvasında şampiyon ol. Arkadaşlarınla çevrim içi, kurulum yok."
@@ -57,9 +51,85 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap"
     />
+
+    <!--
+      Yapısal veri — Google'ın sayfayı "oyun" olarak tanıması ve arama
+      sonucunda zengin sonuç üretebilmesi için.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Açık Artırma Ligi — Futbol Açık Artırma Oyunu",
+        "url": "https://futbol-acik-arttirma.vercel.app/",
+        "description": "Ücretsiz futbol açık artırma oyunu. Futbolcu açık arttırmasına katıl, bütçenle kadronu kur, eleme turnuvasında şampiyon ol.",
+        "image": "https://futbol-acik-arttirma.vercel.app/og.png",
+        "inLanguage": "tr-TR",
+        "genre": ["Spor", "Strateji", "Çok oyunculu"],
+        "playMode": ["MultiPlayer", "SinglePlayer"],
+        "numberOfPlayers": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 8 },
+        "gamePlatform": "Web tarayıcı",
+        "applicationCategory": "Game",
+        "operatingSystem": "Any",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "TRY" }
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      #root İÇİNDEKİ STATİK İÇERİK — SİLMEYİN.
+
+      Bu bir SPA: tüm arayüz JS ile geliyor ve ham HTML boş kalırsa Googlebot'un
+      ilk taraması hiçbir içerik görmez, sayfayı "render kuyruğuna" atar (günler
+      /haftalar sürer, yeni sitelerde en düşük öncelik). 20 Eylül 2026'da GSC
+      "Son tarama: Yok" diyordu — sayfa iki haftadır hiç taranmamıştı.
+
+      Aşağıdaki blok sayfanın gerçek içeriğidir ve JS yüklenene kadar ekranda
+      DURUR (yani gizli metin / cloaking değil; kullanıcı da aynısını görür,
+      aynı zamanda bir yüklenme ekranı işlevi görür). React mount olunca
+      createRoot().render() bu içeriği otomatik olarak değiştirir.
+    -->
+    <div id="root">
+      <div class="app">
+        <div class="panel gold">
+          <h1 class="headline">Futbol açık artırma oyunu</h1>
+          <p class="lede">
+            Açık Artırma Ligi, tarayıcıdan oynanan çok oyunculu bir futbolcu açık artırması
+            oyunudur. 150M bütçeyle açık artırmaya katıl, 7 kişilik kadronu kur (1 kaleci, 2 defans,
+            2 orta saha, 2 forvet) ve eleme turnuvasında şampiyonluğa oyna. Kurulum yok, üyelik yok.
+          </p>
+          <p class="lede">
+            1-8 oyuncu; tek kişi de oynayabilirsin, eksik takımları botlar doldurur. Oda kur, kodu
+            arkadaşlarına gönder, aynı anda başlayın.
+          </p>
+          <h2 class="section-label">Nasıl oynanır?</h2>
+          <ol class="lede">
+            <li>Oda kur ya da arkadaşının oda koduna katıl.</li>
+            <li>
+              Her turda bir futbolcu açık artırmaya çıkar; süre dolmadan en yüksek teklifi veren
+              kadrosuna katar.
+            </li>
+            <li>Bütçeni doğru dağıt — havuzda herkese tam yetecek kadar futbolcu var.</li>
+            <li>
+              Kadrolar dolunca eleme turnuvası başlar: maçlar dakika dakika simüle edilir,
+              beraberlikte uzatma ve seri penaltı oynanır.
+            </li>
+          </ol>
+          <p class="footnote">Oyun yükleniyor…</p>
+        </div>
+      </div>
+    </div>
+    <noscript>
+      <div class="app">
+        <div class="panel crimson">
+          <h2 class="headline">JavaScript gerekli</h2>
+          <p class="lede">
+            Açık Artırma Ligi gerçek zamanlı bir oyundur ve çalışmak için JavaScript'e ihtiyaç
+            duyar. Tarayıcında JavaScript'i açıp sayfayı yenile.
+          </p>
+        </div>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
