@@ -8,7 +8,8 @@ import {
   botOpeningBid,
   botShouldPass,
   decideBotBid,
-  type RivalView,
+  marketOf,
+  type BotView,
 } from './bot.js';
 import { buildDraftPool, findFootballer } from './pool.js';
 import { buildTurnOrders, type TurnOrderPlan } from './turnOrder.js';
@@ -314,16 +315,23 @@ function autoOpen(io: TypedServer, roomId: string): void {
 }
 
 /**
- * Botun gördüğü rakip bilgisi. Gizli bütçe modunda `null` — bot rakip
- * bütçelerini bilmez. Açık modda her rakibin kalan bütçesi + kadrosu.
+ * Botun karar anında gördüğü her şey. Rakip bütçe + kadroları yalnız açık
+ * modda (gizli modda `null`). Piyasa toplamı (herkesin kalan bütçesi / açık
+ * slotu) iki modda da verilir: kazanan teklifler herkese yayınlandığı için
+ * bu toplam kamuya açık bilgiden türetilebilir, kişi başı bütçeyi vermez.
  */
-function rivalsFor(room: RoomState, botId: string): RivalView[] | null {
-  if (room.config.hiddenBudgets) return null;
+function botViewFor(room: RoomState, botId: string): BotView {
   // Bu turda pas geçenler teklif veremez — bot onları rakip saymaz.
   const passed = new Set(room.auction?.passedIds ?? []);
-  return room.participants
-    .filter((p) => p.id !== botId && !passed.has(p.id))
-    .map((p) => ({ budget: p.budget, squad: p.squad }));
+  return {
+    pool: remainingPool(room),
+    rivals: room.config.hiddenBudgets
+      ? null
+      : room.participants
+          .filter((p) => p.id !== botId && !passed.has(p.id))
+          .map((p) => ({ budget: p.budget, squad: p.squad })),
+    market: marketOf(room.participants, room.config),
+  };
 }
 
 function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
@@ -333,18 +341,13 @@ function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
   const bot = room.participants.find((p) => p.id === botId);
   if (!bot?.isBot) return;
 
-  if (botShouldPass(bot, room.auction.footballer, room.config, remainingPool(room))) {
+  const view = botViewFor(room, botId);
+  if (botShouldPass(bot, room.auction.footballer, room.config, view)) {
     applyPass(io, roomId, bot);
     return;
   }
 
-  const amount = botOpeningBid(
-    bot,
-    room.auction.footballer,
-    room.config,
-    remainingPool(room),
-    rivalsFor(room, botId),
-  );
+  const amount = botOpeningBid(bot, room.auction.footballer, room.config, view);
   applyOpening(io, roomId, amount, false);
 }
 
@@ -601,14 +604,20 @@ function runBotTurn(io: TypedServer, roomId: string, botId: string): void {
   const own = rt.timers.botBidCount.get(botId) ?? 0;
   if (own >= MAX_BIDS_PER_BOT_PER_ROUND) return;
 
+  // Kalan hak: botun kendi tavanı ile tur toplam tavanından küçüğü. Hak
+  // bitmek üzereyse bot tavanını tek seferde söyler (bkz. decideBotBid).
+  const bidsLeft = Math.min(
+    MAX_BIDS_PER_BOT_PER_ROUND - own,
+    MAX_BOT_BIDS_PER_ROUND - rt.timers.botBids,
+  );
   const amount = decideBotBid(
     bot,
     room.auction.footballer,
     room.config,
-    remainingPool(room),
+    botViewFor(room, botId),
     room.auction.highestBid,
     bidFloor(room.auction, room.config),
-    rivalsFor(room, botId),
+    bidsLeft,
   );
   if (amount === null) return;
 

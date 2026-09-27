@@ -27,7 +27,13 @@ import {
   type RoomConfig,
   type TournamentSize,
 } from '@fal/shared';
-import { botOpeningBid, botShouldPass, decideBotBid, type RivalView } from '../auction/bot.js';
+import {
+  botOpeningBid,
+  botShouldPass,
+  decideBotBid,
+  marketOf,
+  type BotView,
+} from '../auction/bot.js';
 import { buildDraftPool } from '../auction/pool.js';
 import { buildTurnOrders } from '../auction/turnOrder.js';
 import { positionCount } from '../auction/validateBid.js';
@@ -67,12 +73,15 @@ function runBotDraft(size: TournamentSize): Participant[] {
     bots.map((b) => b.id),
     config.squadSize * size,
   );
-  const rivalsFor = (botId: string, passed: Set<string>): RivalView[] | null =>
-    config.hiddenBudgets
+  const viewFor = (botId: string, passed: Set<string>): BotView => ({
+    pool: remaining,
+    rivals: config.hiddenBudgets
       ? null
       : bots
           .filter((p) => p.id !== botId && !passed.has(p.id))
-          .map((p) => ({ budget: p.budget, squad: p.squad }));
+          .map((p) => ({ budget: p.budget, squad: p.squad })),
+    market: marketOf(bots, config),
+  });
 
   for (let tur = 0; tur < plan.orders.length; tur++) {
     if (bots.every((p) => p.squad.length >= config.squadSize)) break;
@@ -100,7 +109,7 @@ function runBotDraft(size: TournamentSize): Participant[] {
     const passedIds: string[] = [];
     let highest: { playerId: string; amount: number } | null = null;
     for (;;) {
-      if (botShouldPass(opener, footballer, config, remaining)) {
+      if (botShouldPass(opener, footballer, config, viewFor(opener.id, passed))) {
         opener.passesLeft = Math.max(0, opener.passesLeft - 1);
         passed.add(opener.id);
         passedIds.push(opener.id);
@@ -113,13 +122,7 @@ function runBotDraft(size: TournamentSize): Participant[] {
         opener = cands[Math.floor(Math.random() * cands.length)]!;
         continue;
       }
-      const amount = botOpeningBid(
-        opener,
-        footballer,
-        config,
-        remaining,
-        rivalsFor(opener.id, passed),
-      );
+      const amount = botOpeningBid(opener, footballer, config, viewFor(opener.id, passed));
       const capped = Math.max(min, Math.min(Math.floor(amount), Math.max(min, opener.budget)));
       highest = { playerId: opener.id, amount: Math.min(capped, Math.max(min, opener.budget)) };
       break;
@@ -141,10 +144,10 @@ function runBotDraft(size: TournamentSize): Participant[] {
           bot,
           footballer,
           config,
-          remaining,
+          viewFor(bot.id, passed),
           highest,
           floor,
-          rivalsFor(bot.id, passed),
+          Math.min(MAX_BIDS_PER_BOT_PER_ROUND - own, MAX_BOT_BIDS_PER_ROUND - total),
         );
         if (amount === null || amount < floor || amount > bot.budget) continue;
         highest = { playerId: bot.id, amount: Math.floor(amount) };
