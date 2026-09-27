@@ -106,7 +106,11 @@ function viewOf(ctx: Ctx, meId: string): BotView {
       : ctx.parts
           .filter((p) => p.id !== meId && !ctx.passed.has(p.id))
           .map((p) => ({ budget: p.budget, squad: p.squad })),
-    market: marketOf(ctx.parts, ctx.config),
+    market: marketOf(
+      ctx.parts,
+      ctx.config,
+      ctx.config.hiddenBudgets ? ctx.parts.find((p) => p.id === meId) : undefined,
+    ),
   };
 }
 

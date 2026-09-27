@@ -80,7 +80,11 @@ function runBotDraft(size: TournamentSize): Participant[] {
       : bots
           .filter((p) => p.id !== botId && !passed.has(p.id))
           .map((p) => ({ budget: p.budget, squad: p.squad })),
-    market: marketOf(bots, config),
+    market: marketOf(
+      bots,
+      config,
+      config.hiddenBudgets ? bots.find((b) => b.id === botId) : undefined,
+    ),
   });
 
   for (let tur = 0; tur < plan.orders.length; tur++) {

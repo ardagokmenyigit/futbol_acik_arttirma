@@ -13,9 +13,7 @@ export interface RivalView {
 
 /**
  * Piyasanın toplamı: kadrosu eksik herkesin kalan bütçesi ve açık slotu.
- * Kazanan teklifler herkese yayınlandığı için bu toplam GİZLİ modda da kamuya
- * açık bilgiden türetilebilir (başlangıç × kişi − ödenenler) — tek tek kimin
- * ne kadar parası kaldığını vermez.
+ * Açık modda gerçek toplam; gizli modda tahmin (bkz. `marketOf`).
  */
 export interface MarketView {
   budget: number;
@@ -33,9 +31,22 @@ export interface BotView {
   market: MarketView;
 }
 
+/**
+ * Botun gördüğü piyasa. Slot sayıları her iki modda da gerçektir (kadrolar
+ * herkese açık).
+ *
+ * GİZLİ MODDA (`viewer` verilir) bot, insanın ekranda gördüğünden fazlasını
+ * bilmez: yalnız kendi bütçesi. Rakiplerin parasını "slot başına benim
+ * kadar" varsayar. Toplam, yayınlanan kazanan tekliflerden teorik olarak
+ * türetilebilse de hiçbir insan draft boyunca bunu tutmaz — bota hazır
+ * vermek gizli modda gerçek bir bilgi avantajı olurdu (kullanıcı kararı,
+ * 27 Eylül 2026). Sonuç: gizli modda servet çarpanı 1'dir ve λ yalnız botun
+ * kendi parasından türer.
+ */
 export function marketOf(
   participants: readonly { budget: number; squad: readonly Footballer[] }[],
   config: RoomConfig,
+  viewer?: { budget: number; squad: readonly Footballer[] },
 ): MarketView {
   let budget = 0;
   let slots = 0;
@@ -46,6 +57,11 @@ export function marketOf(
     budget += Math.max(0, p.budget);
     slots += open;
     teams += 1;
+  }
+  if (viewer) {
+    const myOpen = config.squadSize - viewer.squad.length;
+    const perSlot = myOpen > 0 ? Math.max(0, viewer.budget) / myOpen : 0;
+    budget = perSlot * slots;
   }
   return { budget, slots, teams };
 }

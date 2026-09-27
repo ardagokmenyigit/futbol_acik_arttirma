@@ -315,22 +315,24 @@ function autoOpen(io: TypedServer, roomId: string): void {
 }
 
 /**
- * Botun karar anında gördüğü her şey. Rakip bütçe + kadroları yalnız açık
- * modda (gizli modda `null`). Piyasa toplamı (herkesin kalan bütçesi / açık
- * slotu) iki modda da verilir: kazanan teklifler herkese yayınlandığı için
- * bu toplam kamuya açık bilgiden türetilebilir, kişi başı bütçeyi vermez.
+ * Botun karar anında gördüğü her şey — insanın ekranda gördüğüyle aynı
+ * bilgi. Açık modda rakip bütçe + kadroları ve gerçek piyasa toplamı; gizli
+ * modda rakipler `null` ve piyasa yalnız botun kendi bütçesinden tahmin
+ * edilir (`marketOf`).
  */
 function botViewFor(room: RoomState, botId: string): BotView {
   // Bu turda pas geçenler teklif veremez — bot onları rakip saymaz.
   const passed = new Set(room.auction?.passedIds ?? []);
+  const hidden = room.config.hiddenBudgets;
+  const me = room.participants.find((p) => p.id === botId);
   return {
     pool: remainingPool(room),
-    rivals: room.config.hiddenBudgets
+    rivals: hidden
       ? null
       : room.participants
           .filter((p) => p.id !== botId && !passed.has(p.id))
           .map((p) => ({ budget: p.budget, squad: p.squad })),
-    market: marketOf(room.participants, room.config),
+    market: marketOf(room.participants, room.config, hidden ? me : undefined),
   };
 }
 

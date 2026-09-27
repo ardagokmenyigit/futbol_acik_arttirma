@@ -769,7 +769,8 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
   aşağıdaki **BOT ZEKÂSI**. `botOpeningBid` açılış (zorunlu, asla null),
   `decideBotBid` serbest evre (null = teklif vermez), `botShouldPass` pas.
   Hepsi `BotView` alır (`engine.ts` → `botViewFor`): kalan havuz, açık modda
-  rakipler, piyasa toplamı (`marketOf`).
+  rakipler, piyasa (`marketOf` — gizli modda yalnız kendi bütçesinden
+  tahmin).
 - Güvenlik ağı: bitişte `autoCompleteSquads()`. Havuz tam denk olduğu için
   normalde devreye girmez.
 - **GİZLİ BÜTÇE MODU** (`config.hiddenBudgets`, oda kurulurken seçilir):
@@ -780,10 +781,16 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
   - Gizli mod: sunucu draft sırasında her sokete YALNIZ kendi bütçesini
     gönderir (`rooms/broadcast.ts` → `emitRoomState` / `redactRoomState`,
     diğerleri `HIDDEN_BUDGET = -1`, istemci `isBudgetHidden()`). Botlara
-    `rivals = null` geçilir — rakip bütçesini tek tek bilmezler; yalnız
-    piyasa toplamını (herkesin kalan bütçesi / açık slotu) görürler. Toplam,
-    herkese yayınlanan kazanan tekliflerden türetilebildiği için gizli
-    modun sözünü bozmaz. Draft bitince
+    `rivals = null` geçilir ve **insanın ekranda gördüğünden fazlasını
+    bilmezler**: yalnız kendi bütçeleri + herkesin kadrosu (açık slotlar).
+    Piyasa parası "rakipler slot başına benim kadar" varsayımıyla tahmin
+    edilir (`marketOf(…, viewer)`), servet çarpanı 1 olur. (İlk sürümde
+    botlar gerçek piyasa toplamını görüyordu — "yayınlanan kazanan
+    tekliflerden türetilebilir" gerekçesiyle; kullanıcı 27 Eylül 2026'da
+    "hiçbir insan bunu tutmaz, gizli modda gereksiz avantaj" dedi ve
+    kaldırıldı. Ölçüm: fark gürültü içinde — gizli 4 takımda sabırlı insan
+    0.45x → 0.44x, `bot×0.8` 1.10x → 1.07x; 8 takımda 0.27x → 0.26x, 1.23x
+    → 1.21x. Açığı kapatan piyasa bilgisi değil, sıradana para basmamak.) Draft bitince
     (`phase !== 'draft'`) bütçeler herkese açılır.
 
 ⚠️ **DENGE — 504 havuz + gerçek bot açık artırması (2000 draft, 4 bot, 150M).**
@@ -818,6 +825,7 @@ GEN − mevkide kalan en düşük GEN (takım gücünde her mevkinin 1 GEN'i eş
 masadaki harcanabilir para kalan toplam artı değere dağılır.
 
     λ     = (herkesin kalan bütçesi − açık slot × asgari) / Σ artıDeğer^1.7
+            (gizli modda "herkesin bütçesi" = benim slot başı param × açık slot)
     tavan = asgari + λ × artıDeğer^1.7 × servet × kişilik (0.9–1.2, yıldız eğilimi)
     servet = (benim bütçem / slotum) / (piyasa bütçesi / slotu)
 
@@ -853,8 +861,8 @@ adil paya (1/n) oranla:
 
 Eski botlara karşı sabırlı insanın güç farkı +2.9…+3.6 ve 3–4 yıldızdı; yeni
 botlara karşı −2.7…−3.3. **Kalan küçük sapmalar** (hepsi +0.2…+0.6 güç):
-`bot×1.3` açık modda ~1.1x; gizli modda `bot×0.8` 4 takımda 1.10x, 8 takımda
-1.23x. İkisi de botun formülünü birebir bilen bir insanı varsayar; servet
+`bot×1.3` açık modda ~1.1x; gizli modda `bot×0.8` 4 takımda 1.07x, 8 takımda
+1.21x (gizli modda yalnız kendi bütçesini bilen botlarla). İkisi de botun formülünü birebir bilen bir insanı varsayar; servet
 üssü (0.5–2), açılış payı (0–%55), sıçrama (0.1–0.35), teklif sınırları
 tarandı, hiçbiri kapatmadı — kabul edildi.
 
