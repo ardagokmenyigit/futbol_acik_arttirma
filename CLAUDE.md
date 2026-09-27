@@ -137,10 +137,17 @@ varsa istemediği futbolcuya pas diyebilir. Oyun başına hak `passesForSize`:
   Herkes pas dediyse bidding'de kimse teklif veremez → zorunlu açıcı
   futbolcuyu asgariden alır (bilinçli: pası herkes harcadıysa bedeli budur).
 - Süre dolunca sunucu pas DEĞİL asgari açılış yapar (`autoOpen`).
-- Botlar (`botShouldPass`): futbolcu havuzda kalan aynı mevkidekilerin alt
-  diliminde (eşik kişiliğe bağlı %25–%50) ve ihtiyaçtan en az 2 fazla aday
-  varsa pas; kıtlıkta asla. Bot açılış/teklif değerlemesi pas diyenleri rakip
-  saymaz (`rivalsFor` passedIds'i düşer).
+- Botlar (`botShouldPass`, 27 Eylül 2026): pas = "sıcak patatesi başkasına
+  at". Futbolcu mevkide kalanların alt diliminde VE medyanlarından en az
+  `PASS_MIN_GAP` (2) GEN kötüyse pas; eşik kişilik + **hak baskısı**
+  (kalan pas / kalan açılış — hak çoksa gevşer, azsa en kötüye saklanır).
+  İstediği futbolcuya asla pas demez (pas diyen teklif de veremez). Pas
+  değerli: hiç pas demeyen bot 4 takımda %16–18 şampiyon (adil %25, −1.5 güç);
+  "yalnız en dibe", "alt üçte bir", "alt yarı", "medyandan 3/5 kötü"
+  kurallarının hiçbiri botu geçemiyor (`measureBotIQ.ts`, `pas-*`). Eski
+  kural "ihtiyaç + 2 aday" istediği için 2 takımlıda pası HİÇ kullanmıyordu.
+  Bot açılış/teklif değerlemesi pas diyenleri rakip saymaz (`botViewFor`
+  passedIds'i düşer).
 - Doğrulama: `caffeinate -i npx tsx packages/server/src/scripts/e2ePass.ts`
   (gerçek sunucu + Socket.io istemcileri; 2 takım/1 pas ve 4 takım/2 pas
   senaryoları, hatalı çağrılar, değişmezler, tam kadro bitişi).
@@ -307,6 +314,29 @@ takımlıda en zayıfın şansı %1.2 — bilinçli kabul. `baseConversion` yaln
 gol sıklığını ölçekler (güç ayrımına dokunmaz); sens değişince gol
 ortalamasını, dolayısıyla beraberlik/penaltı payını sabit tutmak için ayarlanır.
 
+**SENS 3.7 → 5.0 (27 Eylül 2026).** Akıllı botlar (Kişi 1 → BOT ZEKÂSI)
+parayı verimli dağıttığı için bot–bot kadroları eşitlendi (draft farkı
+~5.0 → ~3.3) ve en güçlü şampiyon %46 → %41'e indi. Kullanıcı %46'yı geri
+istedi. Önce önerilen kol (bot değerleme dağılımı) denendi: agresiflik
+aralığı 0.7–1.4, yıldız eğilimi ×3, gürültü ±%20 — hepsi birden farkı yalnız
+3.2 → 3.4'e, en güçlüyü %41'e taşıdı. Verimli bot kişilikten bağımsız
+benzer değerde kadro kuruyor; kol motor kaldı. Tam geri dönüş ~5.7 ister
+(4p %80); kullanıcı "arada bir değer" seçti (tarama 4.5 / 5.3 / 6.1) →
+**5.0, baseConv 0.094**. 3000 draft × 4 bracket, 4 takım:
+
+| bot zorluğu      | en güçlü  | en zayıf  | draft farkı | gol/maç  | 3p      | 4p      | 5p      | 7p      | 8 takım (en güçlü / zayıf) |
+| ---------------- | --------- | --------- | ----------- | -------- | ------- | ------- | ------- | ------- | -------------------------- |
+| zor              | %43.7     | %11.7     | 3.2         | 3.66     | %69     | %76     | %82     | %89     | %34.3 / %2.6               |
+| **normal (vs.)** | **%44.9** | **%10.8** | **3.5**     | **3.67** | **%71** | **%77** | **%83** | **%93** | **%32.9 / %3.4**           |
+| kolay            | %45.2     | %10.7     | 3.5         | 3.67     | %70     | %76     | %82     | %91     | %34.3 / %2.8               |
+
+(3000 draft × 4 bracket; aynı ayarın iki koşusu normalde %46.4 ve %44.9
+verdi — draft başına korelasyonlu bracket'lar yüzünden gürültü ~±1 puan,
+yani üç seviye de ~%44–46.) Güç farkına göre tur geçme 4p %72 → %77, 5p
+%77 → %82 — aynı fark artık daha belirleyici (arkadaşın "3–4 puan güçlüyken çok yeniliyorum" şikâyetiyle
+aynı yön). 1–2 puan hâlâ yazı-turaya yakın (%56 / %63). Uzatma %29, penaltı
+%14.
+
 Uzatma da berabereyse (`isTournament`) seri penaltı — **KÖŞE OYUNU**
 (`shared/src/simulation/penalty.ts`, 17 Eylül 2026). Atıcı ve kaleci eş
 zamanlı SOL / ORTA / SAĞ seçer; vuruş iki bağımsız zara ayrılır:
@@ -371,24 +401,28 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 (12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
 (rastgele olsa %25):
 
-| ayar                                                   | en güçlü  | en zayıf | oran     | gol/maç           |
-| ------------------------------------------------------ | --------- | -------- | -------- | ----------------- |
-| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1    | 2.0x     | 2.77              |
-| sens 2.5 + saha av. yok                                | %37.7     | %15.0    | 2.5x     | 2.92              |
-| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2    | 3.0x     | 3.48              |
-| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7    | 4.0x     | 3.53              |
-| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3** | **5.6x** | **3.54**          |
-| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9    | 4.0x     | 3.66              |
-| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1    | 4.5x     | 3.68              |
-| + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9     | 5.3x     | 4.04              |
-| + sens 2.4 + baseConv 0.116                            | %42.8     | %11.6    | 3.7x     | 3.67 (90 dk)      |
-| + sens 3.3 + baseConv 0.110                            | %46.4     | %9.0     | 5.2x     | 3.68 (90 dk)      |
-| + sens 3.5 + baseConv 0.108                            | %47.9     | %8.3     | 5.7x     | 3.66 (90 dk)      |
-| + yıldızlar mevkisiz + baseConv 0.104                  | %45.1     | %9.4     | 4.8x     | 3.68 (90 dk)      |
-| **+ sens 3.7 + baseConv 0.102 (güncel)**               | **~%46**  | **~%9**  | **5.1x** | **~3.67 (90 dk)** |
+| ayar                                                   | en güçlü  | en zayıf  | oran     | gol/maç          |
+| ------------------------------------------------------ | --------- | --------- | -------- | ---------------- |
+| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1     | 2.0x     | 2.77             |
+| sens 2.5 + saha av. yok                                | %37.7     | %15.0     | 2.5x     | 2.92             |
+| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2     | 3.0x     | 3.48             |
+| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7     | 4.0x     | 3.53             |
+| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3**  | **5.6x** | **3.54**         |
+| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9     | 4.0x     | 3.66             |
+| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1     | 4.5x     | 3.68             |
+| + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9      | 5.3x     | 4.04             |
+| + sens 2.4 + baseConv 0.116                            | %42.8     | %11.6     | 3.7x     | 3.67 (90 dk)     |
+| + sens 3.3 + baseConv 0.110                            | %46.4     | %9.0      | 5.2x     | 3.68 (90 dk)     |
+| + sens 3.5 + baseConv 0.108                            | %47.9     | %8.3      | 5.7x     | 3.66 (90 dk)     |
+| + yıldızlar mevkisiz + baseConv 0.104                  | %45.1     | %9.4      | 4.8x     | 3.68 (90 dk)     |
+| + sens 3.7 + baseConv 0.102                            | ~%46      | ~%9       | 5.1x     | ~3.67 (90 dk)    |
+| + akıllı botlar (27 Eylül 2026)                        | %40.2     | %13.5     | 3.0x     | 3.62 (90 dk)     |
+| **+ sens 5.0 + baseConv 0.094 (güncel; normal bot)**   | **%44.9** | **%10.8** | **4.2x** | **3.67 (90 dk)** |
 
-(Son yedi satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
-ayarla en güçlü ~%36.5, en zayıf ~%1.3. Ölçüm aracı:
+(Son dokuz satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
+ayarla en güçlü %32.9, en zayıf %3.4 (akıllı botlardan önce ~%36.5 / ~%1.3).
+"Akıllı botlar" satırında motor aynı; değişen bot kadrolarının eşitlenmesi;
+son satır bunu motor duyarlılığıyla geri alır. Ölçüm aracı:
 `npx tsx packages/server/src/scripts/measureBalance.ts [draft] [sens] [baseConv]`.)
 
 **İki kolun birlikte ayarlanması gerekir.** `strengthSensitivity` tek başına
@@ -437,10 +471,11 @@ beraberliği yalnız 6.5 puan düşürüyor) — uzatma zaten bunun için var.
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
 - `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
   ~3.67 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
-  kayar ve bununla geri kalibre edilmelidir (güncel: 0.102, sens 3.7 +
-  mevkisiz yıldız havuzu için;
+  kayar ve bununla geri kalibre edilmelidir (güncel: 0.094, sens 5.0 +
+  akıllı botlar için;
   kalibrasyonu gerçek draft kadrolarıyla — `measureBalance.ts` — yapın).
-- **ASIL TAVAN MOTOR DEĞİL, DRAFT.** Gerçek draft'larda takımlar arası güç
+- **ASIL TAVAN MOTOR DEĞİL, DRAFT.** (27 Eylül 2026 bot zekâsından sonra
+  bot–bot farkı ort. 3.3'e indi, bkz. Kişi 1 → BOT ZEKÂSI.) Gerçek draft'larda takımlar arası güç
   farkı ortalama yalnızca **5.25 puan** (medyan 5.0, p10 3.0, p90 8.0, max 13;
   ölçüm: 3000 gerçek bot draft'ı). Havuz tam denk (§3.1) olduğu için herkes
   benzer kalitede kadro kuruyor — motor ne kadar duyarlı olursa olsun ayırt
@@ -755,10 +790,13 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
   turnuvası). **Lig formatı (`null`) kaldırıldı**, `minPlayers` kaldırıldı.
   Oda kapasitesi = turnuva boyutu; tek kişi bile başlatır, eksik takımlar
   **botlarla** tamamlanır (`isBot: true`).
-- Botlar (`server/src/auction/bot.ts`): ihtiyaç + rezerv + değerleme üçlüsü.
+- Botlar (`server/src/auction/bot.ts`): tam model ve ölçüm için bkz.
+  aşağıdaki **BOT ZEKÂSI** ve **BOT ZORLUĞU** (kolay / normal / zor).
   `botOpeningBid` açılış (zorunlu, asla null), `decideBotBid` serbest evre
-  (null = teklif vermez). Taban fiyat kalktığı için rezerv iki parçalı:
-  sert taban (kalan slot × minBidIncrement) + stratejik pay (`RESERVE_SHARE`).
+  (null = teklif vermez), `botShouldPass` pas. Hepsi `BotView` alır
+  (`engine.ts` → `botViewFor`): TAHMİNİ havuz (`estimatePool` — gerçek liste
+  değil), açık modda rakipler, piyasa (`marketOf` — gizli modda yalnız kendi bütçesinden
+  tahmin).
 - Güvenlik ağı: bitişte `autoCompleteSquads()`. Havuz tam denk olduğu için
   normalde devreye girmez.
 - **GİZLİ BÜTÇE MODU** (`config.hiddenBudgets`, oda kurulurken seçilir):
@@ -769,7 +807,16 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
   - Gizli mod: sunucu draft sırasında her sokete YALNIZ kendi bütçesini
     gönderir (`rooms/broadcast.ts` → `emitRoomState` / `redactRoomState`,
     diğerleri `HIDDEN_BUDGET = -1`, istemci `isBudgetHidden()`). Botlara
-    `rivals = null` geçilir — rakip bütçesini hiç bilmezler. Draft bitince
+    `rivals = null` geçilir ve **insanın ekranda gördüğünden fazlasını
+    bilmezler**: yalnız kendi bütçeleri + herkesin kadrosu (açık slotlar).
+    Piyasa parası "rakipler slot başına benim kadar" varsayımıyla tahmin
+    edilir (`marketOf(…, viewer)`), servet çarpanı 1 olur. (İlk sürümde
+    botlar gerçek piyasa toplamını görüyordu — "yayınlanan kazanan
+    tekliflerden türetilebilir" gerekçesiyle; kullanıcı 27 Eylül 2026'da
+    "hiçbir insan bunu tutmaz, gizli modda gereksiz avantaj" dedi ve
+    kaldırıldı. Ölçüm: fark gürültü içinde — gizli 4 takımda sabırlı insan
+    0.45x → 0.44x, `bot×0.8` 1.10x → 1.07x; 8 takımda 0.27x → 0.26x, 1.23x
+    → 1.21x. Açığı kapatan piyasa bilgisi değil, sıradana para basmamak.) Draft bitince
     (`phase !== 'draft'`) bütçeler herkese açılır.
 
 ⚠️ **DENGE — 504 havuz + gerçek bot açık artırması (2000 draft, 4 bot, 150M).**
@@ -783,12 +830,139 @@ açığını da KAPATTI (kontrol %20.3 vs beklemek %19.8; eski pas'lı yapıda
 beklemek %21 ile baskındı).
 
 **BÜTÇE 150M — bot mantığı bütçeyle orantılı, sabit ayar GEREKMEZ.**
-`bot.ts`'teki `fairShare` (= budget/slotsLeft), `reserveNeeded`,
-`maxSingleShare` (`config.startingBudget × persona`) hepsi budget'a bağlı.
-220M→150M ölçümü (2000 draft): eksik kadro 0/8000, ort. fiyat 29.7M→20.2M
-(~%68, bütçeyle orantılı), 1M'ye giden tur %1.1→%3.5 (hâlâ önemsiz),
-tur başına teklif 12.8→10.4 (canlı), kalan bütçe %5.6→%5.7 (aynı oran).
-Açık artırma sönmüyor.
+λ piyasadaki paradan, servet slot başı paranın piyasa ortalamasına oranından,
+sert taban `minBidIncrement`'ten türer; bütçe değişince hepsi ölçeklenir.
+(Bu paragrafın eski ölçümü — ort. fiyat 20.2M, 1M'ye giden tur %3.5 —
+aşağıdaki eski bot modeline aitti.)
+
+**BOT ZEKÂSI (27 Eylül 2026) — "bedava seviyenin üstü × paranın piyasa
+değeri".** Kullanıcı: "insan 150M'den 81'liğe en fazla 10 verir, belki hiç
+vermez, parayı sonraki turlara saklar; botlar her tur teklif veriyor, pası da
+insan kurnazlığıyla kullanmıyor — bu botlara karşı oyunun açığı". Doğru
+çıktı. Eski model değeri havuzdaki yüzdelik dilim × adil pay (budget /
+kalan slot) ile kuruyordu: ilk turda 81–83'lük oyuncuya 27–40M, 78–80'liğe
+15–27M tavan. Parayı saklayıp yıldızları sona bekleyen insan 7 yıldızın
+yarısını topluyordu.
+
+**İLKE — bot, insanın ekranda gördüğünden fazlasını bilmez** (kullanıcı
+kararı). "Kamuya açık yayından teorik olarak türetilebilir" gerekçesi yetmez;
+hiçbir insan draft boyunca bunu tutmaz. Bu yüzden:
+
+- **Havuz tahmini** (`auction/poolEstimate.ts` → `estimatePool`): insan
+  sıradakileri görmez, bot da görmez. Bot kurulum kuralını (mevki başına tam
+  ihtiyaç, %25 yıldız) ve satılanları bilir: mevki başına kalan sayı ve
+  kalan yıldız sayısı KESİN, yıldızların mevkisi veri setindeki paylarıyla,
+  GEN'ler veri setinin dağılımından eşit aralıklı yüzdeliklerle tahmin
+  edilir. **Dip (bedava seviye) mevkideki sıradanların medyanından aşağı
+  inmez** (`FREE_LEVEL_QUANTILE`): kör bot "ortalama birini nasılsa ucuza
+  bulurum" der. Dip veri setinin dibinde (78) iken kör botlar sıradana fazla,
+  yıldıza az ödüyordu — 8 takımda yalnız-yıldız insanı +1.2 güç / 1.5x; %25
+  dilimde +0.55; medyanda +0.1…+0.3, yani gerçek havuzu gören botla aynı.
+- **Gizli modda piyasa**: bot rakiplerin parasını bilmez, "slot başına benim
+  kadar" varsayar (`marketOf(…, viewer)`), servet çarpanı 1.
+
+Model: havuz her mevkide talebe tam denk (§3.1) → herkes kadrosunu nasılsa
+doldurur, kimsenin istemediği asgariye kalır. Değer **artı değer** =
+GEN − mevkide bedava seviye (takım gücünde her mevkinin 1 GEN'i eşit, 1/7).
+Paranın değeri piyasadan: draft bitince para işe yaramadığı için masadaki
+harcanabilir para kalan (tahmini) toplam artı değere dağılır.
+
+    λ     = (herkesin kalan bütçesi − açık slot × asgari) / Σ artıDeğer^1.7
+            (gizli modda "herkesin bütçesi" = benim slot başı param × açık slot)
+    tavan = asgari + λ × artıDeğer^1.7 × servet × kişilik (0.9–1.2, yıldız eğilimi)
+    servet = (benim bütçem / slotum) / (piyasa bütçesi / slotu)
+
+- `SURPLUS_EXP` 1.7: tarandı (1.15 / 1.4 / 1.7 / 2.0; kör botlarla 2.0 /
+  2.4 / 2.8). Düşük üsde "yalnız yıldıza bas" insanı kazanıyordu; yüksek
+  üsde 93+ tavanı 100M'ye çıkıyor ve 8 takım sızıntısını yine kapatmıyordu —
+  asıl kol yukarıdaki dip ayarıydı.
+- Son slot: elde kalan para boşa gideceği için mevkinin en iyisine hepsini,
+  ortalamaya yarısını basar. Açık modda rakip tavanı + 1'in üstüne çıkmaz.
+- Kaldırılanlar: `RESERVE_SHARE` stratejik rezervi, `maxSingleShare` tek
+  futbolcu tavanı, "kıtlıkta tüm parayı bas" kuralı (havuz denk olduğu için
+  kıtlık yok — bot gereksiz yere tüm bütçesini basıyordu), `calculateTeamStats`
+  marjinal katkısı (güç GEN'de doğrusal, artı değer aynı şeyi ölçer).
+- **Teklif hakkı açığı kapandı:** motor tur başına bot başı 10 / toplam 60
+  teklif sınırı koyuyor; +1'lerle çekiştiren insan botu susturup futbolcuyu
+  botun tavanının altında alabiliyordu. `decideBotBid(…, bidsLeft)`: kalan hak
+  (kendi ve toplam sınırın küçüğü) ≤ 2 ise bot tavanını tek seferde söyler.
+
+İlk tur tavanı (taze bot, 4 takım, 150M): 78–80 **0.5M** · 81–83 **3M** ·
+84–86 13M · 87–89 28M · 90–92 55M · 93+ 85M (eski: 15 / 27 / 40 / 51 / 55 /
+58M). Ölçüm: `caffeinate -i npx tsx packages/server/src/scripts/measureBotIQ.ts
+[draft] [boyutlar] [stratejiler]` (`HIDDEN=1` gizli mod) — 1 insan
+stratejisi + (n−1) gerçek bot, 1000 draft × 4 bracket; insan stratejileri de
+gerçek havuzu değil aynı tahmini görür. İnsanın şampiyonluğu adil paya (1/n)
+oranla, açık mod:
+
+| insan stratejisi                                    | 2 t. eski → yeni | 4 t. eski → yeni | 8 t. eski → yeni |
+| --------------------------------------------------- | ---------------- | ---------------- | ---------------- |
+| `sabirli` (yıldız dışına ≤4M, parayı yıldıza sakla) | 1.35x → 0.74x    | 1.83x → 0.47x    | 2.34x → 0.30x    |
+| `sabirli+1` (aynısı, her artırma +1 — botu sustur)  | 1.42x → 0.74x    | 1.91x → 0.52x    | 2.40x → 0.32x    |
+| `yildiz` (yalnız 90+'ya, bütçenin %55'i)            | 1.36x → 0.86x    | 1.89x → 1.02x    | 2.49x → 1.09x    |
+| `yildiz-hepsi` (yalnız 90+'ya, %85)                 | 1.39x → 0.89x    | 1.81x → 1.02x    | 2.36x → 1.03x    |
+| `saldirgan` (iyi olana adil payın üstü)             | 1.36x → 0.73x    | 1.22x → 0.54x    | 1.58x → 0.40x    |
+| `bot×1.3` (botun kafası, %30 cömert)                | 1.09x → 1.05x    | 1.19x → 1.09x    | 1.21x → 1.09x    |
+| `bot×0.8` (botun kafası, %20 cimri)                 | 1.06x → 0.84x    | 1.03x → 0.76x    | 0.95x → 0.76x    |
+
+Eski botlara karşı sabırlı insanın güç farkı +2.9…+3.6 ve 3–4 yıldızdı; yeni
+botlara karşı −2.4…−2.8. Gizli mod benzer (sabırlı 0.73x / 0.49x / 0.23x).
+**Kalan küçük sapmalar** (hepsi ≤ +0.4 güç): `bot×1.3` açık modda ~1.1x;
+gizli modda 8 takımda `bot×0.8` 1.19x, `yildiz` 1.14x. İkisi de botun
+formülünü birebir bilen bir insanı varsayar; servet üssü (0.5–2), açılış payı
+(0–%55), sıçrama (0.1–0.35), teklif sınırları tarandı, hiçbiri kapatmadı —
+kabul edildi. Pas: hiç pas demeyen bot 0.52–0.92x; `pas-*` kurallarının
+hiçbiri botu anlamlı geçmiyor.
+
+**Yan etki — bot–bot kadroları eşitlendi** (`measureBalance.ts`, 3000 draft,
+4 takım): draft güç farkı ort 5.0 → **3.3** (p90 7.5 → 5.0), en güçlü
+şampiyon ~%46 → %40.2, en zayıf ~%9 → %13.5, harcama 133M → 109M, gol/maç
+(90 dk) 3.67 → 3.62, uzatma %28, penaltı %13. 8 takımda fark 4.6, en güçlü
+%29.6 / en zayıf %3.7. Motor değişmedi (güç farkına göre tur geçme eğrisi
+aynı); botlar parayı artık bilinçli dağıttığı için kadrolar birbirine
+yaklaştı. İnsanlı oyunlarda fark insanın draft'ına bağlıdır. Güç daha baskın
+istenirse kol motor değil draft (bkz. §3.2 "ASIL TAVAN").
+Bot–bot sağlığı (4 takım): yıldız ort 48M, sıradan 4.6M, turların %55'i
+asgariye gider (sıradan oyuncuya kimse para basmaz — insan da basmaz), kalan
+bütçe ort 41M, eksik kadro 0, pas hakkının %99'u kullanılır.
+
+**BOT ZORLUĞU (27 Eylül 2026)** — `RoomConfig.botDifficulty`
+(`'easy' | 'normal' | 'hard'`, varsayılan **normal**; oda kurulurken seçilir,
+eski istemci göndermezse / bozuk değer gelirse `normal` — `mergeConfig`).
+Kullanıcı: "şimdiki botlar belki fazla zor; bot zorluğu seçeneği mantıklı".
+Zor = yukarıdaki akıllı bot. Kolay / normal botun "hata" kolları
+(`auction/botSkill.ts`): bedava seviye yüzdeliği (düşükse sıradana para
+basar), değerleme gürültüsü, erken harcama (draft başında fazla öder, sonda
+parası azalır), pas kullanmama, erken bırakma (bazı futbolculara %0–X az
+değer biçer). **Takım sayısına göre ayrı ayarlanır**: aynı kol teke tekte
+(tek bot) neredeyse etkisiz, 8 takımda (yedi bot birden hata yapar) çok
+güçlü — örn. pas kullanmayan kolay bot 8 takımda en iyi planı 1.86x'e
+çıkarıyordu, teke tekte en uç kollarla bile sezgisel insan 0.97x kaldı.
+
+| seviye | 2 takım                                            | 4 takım                               | 8 takım                           |
+| ------ | -------------------------------------------------- | ------------------------------------- | --------------------------------- |
+| kolay  | dip %20, ±%15, erken 0.15, **passız**, bırakma %50 | dip %20, ±%15, erken 0.15, **passız** | dip %25, ±%15, erken 0.1, pas var |
+| normal | dip %20, ±%15, erken 0.15, bırakma %30             | dip %20, ±%15, erken 0.15             | dip %40, ±%10, erken yok          |
+| zor    | dip %50 (medyan), ±%7                              | aynı                                  | aynı                              |
+
+Ölçüt: **en iyi basit insan planı** — `measureBotIQ.ts`'teki `sezgisel`
+(yıldıza bütçenin ~%35'i, 86–89'a ~12M, 83–85'e ~5M, altına asgari; son iki
+slotta elde kalanı harcar; dipteki futbolcuya pas), `yildiz` ve
+`yildiz-hepsi` stratejilerinin en iyisi. (`sezgisel` tek başına teke tekte
+yanıltıcı: yıldız tavanı sabit ~52M, teke tekte yıldız başına düşen para çok
+daha yüksek olduğu için bot ne kadar zayıf olursa olsun yıldızı kaçırıyor.)
+1000 draft × 4 bracket, şampiyonluk / adil pay:
+
+| seviye | 2 takım (açık / gizli) | 4 takım (açık / gizli) | 8 takım (açık / gizli) |
+| ------ | ---------------------- | ---------------------- | ---------------------- |
+| zor    | 0.90x / 0.83x          | 1.04x / 1.02x          | 1.12x / 1.15x          |
+| normal | 1.07x / 0.90x          | 1.29x / 1.12x          | 1.20x / 1.12x          |
+| kolay  | 1.23x / —              | 1.56x / —              | 1.36x / —              |
+
+Sıralama her boyutta tutar; gizli modda normal ile zor teke tekte
+birbirine yakın. Parayı yıldıza saklayan kaba `sabirli` insanı her seviyede
+kaybeder (0.17–0.77x) — açık kapalı kalır. İlk tur tavanı (4 takım): zor
+81–83 3M / 93+ 84M, normal 6M / 93M, kolay 6M / 94M.
 
 **Açık uçlar**
 

@@ -1,5 +1,5 @@
 import type { Footballer, Participant, Position, RoomConfig } from '@fal/shared';
-import { calculateTeamStats } from '../simulation/teamStats.js';
+import { botSkill } from './botSkill.js';
 import { positionCount } from './validateBid.js';
 
 /**
@@ -10,6 +10,61 @@ import { positionCount } from './validateBid.js';
 export interface RivalView {
   budget: number;
   squad: Footballer[];
+}
+
+/**
+ * Piyasanın toplamı: kadrosu eksik herkesin kalan bütçesi ve açık slotu.
+ * Açık modda gerçek toplam; gizli modda tahmin (bkz. `marketOf`).
+ */
+export interface MarketView {
+  budget: number;
+  slots: number;
+  /** Kadrosu hâlâ eksik katılımcı sayısı. */
+  teams: number;
+}
+
+/** Botun bir karar anında gördüğü her şey. */
+export interface BotView {
+  /** Havuzda kalanlar — masadaki futbolcu HARİÇ. */
+  pool: Footballer[];
+  /** Açık modda bu turda teklif verebilecek rakipler; gizli modda `null`. */
+  rivals: RivalView[] | null;
+  market: MarketView;
+}
+
+/**
+ * Botun gördüğü piyasa. Slot sayıları her iki modda da gerçektir (kadrolar
+ * herkese açık).
+ *
+ * GİZLİ MODDA (`viewer` verilir) bot, insanın ekranda gördüğünden fazlasını
+ * bilmez: yalnız kendi bütçesi. Rakiplerin parasını "slot başına benim
+ * kadar" varsayar. Toplam, yayınlanan kazanan tekliflerden teorik olarak
+ * türetilebilse de hiçbir insan draft boyunca bunu tutmaz — bota hazır
+ * vermek gizli modda gerçek bir bilgi avantajı olurdu (kullanıcı kararı,
+ * 27 Eylül 2026). Sonuç: gizli modda servet çarpanı 1'dir ve λ yalnız botun
+ * kendi parasından türer.
+ */
+export function marketOf(
+  participants: readonly { budget: number; squad: readonly Footballer[] }[],
+  config: RoomConfig,
+  viewer?: { budget: number; squad: readonly Footballer[] },
+): MarketView {
+  let budget = 0;
+  let slots = 0;
+  let teams = 0;
+  for (const p of participants) {
+    const open = config.squadSize - p.squad.length;
+    if (open <= 0) continue;
+    budget += Math.max(0, p.budget);
+    slots += open;
+    teams += 1;
+  }
+  if (viewer) {
+    const myOpen = config.squadSize - viewer.squad.length;
+    const perSlot = myOpen > 0 ? Math.max(0, viewer.budget) / myOpen : 0;
+    budget = perSlot * slots;
+  }
+  return { budget, slots, teams };
 }
 
 /**
@@ -38,42 +93,56 @@ function rivalCeiling(rivals: RivalView[], pos: Position, config: RoomConfig): n
 
 /**
  * ============================================================================
- *  BOT TEKLİF MOTORU
+ *  BOT TEKLİF MOTORU — "bedava seviyenin üstü × paranın piyasa değeri"
  * ----------------------------------------------------------------------------
- *  Temel fikir: bir futbolcunun değeri `overall` değil, **benim takımıma
- *  kattığı güç**. Maç simülasyonu takım gücünü pozisyon ağırlıklı hesapladığı
- *  için (calculateTeamStats: hücumda FWD %45 / MID %35, savunmada DEF %45 /
- *  GK %25) bot da aynı ölçüyü kullanır. Böylece hücumu zayıf bot forvete,
- *  savunması zayıf bot stopere daha çok öder — kadrolar farklılaşır.
+ *  Havuz her mevkide talebe TAM denktir (§3.1): herkes kadrosunu nasılsa
+ *  doldurur ve kimsenin istemediği futbolcu sonunda asgariye kalır. Yani bir
+ *  futbolcunun değeri GEN'i değil, o mevkide **bedavaya kalacak seviyenin
+ *  üstünde kattığı güçtür** (artı değer = GEN − mevkide kalan en düşük GEN).
+ *  Takım gücünde her mevkinin 1 GEN'i eşit (1/7) olduğu için bu fark doğrudan
+ *  güç farkıdır.
  *
- *  Fiyatlama "yedek seviyesine göre artı değer" mantığıyla:
+ *  Paranın değeri piyasadan okunur: masada kalan harcanabilir paranın
+ *  tamamı, havuzda kalan toplam artı değere dağılacaktır (draft bitince para
+ *  işe yaramaz). Buradan 1 artı-GEN puanının kaç M ettiği çıkar (λ).
  *
- *      tavan = yedeğin maliyeti + prim × (bu oyuncunun katkısı − yedeğin katkısı)
+ *      tavan = asgari + λ × artıDeğer × servet × kişilik
  *
- *  Yedek = havuzda o pozisyonda kalan, ulaşılabilir sıradan futbolcu.
- *  Yani bot, "zaten benzerini ucuza bulurum" dediği oyuncuya fazla ödemez;
- *  gerçekten fark yaratan oyuncu için cebini açar.
+ *  Sonuçlar (insan sezgisiyle aynı):
+ *   - 150M bütçede 81'lik bir oyuncu, havuzda 78'ler ve yıldızlar varken
+ *     birkaç M eder — bot ona 20-30M basmaz, parayı yıldızlara saklar.
+ *   - Biri parayı biriktirip bekliyorsa masadaki para artar, λ yükselir;
+ *     botlar kalan yıldızlar için daha çok öder. "Bekle ve sonda yıldızları
+ *     topla" sömürüsü böyle kapanır.
+ *   - Servet: kalan slot başına parası piyasa ortalamasından fazla olan bot
+ *     daha çok öder (elde kalan para boşa gider), az olan kısılır.
  *
- *  Üç kısıt her zaman geçerli:
- *   1. İHTİYAÇ  — pozisyon dolduysa teklif yok.
- *   2. REZERV   — kalan zorunlu slotları doldurmaya yetecek para kenarda kalır
- *                 (emniyet payıyla). Bot kadrosunu asla yarım bırakmaz.
- *   3. KİŞİLİK  — her botun sabit bir karakteri var (agresiflik, yıldız
- *                 avcılığı, sabır). id'den türetilir, oyun boyunca değişmez.
+ *  Değişmezler:
+ *   1. İHTİYAÇ — mevki dolduysa teklif yok.
+ *   2. SERT TABAN — kalan zorunlu slotlar için slot başı `minBidIncrement`
+ *      kenarda kalır. Kadro yarım kalmaz.
+ *   3. KARARLILIK — aynı (bot, futbolcu) çifti için tavan tur içinde oynamaz.
+ *
+ *  Eski model (yüzdelik dilim × adil pay) 81'liğe ~17M ödüyordu; parayı
+ *  saklayan insan 4 takımlı oyunda %47 şampiyon oluyordu (adil pay %25).
+ *  Ölçüm: `scripts/measureBotIQ.ts`, CLAUDE.md §3.1.
  * ============================================================================
  */
 
 const POSITIONS: Position[] = ['GK', 'DEF', 'MID', 'FWD'];
 
 /**
- * Kalan slotlar için adil payın ne kadarının kenarda tutulacağı.
- *
- * DİKKAT: bu değer botun tavanını doğrudan belirler (tavan = bütçe − rezerv).
- * Fazla yüksek olursa bütün botlar aynı düşük tavana sıkışır, kişilikleri
- * anlamsızlaşır ve açık artırma sönük geçer. Fazla düşük olursa botlar ilk
- * yıldıza bütün parayı yatırıp kalan turlarda susar.
+ * Artı değerin fiyata dönüşümündeki üs. 1 = doğrusal (her artı-GEN puanı
+ * eşit fiyat). 1'in üstü yıldızı sıradana göre daha pahalı fiyatlar —
+ * herkesin kovaladığı oyuncuda rekabet primi.
  */
-const RESERVE_SHARE = 0.55;
+const SURPLUS_EXP = 1.7;
+
+/**
+ * Oyuncu aynı mevkide kalanlardan bu kadar GEN kötüyse (ve havuzda seçenek
+ * varsa) "sıcak patates" sayılır: kimse artırmaz, açan asgariden sıkışır.
+ */
+const PASS_MIN_GAP = 2;
 
 /* --------------------------- deterministik gürültü --------------------------- */
 
@@ -89,30 +158,21 @@ function hash(str: string): number {
 
 /** Botun sabit karakteri — id'den türer, oyun boyunca değişmez. */
 export interface BotPersona {
-  /** Adil fiyatın üstüne ne kadar çıkar (0.85 = pazarlıkçı, 1.30 = agresif). */
+  /** Piyasa fiyatının üstüne ne kadar çıkar (0.9 = pazarlıkçı, 1.2 = agresif). */
   aggression: number;
   /** Yıldız avcısı mı, bütçeyi yayan mı (0 = yayar, 1 = yıldıza yüklenir). */
   starHunter: number;
   /** Teklif adımı büyüklüğü — bazıları çekiştirir, bazıları resti görür. */
   decisiveness: number;
-  /** Tek futbolcuya yatırabileceği bütçe oranı — kişiliğin asıl strateji etkisi. */
-  maxSingleShare: number;
 }
 
 export function botPersona(botId: string): BotPersona {
-  const star = hash(`${botId}#star7`);
   return {
-    // Dağılımı ortaya toplamamak için iki hash'in ortalaması yerine tek,
-    // farklı tuzlu hash kullanılır.
-    aggression: 0.82 + hash(`${botId}#agg3`) * 0.5,
-    starHunter: star,
+    // Dar tutuldu: piyasanın çok üstüne çıkan bot, parayı saklayan insana
+    // oyuncu değil bütçe hediye eder.
+    aggression: 0.9 + hash(`${botId}#agg3`) * 0.3,
+    starHunter: hash(`${botId}#star7`),
     decisiveness: hash(`${botId}#dec5`),
-    /**
-     * Tek bir futbolcuya toplam bütçenin en fazla yüzde kaçını yatırır.
-     * Yıldız avcısı bir oyuncuya yüklenip gerisini pazarlıkla toplar;
-     * "yayıcı" bot ise hiçbir oyuncuya fazla vermez. Asıl strateji farkı bu.
-     */
-    maxSingleShare: 0.26 + star * 0.34,
   };
 }
 
@@ -123,63 +183,45 @@ export function botBidDelayMs(remainingMs: number): number {
   return base;
 }
 
-/* ------------------------------ takım gücü ------------------------------ */
+/* ------------------------------ piyasa okuma ------------------------------ */
 
-/** Kadronun tek sayıya indirgenmiş gücü (simülasyonun kullandığı ölçü). */
-function strengthOf(squad: Footballer[]): number {
-  const { attack, defense } = calculateTeamStats(squad);
-  return (attack + defense) / 2;
+/** Mevki başına "bedava seviye": havuzda (masadaki dahil) kalan en düşük GEN. */
+function positionFloors(pool: Footballer[], current: Footballer): Record<Position, number> {
+  const floors = { GK: Infinity, DEF: Infinity, MID: Infinity, FWD: Infinity };
+  for (const f of [...pool, current]) floors[f.position] = Math.min(floors[f.position], f.overall);
+  return floors;
 }
 
-/** Bu futbolcuyu alırsam takım gücüm ne kadar artar? */
-function marginalGain(squad: Footballer[], candidate: Footballer): number {
-  return strengthOf([...squad, candidate]) - strengthOf(squad);
+function surplus(f: Footballer, floors: Record<Position, number>): number {
+  return Math.max(0, f.overall - floors[f.position]);
 }
 
 /**
- * "Yedek seviyesi": havuzda o pozisyonda kalanların ortancası.
- * Bot bunu referans alır — yedekten farkı kadar prim öder.
+ * λ — 1 birim (üslü) artı değerin piyasadaki fiyatı. Masadaki harcanabilir
+ * para (sert tabanlar düşülmüş) / havuzda kalan toplam artı değer.
  */
-function replacementFor(pool: Footballer[], pos: Position): Footballer | null {
-  const same = pool.filter((f) => f.position === pos).sort((a, b) => a.overall - b.overall);
-  if (same.length === 0) return null;
-  return same[Math.floor(same.length / 2)] ?? null;
-}
-
-/* -------------------------------- rezerv -------------------------------- */
-
-/**
- * Kalan zorunlu slotlar için kenarda tutulacak para.
- *
- * TABAN FİYAT KALKTIĞI İÇİN bu artık iki parçadır:
- *  1. SERT taban — her kalan slot için en az `minBidIncrement`. Bu olmadan
- *     bot teklif veremez hâle gelir.
- *  2. STRATEJİK pay — kalan slotların piyasada kaça gideceğine dair tahmin.
- *     Tahmin, botun kendi adil payının bir oranıdır: hepsini tek oyuncuya
- *     yatırıp kalan turlarda susmak istemez.
- *
- * `excludeOne` verilen pozisyondan bir slotu (bu turda alacağını) düşer.
- */
-function reserveNeeded(
-  bot: Participant,
+function pricePerSurplus(
+  pool: Footballer[],
+  current: Footballer,
   config: RoomConfig,
-  excludePosition?: Position,
-  excludeOne = false,
+  market: MarketView,
 ): number {
+  const floors = positionFloors(pool, current);
+  let total = 0;
+  for (const f of [...pool, current]) total += surplus(f, floors) ** SURPLUS_EXP;
+  const spendable = Math.max(0, market.budget - market.slots * config.minBidIncrement);
+  return total > 0 ? spendable / total : 0;
+}
+
+/** Kalan zorunlu slotlar (bu turda alınacak hariç) için sert taban. */
+function hardReserve(bot: Participant, config: RoomConfig, pos: Position): number {
   let slots = 0;
-  for (const pos of POSITIONS) {
-    let need = config.squad[pos] - positionCount(bot, pos);
-    if (excludeOne && pos === excludePosition) need -= 1;
+  for (const p of POSITIONS) {
+    let need = config.squad[p] - positionCount(bot, p);
+    if (p === pos) need -= 1;
     if (need > 0) slots += need;
   }
-  if (slots <= 0) return 0;
-
-  const hardFloor = slots * config.minBidIncrement;
-  // Kalan slot başına adil payın bir kısmını kenarda tut.
-  const slotsLeft = Math.max(1, config.squadSize - bot.squad.length);
-  const fairShare = bot.budget / slotsLeft;
-  const strategic = Math.floor(slots * fairShare * RESERVE_SHARE);
-  return Math.max(hardFloor, strategic);
+  return slots * config.minBidIncrement;
 }
 
 /* ------------------------------ değerleme ------------------------------ */
@@ -188,121 +230,113 @@ function reserveNeeded(
  * Botun bu futbolcu için ödemeye razı olduğu tavan fiyat.
  * 0 dönerse bot ilgilenmiyor demektir.
  *
- * Aynı (bot, futbolcu) çifti için HER ZAMAN aynı değeri döndürür — tavanın
- * tur içinde oynamaması kritik (yoksa bot kendi kararıyla çelişir).
- *
- * `rivals` verilirse (açık bütçe modu) bot rakiplerin ödeyebileceği en yüksek
- * teklifin üstüne çıkmaz: kimse rakip değilse ucuza kapar, çekişme varsa
- * rakip tavanının bir tık üstüne razı olur. `null` ise (gizli mod) rakip
- * bütçesini hiç hesaba katmaz.
+ * Aynı (bot, futbolcu) çifti için tur içinde HER ZAMAN aynı değeri döndürür —
+ * tavanın tur içinde oynamaması kritik (yoksa bot kendi kararıyla çelişir).
+ * (Açık modda rakip tavanı, bir rakip pas deyip teklif hakkını kaybedince
+ * düşebilir; bu bilinçli.)
  */
 export function botMaxBid(
   bot: Participant,
   footballer: Footballer,
   config: RoomConfig,
-  pool: Footballer[],
-  rivals: RivalView[] | null = null,
+  view: BotView,
 ): number {
   const pos = footballer.position;
+  const min = config.minBidIncrement;
 
   // 1. İHTİYAÇ
   if (positionCount(bot, pos) >= config.squad[pos]) return 0;
   if (bot.squad.length >= config.squadSize) return 0;
 
-  // 2. REZERV — bu alımdan sonra kalan slotlara para kalmalı
-  const reserve = reserveNeeded(bot, config, pos, true);
-  const affordable = bot.budget - reserve;
-  if (affordable < config.minBidIncrement) return 0;
+  // 2. SERT TABAN
+  const affordable = bot.budget - hardReserve(bot, config, pos);
+  if (affordable < min) return 0;
 
   const persona = botPersona(bot.id);
   const slotsLeft = config.squadSize - bot.squad.length;
-  const fairShare = bot.budget / Math.max(1, slotsLeft);
+  const { pool, rivals, market } = view;
 
-  // 3a. ORTAK DEĞER — futbolcu kendi pozisyonunda ne kadar iyi?
-  //     Gerçek açık artırmada yıldız, herkes istediği için pahalıdır.
-  //     Havuzda kalan aynı pozisyondakiler arasındaki yüzdelik dilimi.
-  const posPool = pool.filter((f) => f.position === pos);
-  const better = posPool.filter((f) => f.overall < footballer.overall).length;
-  const qualityPct = posPool.length > 0 ? better / posPool.length : 0.5; // 0..1
+  // 3. PİYASA DEĞERİ — artı değer × 1 puanın fiyatı.
+  const floors = positionFloors(pool, footballer);
+  const s = surplus(footballer, floors);
+  const lambda = pricePerSurplus(pool, footballer, config, market);
 
-  // 3b. ÖZEL DEĞER — bu oyuncu BENİM kadromu ne kadar güçlendiriyor?
-  //     Yedeğine göre artı değeri. Hücumu zayıf bot forvete daha çok öder.
-  const myGain = marginalGain(bot.squad, footballer);
-  const replacement = replacementFor(pool, pos);
-  const replGain = replacement ? marginalGain(bot.squad, replacement) : 0;
-  const edge = Math.max(0, myGain - replGain);
-  // Tipik artı değer ~1-3 puan; 3 puanı "tam uyum" say.
-  const fitScore = Math.min(1, edge / 3);
+  // Servet: slot başına param piyasa ortalamasına göre ne durumda? Parası bol
+  // olan daha çok öder (draft bitince para işe yaramaz), kıt olan kısılır.
+  const myPerSlot = bot.budget / slotsLeft;
+  const marketPerSlot = market.slots > 0 ? market.budget / market.slots : myPerSlot;
+  const wealth = marketPerSlot > 0 ? myPerSlot / marketPerSlot : 1;
 
-  // İkisini harmanla. starHunter yüksek bot kaliteye, düşük bot uyuma bakar.
-  const qualityWeight = 1.15 + persona.starHunter * 1.25;
-  const fitWeight = 0.85 - persona.starHunter * 0.45;
-  let valuation =
-    fairShare * (0.5 + qualityWeight * qualityPct + fitWeight * fitScore) * persona.aggression;
+  // Kişilik: yıldız avcısı üst dilime biraz fazla, alt dilime biraz az öder.
+  const bestAtPos = Math.max(
+    footballer.overall,
+    ...pool.filter((f) => f.position === pos).map((f) => f.overall),
+  );
+  const spread = Math.max(1, bestAtPos - floors[pos]);
+  const tilt = 1 + (persona.starHunter - 0.5) * 0.4 * (2 * (s / spread) - 1);
 
-  // En az bir artış adımı kadar olsun
-  valuation = Math.max(valuation, config.minBidIncrement);
+  let valuation = min + lambda * s ** SURPLUS_EXP * wealth * persona.aggression * tilt;
 
-  // KITLIK — havuzda o pozisyondan ihtiyacım kadar ya da az kaldıysa kaçırma
-  const need = config.squad[pos] - positionCount(bot, pos);
-  const availableForPos = pool.filter((f) => f.position === pos).length;
-  if (availableForPos <= need) {
-    valuation = affordable; // mecburen sonuna kadar
-  } else if (availableForPos <= need + 2) {
-    valuation *= 1.25;
+  // ZORLUK — erken harcama hatası: kolay bot draft başında fazla öder, sonda
+  // parasız kalır (eski botların zaafı; sabırlı insana alan açar).
+  const skill = botSkill(config);
+  if (skill.earlyOverpay > 0) {
+    const totalSlots = config.squadSize * config.tournamentSize;
+    const draftLeft = Math.min(1, market.slots / Math.max(1, totalSlots));
+    valuation *= 1 + skill.earlyOverpay * draftLeft;
   }
 
-  // KİŞİLİK TAVANI — tek bir futbolcuya bütçenin belli bir oranından fazlasını
-  // yatırma. Yıldız avcısı bir oyuncuya yüklenir, "yayıcı" bot parayı dağıtır.
-  // Asıl strateji farkı burada doğuyor. Kıtlıkta ve son iki slotta uygulanmaz —
-  // kadroyu tamamlamak kişilikten önce gelir.
-  if (availableForPos > need && slotsLeft > 2) {
-    valuation = Math.min(valuation, config.startingBudget * persona.maxSingleShare);
+  // SON SLOT — kalan para draft bitince boşa gider. Mevkideki en iyi aday
+  // oranında elde kalanı basar (en iyisine hepsini, ortalamaya yarısını).
+  if (slotsLeft === 1 && s > 0) {
+    valuation = Math.max(valuation, affordable * (s / spread));
   }
 
-  // Son slotlarda elde kalan parayı değerlendir (israf etme). Yayıcı bot
-  // burada da temkinli, o yüzden pay kişiliğe bağlı.
-  if (slotsLeft <= 2) {
-    valuation = Math.max(valuation, affordable * (0.55 + persona.starHunter * 0.35));
-  }
-
-  // AÇIK BÜTÇE AVANTAJI — rakiplerin bütçesi görünüyorsa fazla ödeme.
-  // Kıtlık (mecburen sonuna kadar) durumunda uygulanmaz — kadro önce gelir.
-  if (rivals && availableForPos > need) {
+  // AÇIK BÜTÇE — rakiplerin çıkabileceğinin bir tık üstü yeter.
+  if (rivals) {
     const ceiling = rivalCeiling(rivals, pos, config);
     if (ceiling <= 0) {
       // Bu mevkiye kimse rakip değil — asgariye yakın kap, parayı sakla.
-      valuation = Math.min(valuation, config.minBidIncrement * 2);
+      valuation = Math.min(valuation, min * 2);
     } else {
-      // Rakibin çıkabileceği en yükseğin bir tık üstü yeter.
-      valuation = Math.min(valuation, ceiling + config.minBidIncrement);
+      valuation = Math.min(valuation, ceiling + min);
     }
   }
 
-  // Deterministik kişisel sapma (±%7) — aynı çift için hep aynı
-  valuation *= 0.93 + hash(`${bot.id}:${footballer.id}`) * 0.14;
+  // Deterministik kişisel sapma — aynı çift için hep aynı. Genişliği zorluğa
+  // bağlı (zor ±%7; kolaylaştıkça bot daha tutarsız fiyatlar).
+  const noise = skill.noise;
+  valuation *= 1 - noise + hash(`${bot.id}:${footballer.id}`) * 2 * noise;
+  // Erken bırakma (kolay botlar): bazı futbolculardan vazgeçer.
+  if (skill.underbid > 0)
+    valuation *= 1 - skill.underbid * hash(`${bot.id}:${footballer.id}:under`);
 
   const cap = Math.min(Math.floor(valuation), affordable);
   return Math.max(0, cap);
 }
 
 /**
- * Botun bu turda vereceği teklif. Vermeyecekse null (pas hakkı yok — sadece
- * teklif vermez, sonraki elde fikri değişebilir).
+ * Botun bu turda vereceği teklif. Vermeyecekse null (sadece teklif vermez,
+ * sonraki elde fikri değişebilir).
+ *
+ * `bidsLeft`: motorun bu tur için bota tanıdığı kalan teklif hakkı. Hak
+ * bitmek üzereyse bot tavanını tek seferde söyler — aksi halde +1'lerle
+ * çekiştiren insan botun haklarını tüketip futbolcuyu tavanın altında alırdı.
  */
 export function decideBotBid(
   bot: Participant,
   footballer: Footballer,
   config: RoomConfig,
-  pool: Footballer[],
+  view: BotView,
   currentHighest: { playerId: string; amount: number } | null,
   floor: number,
-  rivals: RivalView[] | null = null,
+  bidsLeft = Infinity,
 ): number | null {
   if (currentHighest?.playerId === bot.id) return null;
 
-  const max = botMaxBid(bot, footballer, config, pool, rivals);
+  const max = botMaxBid(bot, footballer, config, view);
   if (max <= 0 || floor > max) return null;
+  if (bidsLeft <= 2) return max;
 
   const persona = botPersona(bot.id);
 
@@ -316,43 +350,49 @@ export function decideBotBid(
 }
 
 /**
- * Bot açılış sırası gelince PAS geçsin mi?
+ * Bot açılış sırası gelince PAS geçsin mi? İnsanın pas kurnazlığı:
  *
- * Pas, sonlu bir kaynak (oyun başına 1-2). Botun mantığı: "bu futbolcu, bu
- * mevkide havuzda kalanların ALT diliminde ve yerine daha iyisi gelecek kadar
- * aday var" ise pas. Ölçü havuzdaki yüzdelik dilim (`qualityPct`); eşik
- * kişiliğe bağlı — yıldız avcısı sıradan oyuncuya daha kolay pas der,
- * "yayıcı" bot daha az seçicidir. Kıtlıkta (ihtiyaçtan az/eşit aday) asla
- * pas geçmez: kadro tamamlamak kişilikten önce gelir.
+ *  - Pas, istemediğin futbolcuda "sıcak patates"i başkasına atmaktır. Havuz
+ *    denk olduğu için kimsenin artırmayacağı futbolcu açanın elinde asgariden
+ *    kalır ve o mevkideki slotunu yer. Bot bunu, futbolcu mevkide kalanların
+ *    alt diliminde VE onlardan belirgin (≥ PASS_MIN_GAP GEN) kötüyse yapar.
+ *  - İstediğin futbolcuya asla pas deme: pas diyen o turda teklif de veremez.
+ *  - Hak sonlu ve draft bitince yanar: kalan açılış sayısına göre hakkı
+ *    çoksa eşik gevşer (harcanmadan bitmesin), azsa sıkılaşır (en kötüye sakla).
  *
- * Deterministik: aynı (bot, futbolcu) çifti hep aynı karar (tur içinde
- * sıra ona geri gelirse — herkes pas dediyse — yine tutarlı davranır).
+ * Deterministik: aynı (bot, futbolcu) çifti hep aynı karar (tur içinde sıra
+ * ona geri gelirse — herkes pas dediyse — yine tutarlı davranır).
  */
 export function botShouldPass(
   bot: Participant,
   footballer: Footballer,
   config: RoomConfig,
-  pool: Footballer[],
+  view: BotView,
 ): boolean {
-  if (bot.passesLeft <= 0) return false;
+  if (bot.passesLeft <= 0 || !botSkill(config).usesPasses) return false;
   const pos = footballer.position;
   const need = config.squad[pos] - positionCount(bot, pos);
   if (need <= 0) return false;
 
-  // Havuzda (masadaki hariç) bu mevkiden kalanlar — pas geçince yerine
-  // gelecek adaylar. İhtiyaçtan en az 2 fazla yoksa pas riskli.
-  const samePos = pool.filter((f) => f.position === pos);
-  if (samePos.length < need + 2) return false;
+  // Pas geçince yerine gelecek adaylar (masadaki hariç).
+  const samePos = view.pool.filter((f) => f.position === pos);
+  if (samePos.length < need + 1) return false;
 
   const worse = samePos.filter((f) => f.overall < footballer.overall).length;
-  const qualityPct = worse / samePos.length; // 0 = en kötü, 1 = en iyi
+  const rank = worse / samePos.length; // 0 = en kötü, 1 = en iyi
+  const sorted = samePos.map((f) => f.overall).sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)]!;
+  if (median - footballer.overall < PASS_MIN_GAP) return false;
+
+  // Hak baskısı: kalan açılışlarıma göre elimde ne kadar pas var?
+  const { market } = view;
+  const myOpeningsLeft = Math.max(1, market.slots / Math.max(1, market.teams));
+  const pressure = Math.min(1, bot.passesLeft / myOpeningsLeft);
 
   const persona = botPersona(bot.id);
-  // Yıldız avcısı ~%50 dilimin altına, yayıcı bot ~%25'in altına pas der.
-  const threshold = 0.25 + persona.starHunter * 0.25;
-  // Kişisel sapma (±0.05) — botlar aynı eşikte kilitlenmesin.
+  const threshold = 0.2 + 0.25 * persona.starHunter + 0.3 * pressure;
   const noise = (hash(`${bot.id}:${footballer.id}:pass`) - 0.5) * 0.1;
-  return qualityPct < threshold + noise;
+  return rank < threshold + noise;
 }
 
 /**
@@ -366,11 +406,10 @@ export function botOpeningBid(
   bot: Participant,
   footballer: Footballer,
   config: RoomConfig,
-  pool: Footballer[],
-  rivals: RivalView[] | null = null,
+  view: BotView,
 ): number {
   const min = config.minBidIncrement;
-  const max = botMaxBid(bot, footballer, config, pool, rivals);
+  const max = botMaxBid(bot, footballer, config, view);
   if (max <= min) return Math.max(min, Math.min(min, bot.budget));
 
   const persona = botPersona(bot.id);
@@ -378,8 +417,8 @@ export function botOpeningBid(
   let share = 0.15 + persona.decisiveness * 0.4;
   // Açık bütçe modu: bu mevkiye rakip yoksa asgariden aç (parayı sakla);
   // güçlü rakip varsa daha yüksek aç (caydır).
-  if (rivals) {
-    const ceiling = rivalCeiling(rivals, footballer.position, config);
+  if (view.rivals) {
+    const ceiling = rivalCeiling(view.rivals, footballer.position, config);
     if (ceiling <= 0) return Math.max(min, Math.min(min, bot.budget));
     if (ceiling >= max) share = Math.min(0.85, share + 0.25);
   }

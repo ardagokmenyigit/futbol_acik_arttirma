@@ -8,8 +8,10 @@ import {
   botOpeningBid,
   botShouldPass,
   decideBotBid,
-  type RivalView,
+  marketOf,
+  type BotView,
 } from './bot.js';
+import { estimatePool } from './poolEstimate.js';
 import { buildDraftPool, findFootballer } from './pool.js';
 import { buildTurnOrders, type TurnOrderPlan } from './turnOrder.js';
 import { bidFloor, positionCount, validateBid } from './validateBid.js';
@@ -314,16 +316,26 @@ function autoOpen(io: TypedServer, roomId: string): void {
 }
 
 /**
- * Botun gördüğü rakip bilgisi. Gizli bütçe modunda `null` — bot rakip
- * bütçelerini bilmez. Açık modda her rakibin kalan bütçesi + kadrosu.
+ * Botun karar anında gördüğü her şey — insanın ekranda gördüğüyle aynı
+ * bilgi. Havuz gerçek liste değil, kurulum kuralı + satılanlardan TAHMİN
+ * (`estimatePool`; insan da sıradakileri görmez). Açık modda rakip bütçe +
+ * kadroları ve gerçek piyasa toplamı; gizli modda rakipler `null` ve piyasa
+ * yalnız botun kendi bütçesinden tahmin edilir (`marketOf`).
  */
-function rivalsFor(room: RoomState, botId: string): RivalView[] | null {
-  if (room.config.hiddenBudgets) return null;
+function botViewFor(room: RoomState, botId: string, footballer: Footballer): BotView {
   // Bu turda pas geçenler teklif veremez — bot onları rakip saymaz.
   const passed = new Set(room.auction?.passedIds ?? []);
-  return room.participants
-    .filter((p) => p.id !== botId && !passed.has(p.id))
-    .map((p) => ({ budget: p.budget, squad: p.squad }));
+  const hidden = room.config.hiddenBudgets;
+  const me = room.participants.find((p) => p.id === botId);
+  return {
+    pool: estimatePool(room.config, room.participants, footballer),
+    rivals: hidden
+      ? null
+      : room.participants
+          .filter((p) => p.id !== botId && !passed.has(p.id))
+          .map((p) => ({ budget: p.budget, squad: p.squad })),
+    market: marketOf(room.participants, room.config, hidden ? me : undefined),
+  };
 }
 
 function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
@@ -333,18 +345,13 @@ function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
   const bot = room.participants.find((p) => p.id === botId);
   if (!bot?.isBot) return;
 
-  if (botShouldPass(bot, room.auction.footballer, room.config, remainingPool(room))) {
+  const view = botViewFor(room, botId, room.auction.footballer);
+  if (botShouldPass(bot, room.auction.footballer, room.config, view)) {
     applyPass(io, roomId, bot);
     return;
   }
 
-  const amount = botOpeningBid(
-    bot,
-    room.auction.footballer,
-    room.config,
-    remainingPool(room),
-    rivalsFor(room, botId),
-  );
+  const amount = botOpeningBid(bot, room.auction.footballer, room.config, view);
   applyOpening(io, roomId, amount, false);
 }
 
@@ -560,16 +567,6 @@ function applyBid(
 
 /* ------------------------------ botlar ------------------------------ */
 
-/** Draft havuzunda kalan futbolcular — bot değerlemesi için referans. */
-function remainingPool(room: RoomState): Footballer[] {
-  const out: Footballer[] = [];
-  for (const id of room.remainingPoolIds) {
-    const f = findFootballer(id);
-    if (f) out.push(f);
-  }
-  return out;
-}
-
 function scheduleBotBids(io: TypedServer, roomId: string, exceptId?: string): void {
   const room = roomStore.getRoom(roomId);
   const rt = runtimes.get(roomId);
@@ -601,14 +598,20 @@ function runBotTurn(io: TypedServer, roomId: string, botId: string): void {
   const own = rt.timers.botBidCount.get(botId) ?? 0;
   if (own >= MAX_BIDS_PER_BOT_PER_ROUND) return;
 
+  // Kalan hak: botun kendi tavanı ile tur toplam tavanından küçüğü. Hak
+  // bitmek üzereyse bot tavanını tek seferde söyler (bkz. decideBotBid).
+  const bidsLeft = Math.min(
+    MAX_BIDS_PER_BOT_PER_ROUND - own,
+    MAX_BOT_BIDS_PER_ROUND - rt.timers.botBids,
+  );
   const amount = decideBotBid(
     bot,
     room.auction.footballer,
     room.config,
-    remainingPool(room),
+    botViewFor(room, botId, room.auction.footballer),
     room.auction.highestBid,
     bidFloor(room.auction, room.config),
-    rivalsFor(room, botId),
+    bidsLeft,
   );
   if (amount === null) return;
 
