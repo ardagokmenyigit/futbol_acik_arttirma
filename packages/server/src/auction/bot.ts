@@ -1,4 +1,5 @@
 import type { Footballer, Participant, Position, RoomConfig } from '@fal/shared';
+import { botSkill } from './botSkill.js';
 import { positionCount } from './validateBid.js';
 
 /**
@@ -276,6 +277,15 @@ export function botMaxBid(
 
   let valuation = min + lambda * s ** SURPLUS_EXP * wealth * persona.aggression * tilt;
 
+  // ZORLUK — erken harcama hatası: kolay bot draft başında fazla öder, sonda
+  // parasız kalır (eski botların zaafı; sabırlı insana alan açar).
+  const skill = botSkill(config);
+  if (skill.earlyOverpay > 0) {
+    const totalSlots = config.squadSize * config.tournamentSize;
+    const draftLeft = Math.min(1, market.slots / Math.max(1, totalSlots));
+    valuation *= 1 + skill.earlyOverpay * draftLeft;
+  }
+
   // SON SLOT — kalan para draft bitince boşa gider. Mevkideki en iyi aday
   // oranında elde kalanı basar (en iyisine hepsini, ortalamaya yarısını).
   if (slotsLeft === 1 && s > 0) {
@@ -293,8 +303,13 @@ export function botMaxBid(
     }
   }
 
-  // Deterministik kişisel sapma (±%7) — aynı çift için hep aynı
-  valuation *= 0.93 + hash(`${bot.id}:${footballer.id}`) * 0.14;
+  // Deterministik kişisel sapma — aynı çift için hep aynı. Genişliği zorluğa
+  // bağlı (zor ±%7; kolaylaştıkça bot daha tutarsız fiyatlar).
+  const noise = skill.noise;
+  valuation *= 1 - noise + hash(`${bot.id}:${footballer.id}`) * 2 * noise;
+  // Erken bırakma (kolay botlar): bazı futbolculardan vazgeçer.
+  if (skill.underbid > 0)
+    valuation *= 1 - skill.underbid * hash(`${bot.id}:${footballer.id}:under`);
 
   const cap = Math.min(Math.floor(valuation), affordable);
   return Math.max(0, cap);
@@ -354,7 +369,7 @@ export function botShouldPass(
   config: RoomConfig,
   view: BotView,
 ): boolean {
-  if (bot.passesLeft <= 0) return false;
+  if (bot.passesLeft <= 0 || !botSkill(config).usesPasses) return false;
   const pos = footballer.position;
   const need = config.squad[pos] - positionCount(bot, pos);
   if (need <= 0) return false;

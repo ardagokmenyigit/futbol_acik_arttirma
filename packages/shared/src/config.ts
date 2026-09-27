@@ -1,4 +1,4 @@
-import type { RoomConfig, TournamentSize } from './types.js';
+import type { BotDifficulty, RoomConfig, TournamentSize } from './types.js';
 
 /**
  * FAZ 0 TASLAĞI — varsayılan oda ayarları.
@@ -39,7 +39,10 @@ export const DEFAULT_ROOM_CONFIG: RoomConfig = {
   maxPlayers: 8,
   tournamentSize: 4,
   hiddenBudgets: false,
+  botDifficulty: 'normal',
 };
+
+export const BOT_DIFFICULTIES: readonly BotDifficulty[] = ['easy', 'normal', 'hard'];
 
 /**
  * AÇILIŞ PAS HAKKI — turnuva boyutuna göre oyuncu başına toplam hak.

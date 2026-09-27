@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import {
+  BOT_DIFFICULTIES,
   BOT_NICKNAMES,
   DEFAULT_ROOM_CONFIG,
   passesForSize,
+  type BotDifficulty,
   type Participant,
   type Position,
   type RematchState,
@@ -472,6 +474,10 @@ function mergeConfig(override?: Partial<RoomConfig>): RoomConfig {
     squadSize,
     // Mod bayrağı: yalnız kesin boolean kabul et (istemciden geliyor).
     hiddenBudgets: override?.hiddenBudgets === true,
+    // Zorluk: yalnız bilinen değer; eski istemci / bozuk değer → varsayılan.
+    botDifficulty: BOT_DIFFICULTIES.includes(override?.botDifficulty as BotDifficulty)
+      ? (override!.botDifficulty as BotDifficulty)
+      : DEFAULT_ROOM_CONFIG.botDifficulty,
   };
 }
 

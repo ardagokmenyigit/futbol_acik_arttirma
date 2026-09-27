@@ -1,4 +1,5 @@
 import type { Footballer, Position, RoomConfig } from '@fal/shared';
+import { botSkill } from './botSkill.js';
 import { loadFootballers, TOP_TIER_DRAFT_RATIO, TOP_TIER_OVR_THRESHOLD } from './pool.js';
 
 /**
@@ -20,7 +21,8 @@ import { loadFootballers, TOP_TIER_DRAFT_RATIO, TOP_TIER_OVR_THRESHOLD } from '.
  *     aralıklı yüzdeliklerle (i + 0.5) / k temsil edilir. Veri setinin genel
  *     dağılımı, insanın gerçek futbolcuların reytinglerini kabaca bilmesine
  *     denk sayılır; hangi futbolcuların havuza düştüğü bilinmez.
- *   - Dip (bedava seviye) mevkideki sıradanların medyanından aşağı inmez.
+ *   - Dip (bedava seviye) mevkideki sıradanların bir yüzdeliğinden aşağı
+ *     inmez: zor botta medyan, kolaylaştıkça düşer (`botSkill`).
  *
  *  Deterministik: aynı durum → aynı tahmin (botun tavanı tur içinde oynamaz).
  *  Dönen futbolcular sentetiktir (`est-…` id'li), masadaki futbolcu HARİÇ.
@@ -28,9 +30,6 @@ import { loadFootballers, TOP_TIER_DRAFT_RATIO, TOP_TIER_OVR_THRESHOLD } from '.
  */
 
 const POSITIONS: Position[] = ['GK', 'DEF', 'MID', 'FWD'];
-
-/** Tahmini havuzun dibinin inemeyeceği yüzdelik (bkz. `estimatePool`). */
-const FREE_LEVEL_QUANTILE = 0.5;
 
 const isStar = (f: Footballer) => f.overall >= TOP_TIER_OVR_THRESHOLD;
 
@@ -135,15 +134,17 @@ export function estimatePool(
     const kStar = starAlloc[pos];
     const kNormal = left[pos] - kStar;
     const normQ = quantiles(normalOvr, kNormal, TOP_TIER_OVR_THRESHOLD - 1);
-    // BEDAVA SEVİYE = MEDYAN: tahmini havuzun dibi mevkideki sıradanların
-    // medyanından aşağı inmez. Kör bot "sırada kim var bilmiyorum ama
-    // ortalama birini nasılsa asgariye bulurum" der; yalnız ortalamanın
-    // üstüne para verir. Ölçüm (measureBotIQ, 8 takım, yalnız-yıldız
-    // insanı): dip = veri setinin dibi (78) → +1.2 güç, %25 dilim → +0.55,
-    // medyan → +0.26 (gerçek havuzu gören botla aynı düzey).
+    // BEDAVA SEVİYE: tahmini havuzun dibi mevkideki sıradanların
+    // `freeLevelQuantile` yüzdeliğinden aşağı inmez. Zor bot medyan der —
+    // "sırada kim var bilmiyorum ama ortalama birini nasılsa asgariye
+    // bulurum", yalnız ortalamanın üstüne para verir. Ölçüm (measureBotIQ,
+    // 8 takım, yalnız-yıldız insanı): dip = veri setinin dibi (78) → +1.2
+    // güç, %25 dilim → +0.55, medyan → +0.26 (gerçek havuzu gören botla aynı).
     if (normQ.length > 0 && normalOvr.length > 0) {
-      const median = normalOvr[Math.floor(normalOvr.length * FREE_LEVEL_QUANTILE)]!;
-      normQ[0] = Math.max(normQ[0]!, median);
+      const q = botSkill(config).freeLevelQuantile;
+      const freeLevel =
+        normalOvr[Math.min(normalOvr.length - 1, Math.floor(normalOvr.length * q))]!;
+      normQ[0] = Math.max(normQ[0]!, freeLevel);
     }
     const values = [...normQ, ...quantiles(starOvr, kStar, TOP_TIER_OVR_THRESHOLD)];
     values.forEach((overall, i) => {

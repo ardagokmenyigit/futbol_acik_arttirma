@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { RoomState, TournamentSize } from '@fal/shared';
+import type { BotDifficulty, RoomState, TournamentSize } from '@fal/shared';
 import { leaveRoom, setFormat, setReady, startGame } from '../lib/roomClient.js';
 import { clearSession } from '../lib/session.js';
 import { selectYou, useRoomStore } from '../store.js';
@@ -7,6 +7,12 @@ import { selectYou, useRoomStore } from '../store.js';
 interface Props {
   room: RoomState;
 }
+
+const DIFFICULTY_LABEL: Record<BotDifficulty, string> = {
+  easy: 'Kolay',
+  normal: 'Normal',
+  hard: 'Zor',
+};
 
 export function LobbyPage({ room }: Props) {
   const you = useRoomStore(selectYou);
@@ -129,7 +135,8 @@ export function LobbyPage({ room }: Props) {
         </p>
       )}
       <p className="footnote" style={{ marginTop: 8 }}>
-        Bütçe modu: <strong>{room.config.hiddenBudgets ? '🔒 gizli' : 'açık'}</strong> — oda
+        Bütçe modu: <strong>{room.config.hiddenBudgets ? '🔒 gizli' : 'açık'}</strong> · Bot
+        zorluğu: <strong>{DIFFICULTY_LABEL[room.config.botDifficulty] ?? 'Normal'}</strong> — oda
         kurulurken seçildi, değiştirilemez.
       </p>
 

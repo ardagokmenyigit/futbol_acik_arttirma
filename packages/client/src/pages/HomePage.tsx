@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DEFAULT_ROOM_CONFIG } from '@fal/shared';
+import { DEFAULT_ROOM_CONFIG, type BotDifficulty } from '@fal/shared';
 import { HowToPlay } from '../components/HowToPlay.js';
 import { createRoom, joinRoom } from '../lib/roomClient.js';
 import { saveSession } from '../lib/session.js';
@@ -8,6 +8,12 @@ import { useRoomStore } from '../store.js';
 const NICK_KEY = 'fal:nickname';
 
 const { squad, squadSize, startingBudget } = DEFAULT_ROOM_CONFIG;
+
+const DIFFICULTIES: { value: BotDifficulty; title: string; sub: string }[] = [
+  { value: 'easy', title: 'Kolay', sub: 'Hata yapar' },
+  { value: 'normal', title: 'Normal', sub: 'Dengeli rakip' },
+  { value: 'hard', title: 'Zor', sub: 'Parayı en iyi dağıtır' },
+];
 
 export function HomePage() {
   const enterRoom = useRoomStore((s) => s.enterRoom);
@@ -18,6 +24,9 @@ export function HomePage() {
   const [nickname, setNickname] = useState(() => localStorage.getItem(NICK_KEY) ?? '');
   const [code, setCode] = useState('');
   const [hiddenBudgets, setHiddenBudgets] = useState(false);
+  const [botDifficulty, setBotDifficulty] = useState<BotDifficulty>(
+    DEFAULT_ROOM_CONFIG.botDifficulty,
+  );
   const [busy, setBusy] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +40,7 @@ export function HomePage() {
       localStorage.setItem(NICK_KEY, nickname.trim());
       const res =
         action === 'create'
-          ? await createRoom(nickname, { hiddenBudgets })
+          ? await createRoom(nickname, { hiddenBudgets, botDifficulty })
           : await joinRoom(code, nickname);
       saveSession({ roomId: res.roomState.roomId, playerId: res.you.id });
       enterRoom(res.roomState, res.you.id);
@@ -110,6 +119,26 @@ export function HomePage() {
           </div>
           <p className="footnote" style={{ marginTop: 6 }}>
             Gizli modda botlar da rakip bütçelerini görmez. Oda kurulduktan sonra değişmez.
+          </p>
+        </div>
+
+        <div className="field-block">
+          <span className="field-label">Bot zorluğu</span>
+          <div className="format-row">
+            {DIFFICULTIES.map((d) => (
+              <button
+                key={d.value}
+                type="button"
+                className={`format-btn${botDifficulty === d.value ? ' active' : ''}`}
+                onClick={() => setBotDifficulty(d.value)}
+              >
+                <span className="ft">{d.title}</span>
+                <span className="fs">{d.sub}</span>
+              </button>
+            ))}
+          </div>
+          <p className="footnote" style={{ marginTop: 6 }}>
+            Eksik takımları dolduran botlar için. Oda kurulduktan sonra değişmez.
           </p>
         </div>
 

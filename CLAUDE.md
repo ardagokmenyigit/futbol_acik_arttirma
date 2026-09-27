@@ -766,11 +766,11 @@ dağılımına sadık kalarak küçük, gözden geçirilebilir adımlarla ilerle
   Oda kapasitesi = turnuva boyutu; tek kişi bile başlatır, eksik takımlar
   **botlarla** tamamlanır (`isBot: true`).
 - Botlar (`server/src/auction/bot.ts`): tam model ve ölçüm için bkz.
-  aşağıdaki **BOT ZEKÂSI**. `botOpeningBid` açılış (zorunlu, asla null),
-  `decideBotBid` serbest evre (null = teklif vermez), `botShouldPass` pas.
-  Hepsi `BotView` alır (`engine.ts` → `botViewFor`): TAHMİNİ havuz
-  (`estimatePool` — gerçek liste değil), açık modda
-  rakipler, piyasa (`marketOf` — gizli modda yalnız kendi bütçesinden
+  aşağıdaki **BOT ZEKÂSI** ve **BOT ZORLUĞU** (kolay / normal / zor).
+  `botOpeningBid` açılış (zorunlu, asla null), `decideBotBid` serbest evre
+  (null = teklif vermez), `botShouldPass` pas. Hepsi `BotView` alır
+  (`engine.ts` → `botViewFor`): TAHMİNİ havuz (`estimatePool` — gerçek liste
+  değil), açık modda rakipler, piyasa (`marketOf` — gizli modda yalnız kendi bütçesinden
   tahmin).
 - Güvenlik ağı: bitişte `autoCompleteSquads()`. Havuz tam denk olduğu için
   normalde devreye girmez.
@@ -900,6 +900,44 @@ istenirse kol motor değil draft (bkz. §3.2 "ASIL TAVAN").
 Bot–bot sağlığı (4 takım): yıldız ort 48M, sıradan 4.6M, turların %55'i
 asgariye gider (sıradan oyuncuya kimse para basmaz — insan da basmaz), kalan
 bütçe ort 41M, eksik kadro 0, pas hakkının %99'u kullanılır.
+
+**BOT ZORLUĞU (27 Eylül 2026)** — `RoomConfig.botDifficulty`
+(`'easy' | 'normal' | 'hard'`, varsayılan **normal**; oda kurulurken seçilir,
+eski istemci göndermezse / bozuk değer gelirse `normal` — `mergeConfig`).
+Kullanıcı: "şimdiki botlar belki fazla zor; bot zorluğu seçeneği mantıklı".
+Zor = yukarıdaki akıllı bot. Kolay / normal botun "hata" kolları
+(`auction/botSkill.ts`): bedava seviye yüzdeliği (düşükse sıradana para
+basar), değerleme gürültüsü, erken harcama (draft başında fazla öder, sonda
+parası azalır), pas kullanmama, erken bırakma (bazı futbolculara %0–X az
+değer biçer). **Takım sayısına göre ayrı ayarlanır**: aynı kol teke tekte
+(tek bot) neredeyse etkisiz, 8 takımda (yedi bot birden hata yapar) çok
+güçlü — örn. pas kullanmayan kolay bot 8 takımda en iyi planı 1.86x'e
+çıkarıyordu, teke tekte en uç kollarla bile sezgisel insan 0.97x kaldı.
+
+| seviye | 2 takım                                            | 4 takım                               | 8 takım                           |
+| ------ | -------------------------------------------------- | ------------------------------------- | --------------------------------- |
+| kolay  | dip %20, ±%15, erken 0.15, **passız**, bırakma %50 | dip %20, ±%15, erken 0.15, **passız** | dip %25, ±%15, erken 0.1, pas var |
+| normal | dip %20, ±%15, erken 0.15, bırakma %30             | dip %20, ±%15, erken 0.15             | dip %40, ±%10, erken yok          |
+| zor    | dip %50 (medyan), ±%7                              | aynı                                  | aynı                              |
+
+Ölçüt: **en iyi basit insan planı** — `measureBotIQ.ts`'teki `sezgisel`
+(yıldıza bütçenin ~%35'i, 86–89'a ~12M, 83–85'e ~5M, altına asgari; son iki
+slotta elde kalanı harcar; dipteki futbolcuya pas), `yildiz` ve
+`yildiz-hepsi` stratejilerinin en iyisi. (`sezgisel` tek başına teke tekte
+yanıltıcı: yıldız tavanı sabit ~52M, teke tekte yıldız başına düşen para çok
+daha yüksek olduğu için bot ne kadar zayıf olursa olsun yıldızı kaçırıyor.)
+1000 draft × 4 bracket, şampiyonluk / adil pay:
+
+| seviye | 2 takım (açık / gizli) | 4 takım (açık / gizli) | 8 takım (açık / gizli) |
+| ------ | ---------------------- | ---------------------- | ---------------------- |
+| zor    | 0.90x / 0.83x          | 1.04x / 1.02x          | 1.12x / 1.15x          |
+| normal | 1.07x / 0.90x          | 1.29x / 1.12x          | 1.20x / 1.12x          |
+| kolay  | 1.23x / —              | 1.56x / —              | 1.36x / —              |
+
+Sıralama her boyutta tutar; gizli modda normal ile zor teke tekte
+birbirine yakın. Parayı yıldıza saklayan kaba `sabirli` insanı her seviyede
+kaybeder (0.17–0.77x) — açık kapalı kalır. İlk tur tavanı (4 takım): zor
+81–83 3M / 93+ 84M, normal 6M / 93M, kolay 6M / 94M.
 
 **Açık uçlar**
 

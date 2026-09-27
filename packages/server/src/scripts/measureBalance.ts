@@ -21,6 +21,7 @@ import {
   DEFAULT_ROOM_CONFIG,
   passesForSize,
   simulateMatch,
+  type BotDifficulty,
   type Footballer,
   type MatchResult,
   type Participant,
@@ -45,6 +46,10 @@ const DRAFTS = Number(process.argv[2] ?? 3000);
 const SENS = process.argv[3] !== undefined ? Number(process.argv[3]) : undefined;
 const BASE_CONV = process.argv[4] !== undefined ? Number(process.argv[4]) : undefined;
 
+/** `DIFF=easy|normal|hard` → bot zorluğu (varsayılan: oda varsayılanı). */
+const DIFF: BotDifficulty =
+  (process.env.DIFF as BotDifficulty | undefined) ?? DEFAULT_ROOM_CONFIG.botDifficulty;
+
 const MAX_BIDS_PER_BOT_PER_ROUND = 10;
 const MAX_BOT_BIDS_PER_ROUND = 60;
 
@@ -56,7 +61,7 @@ function canTake(config: RoomConfig, p: Participant, f: Footballer): boolean {
 
 /** Gerçek bot draft'ı — engine.ts tur mantığı, zamanlayıcısız. */
 function runBotDraft(size: TournamentSize): Participant[] {
-  const config: RoomConfig = { ...DEFAULT_ROOM_CONFIG, tournamentSize: size };
+  const config: RoomConfig = { ...DEFAULT_ROOM_CONFIG, tournamentSize: size, botDifficulty: DIFF };
   const bots: Participant[] = Array.from({ length: size }, (_, i) => ({
     id: `bot-${i + 1}-${Math.random().toString(36).slice(2, 10)}`,
     nickname: `Bot ${i + 1}`,

@@ -86,7 +86,17 @@ export interface RoomConfig {
    * seçilir, sonra değişmez.
    */
   hiddenBudgets: boolean;
+  /**
+   * BOT ZORLUĞU. `hard`: bot parayı en iyi dağıtan akıllı model (CLAUDE.md
+   * → BOT ZEKÂSI). `normal` / `easy`: bot sıradan futbolcuya daha çok para
+   * basar ve değerlemesi daha tutarsızdır — sezgisel oynayan insan için
+   * yenilebilir rakip. Oda kurulurken seçilir, sonra değişmez. Eski
+   * istemciler göndermezse `normal`.
+   */
+  botDifficulty: BotDifficulty;
 }
+
+export type BotDifficulty = 'easy' | 'normal' | 'hard';
 
 /** Bir katılımcı (oda üyesi). İnsan ya da bot olabilir. */
 export interface Participant {

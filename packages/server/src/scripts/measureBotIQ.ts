@@ -35,6 +35,7 @@ import {
   DEFAULT_ROOM_CONFIG,
   passesForSize,
   simulateMatch,
+  type BotDifficulty,
   type Footballer,
   type MatchResult,
   type Participant,
@@ -61,6 +62,9 @@ const SIZES = (process.argv[3] ?? '2,4,8').split(',').map(Number) as TournamentS
 const ONLY = process.argv[4]?.split(',');
 /** `HIDDEN=1` → gizli bütçe modu (botlar rakip bütçesini görmez). */
 const HIDDEN = process.env.HIDDEN === '1';
+/** `DIFF=easy|normal|hard` → bot zorluğu (varsayılan: oda varsayılanı). */
+const DIFF: BotDifficulty =
+  (process.env.DIFF as BotDifficulty | undefined) ?? DEFAULT_ROOM_CONFIG.botDifficulty;
 
 /** engine.ts ile aynı tavanlar — insanlara uygulanmaz (motor da uygulamıyor). */
 const MAX_BIDS_PER_BOT_PER_ROUND = 10;
@@ -258,8 +262,39 @@ function botWithPass(
   };
 }
 
+/**
+ * "Sezgisel" insan — zorluk ayarının referansı. Kullanıcının tarifi: 81'liğe
+ * 150M'den en fazla birkaç M, yıldıza ciddi para; son slotlarda elde kalanı
+ * harcar; dipteki futbolcuya pas der. Tavanlar kaba GEN bantları.
+ */
+const intuitive: Agent = {
+  name: 'sezgisel',
+  isBot: false,
+  open(me, f, ctx) {
+    if (humanShouldPass(me, f, ctx)) return 'pass';
+    return ctx.config.minBidIncrement;
+  },
+  bid(me, f, ctx, highest, floor) {
+    if (highest.playerId === me.id || !canTake(ctx.config, me, f)) return null;
+    const slotsLeft = ctx.config.squadSize - me.squad.length;
+    const affordable = me.budget - (slotsLeft - 1) * ctx.config.minBidIncrement;
+    const B = ctx.config.startingBudget;
+    let cap: number;
+    if (slotsLeft <= 2) cap = affordable;
+    else if (f.overall >= STAR) cap = Math.floor(Math.min(B * 0.35, me.budget * 0.6));
+    else if (f.overall >= 86) cap = Math.floor(B * 0.08);
+    else if (f.overall >= 83) cap = Math.floor(B * 0.035);
+    else cap = ctx.config.minBidIncrement;
+    cap = Math.min(cap, affordable);
+    if (floor > cap) return null;
+    // Küçük adımlarla artırır (+1…+3).
+    return Math.min(cap, floor + Math.floor(Math.random() * 3));
+  },
+};
+
 const HUMANS: Agent[] = [
   botAgent,
+  intuitive,
   botNoPass,
   botWithPass('pas-dip', (rank) => rank === 0),
   botWithPass('pas-alt3', (rank) => rank < 0.34),
@@ -296,6 +331,7 @@ function runDraft(size: TournamentSize, human: Agent, st: DraftStats): Participa
     ...DEFAULT_ROOM_CONFIG,
     tournamentSize: size,
     hiddenBudgets: HIDDEN,
+    botDifficulty: DIFF,
   };
   const parts: Participant[] = Array.from({ length: size }, (_, i) => ({
     id: `${i === 0 ? 'h' : 'bot'}-${i}-${Math.random().toString(36).slice(2, 10)}`,
@@ -471,6 +507,7 @@ function probeOpeningCaps(size: TournamentSize): void {
     ...DEFAULT_ROOM_CONFIG,
     tournamentSize: size,
     hiddenBudgets: HIDDEN,
+    botDifficulty: DIFF,
   };
   const bands = new Map<string, number[]>();
   const band = (o: number) =>
