@@ -35,6 +35,7 @@ import {
   type BotView,
 } from '../auction/bot.js';
 import { buildDraftPool } from '../auction/pool.js';
+import { estimatePool } from '../auction/poolEstimate.js';
 import { buildTurnOrders } from '../auction/turnOrder.js';
 import { positionCount } from '../auction/validateBid.js';
 import { buildTeam } from '../simulation/teamStats.js';
@@ -73,8 +74,8 @@ function runBotDraft(size: TournamentSize): Participant[] {
     bots.map((b) => b.id),
     config.squadSize * size,
   );
-  const viewFor = (botId: string, passed: Set<string>): BotView => ({
-    pool: remaining,
+  const viewFor = (botId: string, passed: Set<string>, f: Footballer): BotView => ({
+    pool: estimatePool(config, bots, f),
     rivals: config.hiddenBudgets
       ? null
       : bots
@@ -113,7 +114,7 @@ function runBotDraft(size: TournamentSize): Participant[] {
     const passedIds: string[] = [];
     let highest: { playerId: string; amount: number } | null = null;
     for (;;) {
-      if (botShouldPass(opener, footballer, config, viewFor(opener.id, passed))) {
+      if (botShouldPass(opener, footballer, config, viewFor(opener.id, passed, footballer))) {
         opener.passesLeft = Math.max(0, opener.passesLeft - 1);
         passed.add(opener.id);
         passedIds.push(opener.id);
@@ -126,7 +127,12 @@ function runBotDraft(size: TournamentSize): Participant[] {
         opener = cands[Math.floor(Math.random() * cands.length)]!;
         continue;
       }
-      const amount = botOpeningBid(opener, footballer, config, viewFor(opener.id, passed));
+      const amount = botOpeningBid(
+        opener,
+        footballer,
+        config,
+        viewFor(opener.id, passed, footballer),
+      );
       const capped = Math.max(min, Math.min(Math.floor(amount), Math.max(min, opener.budget)));
       highest = { playerId: opener.id, amount: Math.min(capped, Math.max(min, opener.budget)) };
       break;
@@ -148,7 +154,7 @@ function runBotDraft(size: TournamentSize): Participant[] {
           bot,
           footballer,
           config,
-          viewFor(bot.id, passed),
+          viewFor(bot.id, passed, footballer),
           highest,
           floor,
           Math.min(MAX_BIDS_PER_BOT_PER_ROUND - own, MAX_BOT_BIDS_PER_ROUND - total),

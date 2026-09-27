@@ -50,6 +50,7 @@ import {
   type BotView,
 } from '../auction/bot.js';
 import { buildDraftPool } from '../auction/pool.js';
+import { estimatePool } from '../auction/poolEstimate.js';
 import { buildTurnOrders } from '../auction/turnOrder.js';
 import { positionCount } from '../auction/validateBid.js';
 import { buildTeam } from '../simulation/teamStats.js';
@@ -68,7 +69,7 @@ const STAR = 90;
 
 interface Ctx {
   config: RoomConfig;
-  /** Masadaki hariç, havuzda kalanlar. */
+  /** Masadaki hariç, havuzda kalanların TAHMİNİ (`estimatePool`). */
   pool: Footballer[];
   parts: Participant[];
   passed: Set<string>;
@@ -344,7 +345,15 @@ function runDraft(size: TournamentSize, human: Agent, st: DraftStats): Participa
 
     const passed = new Set<string>();
     const passedIds: string[] = [];
-    const ctx: Ctx = { config, pool: remaining, parts, passed, bidsLeft: Infinity };
+    // Ajanlar (bot da insan stratejileri de) gerçek havuzu DEĞİL, kurulum
+    // kuralı + satılanlardan tahmini görür — insan sıradakileri bilmez.
+    const ctx: Ctx = {
+      config,
+      pool: estimatePool(config, parts, footballer),
+      parts,
+      passed,
+      bidsLeft: Infinity,
+    };
     let highest: { playerId: string; amount: number };
     for (;;) {
       const a = agentOf(opener);
@@ -491,8 +500,13 @@ function probeOpeningCaps(size: TournamentSize): void {
     const pool = buildDraftPool(config, size);
     for (let k = 0; k < pool.length; k++) {
       const f = pool[k]!;
-      const rest = pool.filter((_, j) => j !== k);
-      const ctx: Ctx = { config, pool: rest, parts, passed: new Set(), bidsLeft: Infinity };
+      const ctx: Ctx = {
+        config,
+        pool: estimatePool(config, parts, f),
+        parts,
+        passed: new Set(),
+        bidsLeft: Infinity,
+      };
       const cap = botMaxBid(parts[0]!, f, config, viewOf(ctx, parts[0]!.id));
       const key = band(f.overall);
       bands.set(key, [...(bands.get(key) ?? []), cap]);

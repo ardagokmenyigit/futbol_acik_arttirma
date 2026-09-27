@@ -11,6 +11,7 @@ import {
   marketOf,
   type BotView,
 } from './bot.js';
+import { estimatePool } from './poolEstimate.js';
 import { buildDraftPool, findFootballer } from './pool.js';
 import { buildTurnOrders, type TurnOrderPlan } from './turnOrder.js';
 import { bidFloor, positionCount, validateBid } from './validateBid.js';
@@ -316,17 +317,18 @@ function autoOpen(io: TypedServer, roomId: string): void {
 
 /**
  * Botun karar anında gördüğü her şey — insanın ekranda gördüğüyle aynı
- * bilgi. Açık modda rakip bütçe + kadroları ve gerçek piyasa toplamı; gizli
- * modda rakipler `null` ve piyasa yalnız botun kendi bütçesinden tahmin
- * edilir (`marketOf`).
+ * bilgi. Havuz gerçek liste değil, kurulum kuralı + satılanlardan TAHMİN
+ * (`estimatePool`; insan da sıradakileri görmez). Açık modda rakip bütçe +
+ * kadroları ve gerçek piyasa toplamı; gizli modda rakipler `null` ve piyasa
+ * yalnız botun kendi bütçesinden tahmin edilir (`marketOf`).
  */
-function botViewFor(room: RoomState, botId: string): BotView {
+function botViewFor(room: RoomState, botId: string, footballer: Footballer): BotView {
   // Bu turda pas geçenler teklif veremez — bot onları rakip saymaz.
   const passed = new Set(room.auction?.passedIds ?? []);
   const hidden = room.config.hiddenBudgets;
   const me = room.participants.find((p) => p.id === botId);
   return {
-    pool: remainingPool(room),
+    pool: estimatePool(room.config, room.participants, footballer),
     rivals: hidden
       ? null
       : room.participants
@@ -343,7 +345,7 @@ function runBotOpening(io: TypedServer, roomId: string, botId: string): void {
   const bot = room.participants.find((p) => p.id === botId);
   if (!bot?.isBot) return;
 
-  const view = botViewFor(room, botId);
+  const view = botViewFor(room, botId, room.auction.footballer);
   if (botShouldPass(bot, room.auction.footballer, room.config, view)) {
     applyPass(io, roomId, bot);
     return;
@@ -565,16 +567,6 @@ function applyBid(
 
 /* ------------------------------ botlar ------------------------------ */
 
-/** Draft havuzunda kalan futbolcular — bot değerlemesi için referans. */
-function remainingPool(room: RoomState): Footballer[] {
-  const out: Footballer[] = [];
-  for (const id of room.remainingPoolIds) {
-    const f = findFootballer(id);
-    if (f) out.push(f);
-  }
-  return out;
-}
-
 function scheduleBotBids(io: TypedServer, roomId: string, exceptId?: string): void {
   const room = roomStore.getRoom(roomId);
   const rt = runtimes.get(roomId);
@@ -616,7 +608,7 @@ function runBotTurn(io: TypedServer, roomId: string, botId: string): void {
     bot,
     room.auction.footballer,
     room.config,
-    botViewFor(room, botId),
+    botViewFor(room, botId, room.auction.footballer),
     room.auction.highestBid,
     bidFloor(room.auction, room.config),
     bidsLeft,
