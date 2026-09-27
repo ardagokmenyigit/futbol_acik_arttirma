@@ -1,4 +1,4 @@
-import type { BotDifficulty, RoomConfig, TournamentSize } from './types.js';
+import type { BotDifficulty, Lang, RoomConfig, TournamentSize } from './types.js';
 
 /**
  * FAZ 0 TASLAĞI — varsayılan oda ayarları.
@@ -43,6 +43,9 @@ export const DEFAULT_ROOM_CONFIG: RoomConfig = {
 };
 
 export const BOT_DIFFICULTIES: readonly BotDifficulty[] = ['easy', 'normal', 'hard'];
+
+export const LANGS: readonly Lang[] = ['tr', 'en'];
+export const DEFAULT_LANG: Lang = 'tr';
 
 /**
  * AÇILIŞ PAS HAKKI — turnuva boyutuna göre oyuncu başına toplam hak.

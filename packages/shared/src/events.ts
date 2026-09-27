@@ -6,6 +6,7 @@
 import type {
   AuctionState,
   Bid,
+  Lang,
   LeagueState,
   MatchResult,
   Participant,
@@ -22,6 +23,11 @@ import type {
 export interface ClientToServerEvents {
   /** Faz 0 sağlık kontrolü — bağlantı doğrulandıktan sonra kaldırılabilir. */
   hello: (msg: string, ack: (reply: string) => void) => void;
+  /**
+   * Arayüz dili değişti — sunucu bu soketin hata / uyarı mesajlarını artık bu
+   * dilde gönderir. Ack yok. İlk değer bağlantıda `auth.lang` ile gelir.
+   */
+  'client:setLang': (payload: { lang: Lang }) => void;
 
   'room:create': (
     payload: { nickname: string; config?: Partial<RoomConfig> },

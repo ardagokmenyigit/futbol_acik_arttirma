@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { PENALTY_DIRECTIONS, type PenaltyDirection, type PenaltyOutcome } from '@fal/shared';
+import { useT } from '../i18n/index.js';
 
 /**
  * 2D PENALTI SAHNESİ — arkadan bakış (atıcının gözünden): kale, file, kollarını
@@ -32,8 +33,6 @@ export interface PenaltySceneProps {
   /** Bölge etiketi: atıcı "vur", kaleci "uzan". */
   role?: 'shooter' | 'keeper' | 'spectator';
 }
-
-const LABEL: Record<PenaltyDirection, string> = { left: 'SOL', center: 'ORTA', right: 'SAĞ' };
 
 /** Kale ağzındaki bölgeler (viewBox koordinatları). */
 const ZONES: Record<PenaltyDirection, { x: number; w: number }> = {
@@ -80,6 +79,8 @@ export const PenaltyScene: FC<PenaltySceneProps> = ({
   onSelect,
   role = 'spectator',
 }) => {
+  const t = useT();
+  const LABEL = t.live.dirCaps;
   const target = reveal ? ballTarget(reveal.shotDirection, reveal.outcome) : { x: 0, y: 0 };
   const ballStyle = {
     transform: reveal
@@ -91,7 +92,7 @@ export const PenaltyScene: FC<PenaltySceneProps> = ({
 
   return (
     <div className={`pen-scene ${outcomeClass}`}>
-      <svg viewBox="0 0 400 300" role="img" aria-label="Penaltı sahnesi" className="pen-svg">
+      <svg viewBox="0 0 400 300" role="img" aria-label={t.penaltyScene.aria} className="pen-svg">
         <defs>
           <pattern id="pen-net" width="9" height="9" patternUnits="userSpaceOnUse">
             <path d="M0 0H9M0 0V9" stroke="rgba(242,239,230,0.42)" strokeWidth="0.8" />
@@ -153,7 +154,7 @@ export const PenaltyScene: FC<PenaltySceneProps> = ({
                 className={`pen-zone${isSel ? ' selected' : ''}${selectable ? ' selectable' : ''}`}
                 onClick={selectable ? () => onSelect?.(dir) : undefined}
                 role={selectable ? 'button' : undefined}
-                aria-label={`${LABEL[dir]} ${role === 'keeper' ? 'tarafa uzan' : 'köşeye vur'}`}
+                aria-label={`${LABEL[dir]} ${role === 'keeper' ? t.penaltyScene.zoneDive : t.penaltyScene.zoneShoot}`}
               >
                 <rect x={z.x + 3} y="54" width={z.w - 6} height="114" rx="8" />
                 <text x={z.x + z.w / 2} y="68" textAnchor="middle" className="pen-zone-label">
@@ -182,7 +183,11 @@ export const PenaltyScene: FC<PenaltySceneProps> = ({
                 <rect x={z.x + 3} y="54" width={z.w - 6} height="114" rx="8" />
                 {/* etiket üst direğin üstünde — kaleci/topla çakışmaz */}
                 <text x={z.x + z.w / 2} y="37" textAnchor="middle" className="pen-pick-label">
-                  {kind === 'both' ? 'VURUŞ · KALECİ' : kind === 'shot' ? 'VURUŞ' : 'KALECİ'}
+                  {kind === 'both'
+                    ? `${t.penaltyScene.pickShot} · ${t.penaltyScene.pickKeeper}`
+                    : kind === 'shot'
+                      ? t.penaltyScene.pickShot
+                      : t.penaltyScene.pickKeeper}
                 </text>
               </g>
             );

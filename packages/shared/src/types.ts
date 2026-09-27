@@ -98,6 +98,13 @@ export interface RoomConfig {
 
 export type BotDifficulty = 'easy' | 'normal' | 'hard';
 
+/**
+ * Arayüz dili. İstemci seçer; sunucu hata / uyarı mesajlarını bu dilde
+ * gönderir (`client:setLang`, bağlantıda `auth.lang`). Bilinmeyen / eksik →
+ * Türkçe.
+ */
+export type Lang = 'tr' | 'en';
+
 /** Bir katılımcı (oda üyesi). İnsan ya da bot olabilir. */
 export interface Participant {
   /** Kalıcı oyuncu kimliği (reconnect için socket.id'den bağımsız). */

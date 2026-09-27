@@ -8,6 +8,7 @@ import {
   startRematchNow,
 } from '../lib/roomClient.js';
 import { clearSession } from '../lib/session.js';
+import { useT } from '../i18n/index.js';
 import { useRoomStore } from '../store.js';
 
 interface Props {
@@ -20,6 +21,7 @@ interface Props {
  * Sunucu tek doğruluk kaynağı — burada yalnız `room.rematch` render edilir.
  */
 export function RematchPanel({ room, youId }: Props) {
+  const t = useT();
   const exitRoom = useRoomStore((s) => s.exitRoom);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export function RematchPanel({ room, youId }: Props) {
     try {
       await action();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Bir hata oluştu');
+      setError(err instanceof Error ? err.message : t.common.errorGeneric);
     } finally {
       setBusy(false);
     }
@@ -61,10 +63,10 @@ export function RematchPanel({ room, youId }: Props) {
           <div className="roster-name">
             <span className={`dot ${p.connected ? '' : 'off'}`} />
             {p.nickname}
-            {p.id === you.id && <span className="sub">(sen)</span>}
+            {p.id === you.id && <span className="sub">{t.rematch.you}</span>}
           </div>
           <span className={`tag ${accepted.has(p.id) ? 'ready' : 'waiting'}`}>
-            {accepted.has(p.id) ? 'kabul etti' : 'bekliyor'}
+            {accepted.has(p.id) ? t.rematch.accepted : t.rematch.waiting}
           </span>
         </div>
       ))}
@@ -76,16 +78,14 @@ export function RematchPanel({ room, youId }: Props) {
       <div className="stack" style={{ gap: 8 }}>
         <div className="btn-row">
           <button className="btn-primary" disabled={busy} onClick={() => void run(proposeRematch)}>
-            {others.length === 0 ? '🔁 Tekrar oyna' : '🔁 Rövanş oyna'}
+            {others.length === 0 ? t.rematch.playAgain : t.rematch.playRematch}
           </button>
           <button className="btn-outline" disabled={busy} onClick={leave}>
-            Yeni oyun
+            {t.rematch.newGame}
           </button>
         </div>
         <p className="footnote" style={{ marginTop: 0 }}>
-          {others.length === 0
-            ? 'Aynı oda ve ayarlarla yeni bir oyun başlar.'
-            : 'Rövanş: aynı oda, aynı oyuncular — herkese davet gider, kabul edenler devam eder.'}
+          {others.length === 0 ? t.rematch.soloInfo : t.rematch.groupInfo}
         </p>
         {error && <p className="error">{error}</p>}
       </div>
@@ -95,11 +95,11 @@ export function RematchPanel({ room, youId }: Props) {
   if (isProposer) {
     return (
       <div className="panel cobalt" style={{ marginTop: 8, textAlign: 'left' }}>
-        <div className="section-label">Rövanş daveti gönderildi</div>
+        <div className="section-label">{t.rematch.sent}</div>
         <p className="footnote" style={{ marginTop: 4 }}>
           {pending.length === 0
-            ? 'Herkes kabul etti — lobiye geçiliyor…'
-            : `${accepted.size}/${humans.length} kabul etti. Kalanları bekleyebilir ya da kabul edenlerle başlayabilirsin.`}
+            ? t.rematch.allAccepted
+            : t.rematch.acceptedCount(accepted.size, humans.length)}
         </p>
         {roster}
         <div className="btn-row">
@@ -108,16 +108,16 @@ export function RematchPanel({ room, youId }: Props) {
               className="btn-primary"
               disabled={busy}
               onClick={() => void run(startRematchNow)}
-              title="Yanıt vermeyenler odadan çıkarılır; lobiye kodla geri katılabilirler."
+              title={t.rematch.startWithAcceptedTitle}
             >
-              Kabul edenlerle başla ({accepted.size})
+              {t.rematch.startWithAccepted(accepted.size)}
             </button>
           )}
           <button className="btn-outline" disabled={busy} onClick={() => void run(cancelRematch)}>
-            Daveti iptal et
+            {t.rematch.cancelInvite}
           </button>
           <button className="btn-outline" disabled={busy} onClick={leave}>
-            Vazgeç ve çık
+            {t.rematch.giveUpLeave}
           </button>
         </div>
         {error && <p className="error">{error}</p>}
@@ -128,11 +128,11 @@ export function RematchPanel({ room, youId }: Props) {
   if (youAccepted) {
     return (
       <div className="panel cobalt" style={{ marginTop: 8, textAlign: 'left' }}>
-        <div className="section-label">Rövanşı kabul ettin</div>
+        <div className="section-label">{t.rematch.youAccepted}</div>
         <p className="footnote" style={{ marginTop: 4 }}>
           {pending.length === 0
-            ? 'Herkes kabul etti — lobiye geçiliyor…'
-            : `Bekleniyor: ${pending.map((p) => p.nickname).join(', ')}`}
+            ? t.rematch.allAccepted
+            : t.rematch.waitingFor(pending.map((p) => p.nickname).join(', '))}
         </p>
         {roster}
         <div className="btn-row">
@@ -141,10 +141,10 @@ export function RematchPanel({ room, youId }: Props) {
             disabled={busy}
             onClick={() => void run(() => respondRematch(false))}
           >
-            Kabulü geri çek
+            {t.rematch.withdraw}
           </button>
           <button className="btn-outline" disabled={busy} onClick={leave}>
-            Çık
+            {t.rematch.leave}
           </button>
         </div>
         {error && <p className="error">{error}</p>}
@@ -154,12 +154,12 @@ export function RematchPanel({ room, youId }: Props) {
 
   return (
     <div className="panel gold" style={{ marginTop: 8, textAlign: 'left' }}>
-      <div className="section-label">Rövanş daveti</div>
+      <div className="section-label">{t.rematch.invite}</div>
       <h2 style={{ fontSize: 22, margin: '6px 0 4px' }}>
-        {proposer?.nickname ?? 'Bir oyuncu'} sizi rövanşa davet ediyor
+        {t.rematch.invites(proposer?.nickname ?? t.rematch.somePlayer)}
       </h2>
       <p className="footnote" style={{ marginTop: 0 }}>
-        Aynı oda ve ayarlarla yeni bir oyun. {accepted.size}/{humans.length} kabul etti.
+        {t.rematch.inviteInfo(accepted.size, humans.length)}
       </p>
       {roster}
       <div className="btn-row">
@@ -168,10 +168,10 @@ export function RematchPanel({ room, youId }: Props) {
           disabled={busy}
           onClick={() => void run(() => respondRematch(true))}
         >
-          Kabul et
+          {t.rematch.accept}
         </button>
         <button className="btn-outline" disabled={busy} onClick={leave}>
-          Reddet ve çık
+          {t.rematch.declineLeave}
         </button>
       </div>
       {error && <p className="error">{error}</p>}

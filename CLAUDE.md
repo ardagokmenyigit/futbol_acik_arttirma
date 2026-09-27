@@ -670,6 +670,53 @@ turnDurationSec:1, tournamentSize:2` ile koşuldu; hepsi geçti.
 
 ---
 
+### 3.5 Dil desteği — Türkçe / İngilizce (27 Eylül 2026)
+
+Kullanıcı isteği: sağ üstte bir düğmeyle arayüz dili TR ↔ EN değişsin; web ve
+Flutter istemcisinde ayrı ayrı. **Varsayılan her zaman Türkçe** — tarayıcı /
+cihaz diline göre otomatik İngilizce açılmaz: Google ana sayfayı JS sonrası
+DOM'dan (en-US tarayıcıyla) indeksliyor, otomatik İngilizce Türkçe aramalar
+için yazılan SEO içeriğini (`HomeAbout`) gizlerdi.
+
+- **Sunucu mesajları** (`server/src/i18n.ts`): sunucu kodu hata / uyarı
+  mesajlarını TÜRKÇE üretmeye devam eder (tek kaynak). İstemci dilini
+  bağlanırken `auth.lang`, değiştirince `client:setLang` ile bildirir
+  (`SocketData.lang`). `localizeSocket` soketin çıkış kapısında çevirir: ack
+  cevaplarının `error` alanı, `room:error.message`, `room:kicked.reason`
+  (`hardenSocket`'ten SONRA çağrılır). Tablo `EXACT` (sabit metin) +
+  `PATTERNS` (değişkenli şablonların regex'i). **Yeni kullanıcı mesajı
+  eklerken İngilizcesini de ekle** ve `npx tsx
+packages/server/src/scripts/checkServerI18n.ts` koş (kaynak kodu tarar,
+  çevirisi olmayanı listeler). Eksikse mesaj Türkçe gider, çökme yok. Eski
+  istemci dil bildirmez → Türkçe.
+- **Oda durumundaki Türkçe alanlar** (`TournamentRound.title`, maç
+  `homePlaceholder` "Takım 3" / "Yarı Final 1 Kazananı") herkese aynı
+  yayınlandığı için sunucuda çevrilemez; istemci koddan çevirir (web
+  `i18n/labels.ts` → `roundTitle`, `placeholderLabel`; Flutter aynısı).
+  `tournamentEngine.ts`'teki bu metinleri değiştiren iki istemcinin
+  kalıplarını da günceller.
+- **Web** (`client/src/i18n/`): kütüphanesiz. `tr.ts` kaynak sözlük,
+  `en.ts` onun tipine (`Dict`) bağlı — eksik / fazla anahtar DERLEME HATASI.
+  Değişkenli metinler fonksiyondur (`t.lobby.botsFill(3)`). Uzun, vurgulu
+  içerik dil başına ayrı bileşen: `HowToPlay` (`BodyTr` / `BodyEn`),
+  `HomeAbout` (SEO bölümü). `useT()` sözlüğü verir; dil `fal:lang`'de
+  saklanır, `<html lang>` güncellenir, düğme `LanguageToggle` (üst çubuğun
+  sağı). Canlı maç anlatım akışı satırları metin değil `(t) => string`
+  olarak saklanır: dil maç ortasında değişince geçmiş satırlar da çevrilir;
+  anlatım cümlesi listeleri iki dilde aynı uzunlukta (aynı olay → aynı sıradaki
+  cümle). Kısaltmalar: GEN → OVR, HÜC → ATT, SAV → DEF.
+- **Çevrilmeyenler (bilinçli):** yalnız geliştirme modunda açılan turnuva
+  önizlemesi (`SimulationPage`, `TournamentBracket`, `ChampionCelebration`),
+  ölü kod (`ResultsPage`, `StandingsTable`, `MatchCard`), konsol logları,
+  özel isimler (bot takım adları "Ege Fırtınası", marka "Açık Artırma Ligi").
+- **Doğrulama** (gerçek Chrome + puppeteer-core, test sunucusu + Vite):
+  varsayılan TR, düğmeyle EN, rehber, geçersiz oda kodunda sunucu hatası
+  İngilizce ("No such room found"), lobi, draft, yenilemede dil + oturum
+  korunur, oyun ortasında TR'ye anında döner; kısa süreli 2 takımlı oda +
+  `FAL_FORCE_SHOOTOUT=1` ile kadro inceleme → canlı maç → seri penaltı
+  (köşe seçimi) → şampiyon + rövanş paneli baştan sona İngilizce, Türkçe
+  kalıntı yok.
+
 ## 4. Görev Dağılımı (Kişi 1 & Kişi 2)
 
 İkiniz de full-stack çalışacağınız için görevler **dikey dilimler**
