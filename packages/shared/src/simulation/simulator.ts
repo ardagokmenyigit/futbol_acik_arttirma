@@ -28,7 +28,7 @@ export interface SimulateMatchOptions {
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
   /**
-   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.102).
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.094).
    *
    * MAÇ BAŞINA GOL bu değere neredeyse doğrusal bağlı — heyecan kolu budur.
    * Hedef maç başı ~3.5 gol; `strengthSensitivity`, `FORM_SPREAD` ya da
@@ -43,8 +43,8 @@ export interface SimulateMatchOptions {
    * çıkınca (18 Eylül 2026) yine 3.67 için 0.110'a, aynı gün 3.5'e çıkınca
    * 0.108'e, yıldızlar havuza mevkisiz dağılınca (forvet yıldızı daha sık →
    * hücum ölçeği yükseldi, gol 3.82) 0.104'e, sens 3.7'ye çıkınca 0.102'ye
-   * çekildi — kalibrasyon
-   * GERÇEK bot draft kadrolarıyla yapılır (`scripts/measureBalance.ts`);
+   * çekildi, akıllı botlarla sens 5.0'a çıkınca (27 Eylül 2026) 0.094'e
+   * — kalibrasyon GERÇEK bot draft kadrolarıyla yapılır (`scripts/measureBalance.ts`);
    * rastgele kadrolar aynı sens'te 0.106 verir, fark draft'ın kadroları
    * güçlendirip birbirine yaklaştırmasından.
    *
@@ -60,7 +60,7 @@ export interface SimulateMatchOptions {
    */
   baseConversion?: number;
   /**
-   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 3.7).
+   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 5.0).
    * Hem pozisyon payına hem de gole çevirme oranına uygulanır.
    *
    * ⚠️ TEK BAŞINA ZAYIF BİR KOL. Yükseltmek gol sayısını da şişirdiği için
@@ -101,6 +101,14 @@ export interface SimulateMatchOptions {
    * dağılınca kadrolar biraz eşitlendi (en güçlü %47.9 → %45.1); kullanıcı
    * bunu telafi etmek için 3.7 istedi — baseConv 0.102, gol/maç ~3.67:
    * 4p %72, 5p %77, 7p %86; en güçlü ~%46, en zayıf ~%9.
+   *
+   * 3.7 → 5.0 (27 Eylül 2026): akıllı botlar (CLAUDE.md → BOT ZEKÂSI)
+   * parayı verimli dağıttığı için bot–bot kadroları eşitlendi (draft farkı
+   * ~5 → ~3.3) ve en güçlü şampiyon %46 → %41'e indi. Kullanıcı %46'yı geri
+   * istedi; bot kişilik çeşitliliği denendi, farkı açmadı (en fazla %41).
+   * Tam geri dönüş ~5.7 ister (4p %80); kullanıcı "arada bir değer" dedi →
+   * 5.0, baseConv 0.094 (gol/maç ~3.67): en güçlü zor/normal/kolay botlarla
+   * %43.7 / %44.9 / %45.2 (3000 draft; gürültü ~±1 puan).
    *
    * ⚠️ ASIL TAVAN MOTOR DEĞİL, DRAFT. Gerçek draft'larda takımlar arası güç
    * farkı ortalama sadece ~5.2 puan (ölçüm: 3000 gerçek bot draft'ı; medyan
@@ -238,8 +246,8 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.0,
     chanceRate = 0.3,
-    baseConversion = 0.102,
-    strengthSensitivity = 3.7,
+    baseConversion = 0.094,
+    strengthSensitivity = 5.0,
     isTournament = true,
     interactiveShootout = false,
   } = options;

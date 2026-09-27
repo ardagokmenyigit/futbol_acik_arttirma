@@ -314,6 +314,29 @@ takımlıda en zayıfın şansı %1.2 — bilinçli kabul. `baseConversion` yaln
 gol sıklığını ölçekler (güç ayrımına dokunmaz); sens değişince gol
 ortalamasını, dolayısıyla beraberlik/penaltı payını sabit tutmak için ayarlanır.
 
+**SENS 3.7 → 5.0 (27 Eylül 2026).** Akıllı botlar (Kişi 1 → BOT ZEKÂSI)
+parayı verimli dağıttığı için bot–bot kadroları eşitlendi (draft farkı
+~5.0 → ~3.3) ve en güçlü şampiyon %46 → %41'e indi. Kullanıcı %46'yı geri
+istedi. Önce önerilen kol (bot değerleme dağılımı) denendi: agresiflik
+aralığı 0.7–1.4, yıldız eğilimi ×3, gürültü ±%20 — hepsi birden farkı yalnız
+3.2 → 3.4'e, en güçlüyü %41'e taşıdı. Verimli bot kişilikten bağımsız
+benzer değerde kadro kuruyor; kol motor kaldı. Tam geri dönüş ~5.7 ister
+(4p %80); kullanıcı "arada bir değer" seçti (tarama 4.5 / 5.3 / 6.1) →
+**5.0, baseConv 0.094**. 3000 draft × 4 bracket, 4 takım:
+
+| bot zorluğu      | en güçlü  | en zayıf  | draft farkı | gol/maç  | 3p      | 4p      | 5p      | 7p      | 8 takım (en güçlü / zayıf) |
+| ---------------- | --------- | --------- | ----------- | -------- | ------- | ------- | ------- | ------- | -------------------------- |
+| zor              | %43.7     | %11.7     | 3.2         | 3.66     | %69     | %76     | %82     | %89     | %34.3 / %2.6               |
+| **normal (vs.)** | **%44.9** | **%10.8** | **3.5**     | **3.67** | **%71** | **%77** | **%83** | **%93** | **%32.9 / %3.4**           |
+| kolay            | %45.2     | %10.7     | 3.5         | 3.67     | %70     | %76     | %82     | %91     | %34.3 / %2.8               |
+
+(3000 draft × 4 bracket; aynı ayarın iki koşusu normalde %46.4 ve %44.9
+verdi — draft başına korelasyonlu bracket'lar yüzünden gürültü ~±1 puan,
+yani üç seviye de ~%44–46.) Güç farkına göre tur geçme 4p %72 → %77, 5p
+%77 → %82 — aynı fark artık daha belirleyici (arkadaşın "3–4 puan güçlüyken çok yeniliyorum" şikâyetiyle
+aynı yön). 1–2 puan hâlâ yazı-turaya yakın (%56 / %63). Uzatma %29, penaltı
+%14.
+
 Uzatma da berabereyse (`isTournament`) seri penaltı — **KÖŞE OYUNU**
 (`shared/src/simulation/penalty.ts`, 17 Eylül 2026). Atıcı ve kaleci eş
 zamanlı SOL / ORTA / SAĞ seçer; vuruş iki bağımsız zara ayrılır:
@@ -393,11 +416,13 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 | + sens 3.5 + baseConv 0.108                            | %47.9     | %8.3      | 5.7x     | 3.66 (90 dk)     |
 | + yıldızlar mevkisiz + baseConv 0.104                  | %45.1     | %9.4      | 4.8x     | 3.68 (90 dk)     |
 | + sens 3.7 + baseConv 0.102                            | ~%46      | ~%9       | 5.1x     | ~3.67 (90 dk)    |
-| **+ akıllı botlar (güncel, 27 Eylül 2026)**            | **%40.2** | **%13.5** | **3.0x** | **3.62 (90 dk)** |
+| + akıllı botlar (27 Eylül 2026)                        | %40.2     | %13.5     | 3.0x     | 3.62 (90 dk)     |
+| **+ sens 5.0 + baseConv 0.094 (güncel; normal bot)**   | **%44.9** | **%10.8** | **4.2x** | **3.67 (90 dk)** |
 
-(Son sekiz satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
-ayarla en güçlü %29.6, en zayıf %3.7 (akıllı botlardan önce ~%36.5 / ~%1.3).
-Son satırda motor aynı; değişen bot kadrolarının eşitlenmesi. Ölçüm aracı:
+(Son dokuz satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
+ayarla en güçlü %32.9, en zayıf %3.4 (akıllı botlardan önce ~%36.5 / ~%1.3).
+"Akıllı botlar" satırında motor aynı; değişen bot kadrolarının eşitlenmesi;
+son satır bunu motor duyarlılığıyla geri alır. Ölçüm aracı:
 `npx tsx packages/server/src/scripts/measureBalance.ts [draft] [sens] [baseConv]`.)
 
 **İki kolun birlikte ayarlanması gerekir.** `strengthSensitivity` tek başına
@@ -446,8 +471,8 @@ beraberliği yalnız 6.5 puan düşürüyor) — uzatma zaten bunun için var.
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
 - `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
   ~3.67 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
-  kayar ve bununla geri kalibre edilmelidir (güncel: 0.102, sens 3.7 +
-  mevkisiz yıldız havuzu için;
+  kayar ve bununla geri kalibre edilmelidir (güncel: 0.094, sens 5.0 +
+  akıllı botlar için;
   kalibrasyonu gerçek draft kadrolarıyla — `measureBalance.ts` — yapın).
 - **ASIL TAVAN MOTOR DEĞİL, DRAFT.** (27 Eylül 2026 bot zekâsından sonra
   bot–bot farkı ort. 3.3'e indi, bkz. Kişi 1 → BOT ZEKÂSI.) Gerçek draft'larda takımlar arası güç
