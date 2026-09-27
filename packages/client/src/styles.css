@@ -1472,17 +1472,6 @@ button:disabled {
   color: var(--hairline-strong);
 }
 
-.lm-track {
-  margin: 14px 0 0;
-}
-.lm-track .stat-fill {
-  background: var(--ready);
-  transition: width 0.12s linear;
-}
-.lm-track .stat-fill.extra {
-  background: var(--gold);
-}
-
 .lm-notice {
   margin: 16px 0 0;
 }

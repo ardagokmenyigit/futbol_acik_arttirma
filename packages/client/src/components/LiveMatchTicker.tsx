@@ -590,9 +590,6 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     return () => window.removeEventListener('keydown', onKey);
   }, [selectable, choose]);
 
-  const totalMinutes = result.extraTime ? 120 : 90;
-  const progressPct = Math.min(100, Math.round((minute / totalMinutes) * 100));
-
   const hasShootout = interactive || Boolean(result.penaltyShootout?.length);
   const finalPenH = interactive ? (view?.scoreHome ?? 0) : result.penaltiesHome;
   const finalPenA = interactive ? (view?.scoreAway ?? 0) : result.penaltiesAway;
@@ -729,16 +726,6 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           {hasShootout && renderPenaltyDots(result.awayId)}
         </div>
       </div>
-
-      {/* Süre ilerleme çubuğu (normal süre + uzatma) */}
-      {(phase === 'regular' || phase === 'extra') && (
-        <div className="stat-track lm-track">
-          <div
-            className={`stat-fill${phase === 'extra' ? ' extra' : ''}`}
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
-      )}
 
       {/* Son gol anonsu (oyun sürerken) — sitenin ticker bildirimi */}
       {latestGoal && (phase === 'regular' || phase === 'extra') && (
