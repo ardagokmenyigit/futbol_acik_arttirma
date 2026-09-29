@@ -55,6 +55,12 @@ import { bidFloor, positionCount, validateBid } from './validateBid.js';
 
 const TICK_MS = 1000;
 
+/**
+ * Tur bitince sıradaki futbolcu gelmeden önceki es. Satılan futbolcu bu süre
+ * boyunca ekranda (sayaç 0'da) kalır; yeni futbolcu anında üstüne binmez.
+ */
+const ROUND_GAP_MS = 1000;
+
 /** Son iki uygun alıcıdan biri pas verince otomatik atamanın ekranda kalma süresi. */
 const PASS_AUTO_ASSIGNMENT_DURATION_MS = 5000;
 
@@ -85,6 +91,11 @@ interface DraftRuntime {
   /** 0 tabanlı tur indeksi. */
   turIndex: number;
   timers: RoomTimers;
+  /**
+   * Tur sonuçlandı, sıradaki futbolcu `ROUND_GAP_MS` sonra gelecek. Bu arada
+   * `room.auction` satılan futbolcuyu göstermeye devam eder ama teklif almaz.
+   */
+  settled: boolean;
 }
 
 const runtimes = new Map<string, DraftRuntime>();
@@ -124,7 +135,7 @@ export function beginDraft(io: TypedServer, roomId: string): void {
     room.participants.map((p) => p.id),
     totalRounds,
   );
-  runtimes.set(roomId, { plan, turIndex: -1, timers: freshTimers() });
+  runtimes.set(roomId, { plan, turIndex: -1, timers: freshTimers(), settled: false });
 
   console.log(
     `[auction] ${roomId}: ${n} katılımcı · ${totalRounds} tur · havuz ${pool.length} futbolcu · ` +
@@ -153,6 +164,7 @@ function startNextRound(io: TypedServer, roomId: string): void {
   if (!room || !rt) return;
   clearTimers(rt.timers);
   rt.timers = freshTimers();
+  rt.settled = false;
 
   if (everySquadFull(room)) {
     finishDraft(io, room);
@@ -545,6 +557,7 @@ function applyBid(
   rawAmount: unknown,
 ): { ok: true; bid: Bid } | { ok: false; error: string } {
   if (!room.auction) return { ok: false, error: 'Şu an aktif bir açık artırma yok' };
+  if (runtimes.get(room.roomId)?.settled) return { ok: false, error: 'Bu tur bitti' };
 
   const check = validateBid(room.auction, bidder, room.config, rawAmount);
   if (!check.ok) return { ok: false, error: check.error };
@@ -570,7 +583,7 @@ function applyBid(
 function scheduleBotBids(io: TypedServer, roomId: string, exceptId?: string): void {
   const room = roomStore.getRoom(roomId);
   const rt = runtimes.get(roomId);
-  if (!room?.auction || !rt) return;
+  if (!room?.auction || !rt || rt.settled) return;
   if (room.auction.phase !== 'bidding') return;
   if (rt.timers.botBids >= MAX_BOT_BIDS_PER_ROUND) return;
 
@@ -645,8 +658,9 @@ function rescheduleEnd(io: TypedServer, roomId: string, inMs: number): void {
 function endRound(io: TypedServer, roomId: string): void {
   const room = roomStore.getRoom(roomId);
   const rt = runtimes.get(roomId);
-  if (!room?.auction || !rt) return;
+  if (!room?.auction || !rt || rt.settled) return;
   clearTimers(rt.timers);
+  rt.settled = true;
 
   const { footballer, highestBid, round } = room.auction;
   // Açılış zorunlu olduğu için burada her zaman bir teklif vardır.
@@ -670,7 +684,8 @@ function endRound(io: TypedServer, roomId: string): void {
   });
   emitRoomState(io, room);
 
-  startNextRound(io, roomId);
+  // Zamanlayıcı `timers.end`te durur: oda silinirse cancelAuction onu da iptal eder.
+  rt.timers.end = setTimeout(() => startNextRound(io, roomId), ROUND_GAP_MS);
 }
 
 /** Ayrılan oyuncu açılışı tıkamasın / lider değilse teklifi düşür. */
@@ -706,7 +721,7 @@ export function handleBotTakeover(io: TypedServer, roomId: string, playerId: str
 
 export function dropBidderIfLeading(io: TypedServer, roomId: string, playerId: string): void {
   const room = roomStore.getRoom(roomId);
-  if (!room?.auction) return;
+  if (!room?.auction || runtimes.get(roomId)?.settled) return;
   if (room.auction.phase === 'opening' && room.auction.openerId === playerId) {
     autoOpen(io, roomId);
     return;
