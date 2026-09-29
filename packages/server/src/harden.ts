@@ -1,4 +1,5 @@
 import type { ClientToServerEvents } from '@fal/shared';
+import { localize } from './i18n.js';
 import type { TypedSocket } from './socketTypes.js';
 
 /**
@@ -44,13 +45,16 @@ const RATE_LIMIT = 40;
 
 type AnyListener = (...args: unknown[]) => unknown;
 
-function reportError(socketId: string, event: string, err: unknown, args: unknown[]): void {
+function reportError(socket: TypedSocket, event: string, err: unknown, args: unknown[]): void {
   const message = err instanceof Error ? (err.stack ?? err.message) : String(err);
-  console.error(`[socket] ${socketId}: '${event}' dinleyicisi hata verdi:\n${message}`);
+  console.error(`[socket] ${socket.id}: '${event}' dinleyicisi hata verdi:\n${message}`);
   const ack = args[args.length - 1];
   if (typeof ack === 'function') {
     try {
-      (ack as (res: unknown) => void)({ ok: false, error: 'Sunucu hatası, tekrar dene.' });
+      (ack as (res: unknown) => void)({
+        ok: false,
+        error: localize('Sunucu hatası, tekrar dene.', socket.data.lang),
+      });
     } catch {
       /* ack zaten çağrılmış olabilir */
     }
@@ -75,7 +79,10 @@ export function hardenSocket(socket: TypedSocket): void {
       // beklemesin diye hata ack'i döner.
       const ack = args[args.length - 1];
       if (typeof ack === 'function') {
-        (ack as (res: unknown) => void)({ ok: false, error: 'Çok hızlı istek, biraz bekle.' });
+        (ack as (res: unknown) => void)({
+          ok: false,
+          error: localize('Çok hızlı istek, biraz bekle.', socket.data.lang),
+        });
       }
       return;
     }
@@ -101,10 +108,10 @@ export function hardenSocket(socket: TypedSocket): void {
       try {
         const out = listener(...args);
         if (out instanceof Promise) {
-          out.catch((err: unknown) => reportError(socket.id, event, err, args));
+          out.catch((err: unknown) => reportError(socket, event, err, args));
         }
       } catch (err) {
-        reportError(socket.id, event, err, args);
+        reportError(socket, event, err, args);
       }
     });
   // Tip imzası korunur; çalışma zamanında her dinleyici zırhlı kayıt olur.

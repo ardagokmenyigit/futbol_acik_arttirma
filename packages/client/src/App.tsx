@@ -9,7 +9,9 @@ import type {
 import { useSocket } from './hooks/useSocket.js';
 import { rejoinRoom } from './lib/roomClient.js';
 import { clearSession, loadSession } from './lib/session.js';
+import { LanguageToggle } from './components/LanguageToggle.js';
 import { LogoIntro } from './components/LogoIntro.js';
+import { useT } from './i18n/index.js';
 import { DraftPage } from './pages/DraftPage.js';
 import { HomePage } from './pages/HomePage.js';
 import { LobbyPage } from './pages/LobbyPage.js';
@@ -24,6 +26,7 @@ export function App() {
   const youId = useRoomStore((s) => s.youId);
   const tournament = useRoomStore((s) => s.tournament);
   const [forceSimulationPreview, setForceSimulationPreview] = useState(false);
+  const t = useT();
 
   // Sunucudan gelen tam durum güncellemeleri (client sadece render eder).
   useEffect(() => {
@@ -175,20 +178,23 @@ export function App() {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <img className="brand-logo" src="/icon-192.png" alt="Açık Artırma Ligi" />
+            <img className="brand-logo" src="/icon-192.png" alt={t.app.logoAlt} />
             <span className={`dot ${connected ? '' : 'off'}`} />
-            {connected ? 'Sunucuya bağlı' : 'Bağlanıyor…'}
+            {connected ? t.app.connected : t.app.connecting}
           </div>
-          {import.meta.env.DEV && (
-            <button
-              type="button"
-              className="btn-outline"
-              style={{ padding: '6px 10px', fontSize: 12 }}
-              onClick={() => setForceSimulationPreview((v) => !v)}
-            >
-              {forceSimulationPreview ? '✕ Önizleme' : '🏆 Turnuva önizleme'}
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            {import.meta.env.DEV && (
+              <button
+                type="button"
+                className="btn-outline"
+                style={{ padding: '6px 10px', fontSize: 12 }}
+                onClick={() => setForceSimulationPreview((v) => !v)}
+              >
+                {forceSimulationPreview ? t.app.previewClose : t.app.previewOpen}
+              </button>
+            )}
+            <LanguageToggle />
+          </div>
         </div>
 
         {forceSimulationPreview ? (
@@ -208,11 +214,11 @@ export function App() {
               ) : (
                 <div className="panel gold">
                   <div className="round-label" style={{ color: 'var(--chalk-faint)' }}>
-                    Draft tamamlandı
+                    {t.app.draftDone}
                   </div>
-                  <h1 style={{ fontSize: 30, marginBottom: 12 }}>Turnuva hazırlanıyor</h1>
+                  <h1 style={{ fontSize: 30, marginBottom: 12 }}>{t.app.preparing}</h1>
                   <p className="footnote" style={{ marginTop: 0 }}>
-                    Eşleşmeler kuruluyor, maçlar birazdan başlıyor…
+                    {t.app.preparingSub}
                   </p>
                 </div>
               ))}

@@ -4,6 +4,7 @@ import express from 'express';
 import { Server } from 'socket.io';
 import { registerAuctionHandlers } from './auction/index.js';
 import { hardenSocket } from './harden.js';
+import { localizeSocket } from './i18n.js';
 import { registerRoomHandlers } from './rooms/index.js';
 import type { InterServerEvents, SocketData, TypedServer } from './socketTypes.js';
 import type { ClientToServerEvents, ServerToClientEvents } from '@fal/shared';
@@ -88,6 +89,7 @@ process.on('unhandledRejection', (reason) => {
 io.on('connection', (socket) => {
   console.log(`[socket] connected: ${socket.id}`);
   hardenSocket(socket);
+  localizeSocket(socket);
 
   // Faz 0 hello-world: istemci "hello" gönderir, sunucu ack ile yanıtlar.
   socket.on('hello', (msg, ack) => {

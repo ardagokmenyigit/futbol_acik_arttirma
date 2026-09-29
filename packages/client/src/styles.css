@@ -434,6 +434,32 @@ button:disabled {
   color: #8fb6d2;
 }
 
+/* ---------- dil seçici (sağ üst) ---------- */
+.lang-toggle {
+  display: inline-flex;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.lang-btn {
+  background: transparent;
+  border: none;
+  padding: 5px 9px;
+  font-family: var(--font-cond);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.6px;
+  color: var(--chalk-faint);
+  cursor: pointer;
+}
+.lang-btn + .lang-btn {
+  border-left: 1px solid var(--hairline-strong);
+}
+.lang-btn.active {
+  background: var(--panel-raised);
+  color: var(--gold-bright);
+}
+
 /* ---------- lobi: format seçici ---------- */
 .format-row {
   display: grid;

@@ -11,6 +11,8 @@ import { PositionBadge } from '../components/PositionBadge.js';
 import { RematchPanel } from '../components/RematchPanel.js';
 import { SquadsOverview } from '../components/SquadsOverview.js';
 import { useSocket } from '../hooks/useSocket.js';
+import { useT, type Dict } from '../i18n/index.js';
+import { placeholderLabel, roundTitle } from '../i18n/labels.js';
 import { choosePenalty } from '../lib/tournamentClient.js';
 import { useRoomStore } from '../store.js';
 
@@ -20,6 +22,7 @@ interface Props {
 }
 
 export function TournamentPage({ room, tournament }: Props) {
+  const t = useT();
   const youId = useRoomStore((s) => s.youId);
   const liveMatch = useRoomStore((s) => s.liveMatch);
   const shootout = useRoomStore((s) => s.shootout);
@@ -34,7 +37,7 @@ export function TournamentPage({ room, tournament }: Props) {
   };
 
   const nameOf = (id: string | null, placeholder?: string) => {
-    if (!id) return placeholder ?? 'Bekleniyor';
+    if (!id) return placeholderLabel(placeholder, t) ?? t.tournament.waiting;
     return room.participants.find((p) => p.id === id)?.nickname ?? '?';
   };
   const isBot = (id: string | null) =>
@@ -61,11 +64,11 @@ export function TournamentPage({ room, tournament }: Props) {
     if (!liveMatch) return null;
     for (const r of tournament.rounds) {
       if (r.matches.some((m) => m.matchId === liveMatch.matchId)) {
-        return r.title;
+        return roundTitle(r, t);
       }
     }
     return null;
-  }, [liveMatch, tournament.rounds]);
+  }, [liveMatch, tournament.rounds, t]);
 
   return (
     <div className="stack">
@@ -86,24 +89,28 @@ export function TournamentPage({ room, tournament }: Props) {
             <path d="M9 21h6" />
             <path d="M10 17h4" />
           </svg>
-          <div className="champ-name">Şampiyon — {champ.nickname}</div>
+          <div className="champ-name">{t.tournament.champion(champ.nickname)}</div>
           <div className="champ-meta">
-            {tournament.size} takımlı turnuva{champ.id === youId ? ' · tebrikler!' : ''}
+            {t.tournament.championMeta(tournament.size, champ.id === youId)}
           </div>
 
           {topScorer && (
             <div className="top-scorer-card">
-              <div className="top-scorer-badge">👑 Turnuva Gol Kralı</div>
+              <div className="top-scorer-badge">{t.tournament.topScorer}</div>
               <div className="top-scorer-name">
                 <span>{topScorer.playerName}</span>
                 {topScorer.position && <PositionBadge position={topScorer.position} size="sm" />}
               </div>
               <div className="top-scorer-meta">
                 <span className="team-pill">
-                  🛡️ Takım: <strong>{topScorer.teamNickname}</strong>
+                  🛡️ {t.tournament.team}: <strong>{topScorer.teamNickname}</strong>
                 </span>
-                <span className="goals-pill">⚽ {topScorer.goals} Gol</span>
-                {topScorer.overall && <span className="stat-pill">GEN {topScorer.overall}</span>}
+                <span className="goals-pill">{t.tournament.goals(topScorer.goals)}</span>
+                {topScorer.overall && (
+                  <span className="stat-pill">
+                    {t.common.ovr} {topScorer.overall}
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -113,9 +120,9 @@ export function TournamentPage({ room, tournament }: Props) {
       ) : (
         <div>
           <div className="round-label" style={{ color: 'var(--chalk-faint)' }}>
-            Maç {played}/{total}
+            {t.tournament.matchCount(played, total)}
           </div>
-          <h1 style={{ fontSize: 30 }}>Turnuva oynanıyor</h1>
+          <h1 style={{ fontSize: 30 }}>{t.tournament.playing}</h1>
         </div>
       )}
 
@@ -157,7 +164,7 @@ export function TournamentPage({ room, tournament }: Props) {
             style={{ padding: '6px 12px', fontSize: 13 }}
             onClick={() => setShowSquads((v) => !v)}
           >
-            {showSquads ? 'Kadroları Gizle' : '👥 Kadroları Göster'}
+            {showSquads ? t.tournament.hideSquads : t.tournament.showSquads}
           </button>
         </div>
       )}
@@ -166,7 +173,7 @@ export function TournamentPage({ room, tournament }: Props) {
 
       {tournament.rounds.map((round) => (
         <div className="panel" key={round.name}>
-          <div className="section-label">{round.title}</div>
+          <div className="section-label">{roundTitle(round, t)}</div>
           <div className="bracket">
             {round.matches.map((m) => (
               <BracketMatch
@@ -177,6 +184,7 @@ export function TournamentPage({ room, tournament }: Props) {
                 powerOf={powerOf}
                 isBot={isBot}
                 youId={youId}
+                t={t}
               />
             ))}
           </div>
@@ -193,9 +201,10 @@ interface MatchProps {
   nameOf: (id: string | null, placeholder?: string) => string;
   powerOf: (id: string | null) => number | null;
   isBot: (id: string | null) => boolean;
+  t: Dict;
 }
 
-function BracketMatch({ match, live, youId, nameOf, powerOf, isBot }: MatchProps) {
+function BracketMatch({ match, live, youId, nameOf, powerOf, isBot, t }: MatchProps) {
   const res = match.result;
   const homeWon = res ? res.winnerId === match.homeId : false;
   const awayWon = res ? res.winnerId === match.awayId : false;
@@ -209,9 +218,9 @@ function BracketMatch({ match, live, youId, nameOf, powerOf, isBot }: MatchProps
     <div className={`bm-side${won ? ' won' : ''}${id && id === youId ? ' you' : ''}`}>
       <span className="bm-name">
         {nameOf(id, placeholder)}
-        {isBot(id) && <span className="bm-bot">bot</span>}
+        {isBot(id) && <span className="bm-bot">{t.common.bot}</span>}
         {powerOf(id) !== null && (
-          <span className="bm-power" title="Maç sonucunu belirleyen takım gücü">
+          <span className="bm-power" title={t.tournament.powerTitle}>
             {powerOf(id)}
           </span>
         )}
@@ -226,10 +235,10 @@ function BracketMatch({ match, live, youId, nameOf, powerOf, isBot }: MatchProps
       {side(match.awayId, match.awayPlaceholder, awayWon, res?.scoreAway)}
       {res?.penaltiesHome != null && (
         <div className="bm-pen">
-          penaltılar {res.penaltiesHome}-{res.penaltiesAway}
+          {t.tournament.penalties(res.penaltiesHome, res.penaltiesAway ?? 0)}
         </div>
       )}
-      {live && !res && <div className="bm-live">oynanıyor…</div>}
+      {live && !res && <div className="bm-live">{t.tournament.live}</div>}
     </div>
   );
 }

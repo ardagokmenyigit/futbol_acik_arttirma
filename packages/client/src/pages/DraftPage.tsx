@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   calculateTeamStats,
   isBudgetHidden,
-  powerRoleLabel,
   type Footballer,
   type Position,
   type RoomState,
 } from '@fal/shared';
 import { PositionBadge } from '../components/PositionBadge.js';
+import { useT, type Dict } from '../i18n/index.js';
+import { roleLabel } from '../i18n/labels.js';
 import { passOpening, placeBid } from '../lib/auctionClient.js';
 import { leaveRoom } from '../lib/roomClient.js';
 import { clearSession } from '../lib/session.js';
@@ -20,6 +21,7 @@ interface Props {
 const POSITIONS: Position[] = ['GK', 'DEF', 'MID', 'FWD'];
 
 export function DraftPage({ room }: Props) {
+  const t = useT();
   const you = useRoomStore(selectYou);
   const exitRoom = useRoomStore((s) => s.exitRoom);
   const [confirmLeave, setConfirmLeave] = useState(false);
@@ -66,10 +68,10 @@ export function DraftPage({ room }: Props) {
   if (!auction) {
     return (
       <div className="panel crimson">
-        <div className="round-label">Açık Artırma</div>
+        <div className="round-label">{t.draft.auctionLabel}</div>
         <h1 style={{ fontSize: 30, marginBottom: 16 }}>Draft</h1>
-        {lastWon && <Ticker text={wonText(lastWon, lastWonFootballer)} />}
-        <p className="footnote">Sıradaki futbolcu için hazırlanıyor…</p>
+        {lastWon && <Ticker text={wonText(lastWon, lastWonFootballer, t)} />}
+        <p className="footnote">{t.draft.preparingNext}</p>
       </div>
     );
   }
@@ -107,18 +109,18 @@ export function DraftPage({ room }: Props) {
     setBidError(null);
     const targetAmount = customBid !== null && customBid !== '' ? Number(customBid) : floor;
     if (!Number.isFinite(targetAmount) || targetAmount < floor) {
-      setBidError(`Teklif en az ${floor}M olmalıdır.`);
+      setBidError(t.draft.bidAtLeast(floor));
       return;
     }
     if (targetAmount > you.budget) {
-      setBidError(`Bütçeniz (${you.budget}M) bu teklife yetmiyor.`);
+      setBidError(t.draft.bidOverBudget(you.budget));
       return;
     }
     try {
       await placeBid(targetAmount);
       setCustomBid(null);
     } catch (err) {
-      setBidError(err instanceof Error ? err.message : 'Teklif reddedildi');
+      setBidError(err instanceof Error ? err.message : t.draft.bidRejected);
     }
   }
 
@@ -127,7 +129,7 @@ export function DraftPage({ room }: Props) {
     try {
       await passOpening();
     } catch (err) {
-      setBidError(err instanceof Error ? err.message : 'Pas reddedildi');
+      setBidError(err instanceof Error ? err.message : t.draft.passRejected);
     }
   }
 
@@ -165,10 +167,10 @@ export function DraftPage({ room }: Props) {
         <div className="live-head">
           <div>
             <div className="round-label">
-              Tur {auction.round}/{auction.totalRounds}
-              {isOpening ? ' · açılış teklifi' : ' · serbest teklif'}
+              {t.draft.round(auction.round, auction.totalRounds)}
+              {isOpening ? t.draft.phaseOpening : t.draft.phaseBidding}
             </div>
-            <h1>Açık Artırma</h1>
+            <h1>{t.draft.auction}</h1>
           </div>
           <div
             className="timer-ring"
@@ -181,13 +183,13 @@ export function DraftPage({ room }: Props) {
           </div>
         </div>
 
-        {lastWon && <Ticker text={wonText(lastWon, lastWonFootballer)} />}
+        {lastWon && <Ticker text={wonText(lastWon, lastWonFootballer, t)} />}
         {lastPass && (
           <Ticker
             text={
               lastPass.autoAssigned
-                ? `${lastPass.passerNickname} pas geçti — ${lastPass.nextOpenerNickname} tek uygun alıcı olduğu için futbolcu otomatik olarak ona atandı.`
-                : `${lastPass.passerNickname} pas geçti — açılış ${lastPass.nextOpenerNickname}'e geçti.`
+                ? t.draft.passAuto(lastPass.passerNickname, lastPass.nextOpenerNickname)
+                : t.draft.passNext(lastPass.passerNickname, lastPass.nextOpenerNickname)
             }
           />
         )}
@@ -200,14 +202,14 @@ export function DraftPage({ room }: Props) {
           <div className="player-meta">
             {auction.eligibleIds.length === 1 ? (
               <span style={{ color: 'var(--accent-gold, #f59e0b)', fontWeight: 700 }}>
-                ⚡ Tek uygun alıcı:{' '}
-                {room.participants.find((p) => p.id === auction.eligibleIds[0])?.nickname ?? '—'}{' '}
-                (Otomatik Atanıyor...)
+                {t.draft.onlyBuyer(
+                  room.participants.find((p) => p.id === auction.eligibleIds[0])?.nickname ?? '—',
+                )}
               </span>
             ) : isOpening ? (
-              `Açılışı ${openerNick ?? '—'} yapacak (en az ${minInc}M)`
+              t.draft.openerWill(openerNick ?? '—', minInc)
             ) : auction.highestBid ? (
-              'Serbest teklif'
+              t.draft.freeBidding
             ) : (
               '—'
             )}
@@ -227,19 +229,19 @@ export function DraftPage({ room }: Props) {
                   className={`turn-chip${isOpener ? ' now' : ''}${out ? ' out' : ''}${leads ? ' leads' : ''}`}
                   title={
                     passed
-                      ? 'bu turda pas geçti'
+                      ? t.draft.chipPassed
                       : out
-                        ? 'kadrosu bu pozisyonda dolu'
+                        ? t.draft.chipFull
                         : isOpener
-                          ? 'açılışı yapıyor'
+                          ? t.draft.chipOpening
                           : undefined
                   }
                 >
                   <span className="turn-no">{i + 1}</span>
                   {p?.nickname ?? '—'}
-                  {passed && <span className="turn-pass">pas</span>}
+                  {passed && <span className="turn-pass">{t.draft.chipPass}</span>}
                   {budget && <span className="turn-budget">{budget}</span>}
-                  {id === you.id && <span className="turn-you">sen</span>}
+                  {id === you.id && <span className="turn-you">{t.common.you}</span>}
                 </span>
               );
             })}
@@ -248,26 +250,26 @@ export function DraftPage({ room }: Props) {
           {/* Takım gücüne giren tek sayı GEN'dir (CLAUDE.md §3.2); oyuncu başına
               HÜC/SAV gösterimi kaldırıldı — kullanıcı isteği, kafa karıştırıyordu. */}
           <div className="stat-row">
-            <StatItem label="GEN" value={f.overall} />
+            <StatItem label={t.common.ovr} value={f.overall} />
           </div>
 
           <div className="top-bid-row">
-            <span className="lbl">En yüksek teklif</span>
+            <span className="lbl">{t.draft.topBid}</span>
             {auction.highestBid ? (
               <span>
                 <span className="amt">{auction.highestBid.amount}M</span>{' '}
                 {leaderNick && <span className="who">— {leaderNick}</span>}
               </span>
             ) : (
-              <span className="who">henüz yok</span>
+              <span className="who">{t.draft.noneYet}</span>
             )}
           </div>
         </div>
 
         <div className="budget-strip">
-          <span className="lbl">Kalan bütçe</span>
+          <span className="lbl">{t.draft.budgetLeft}</span>
           <span className="amt">{you.budget}M</span>
-          <span className="lbl pass-lbl">Pas hakkı</span>
+          <span className="lbl pass-lbl">{t.draft.passesLeft}</span>
           <span className="amt pass-amt">{you.passesLeft}</span>
         </div>
         <div className="bid-input-row">
@@ -279,7 +281,7 @@ export function DraftPage({ room }: Props) {
             placeholder={String(floor)}
           />
           <button className="step-btn" onClick={handleSetMin}>
-            MIN
+            {t.draft.bidMin}
           </button>
           <button className="step-btn" onClick={() => handleAddStep(1)}>
             +1
@@ -297,20 +299,16 @@ export function DraftPage({ room }: Props) {
             }
             onClick={() => void submitBid()}
           >
-            {isOpening ? 'Açılış teklifi ver' : 'Teklif ver'}
+            {isOpening ? t.draft.placeOpening : t.draft.placeBid}
           </button>
           {youOpen && (
             <button
               className="btn-outline"
               disabled={!canPass}
-              title={
-                you.passesLeft > 0
-                  ? 'Bu futbolcuyu istemiyorsan açılışı rastgele birine devret'
-                  : 'Pas hakkın kalmadı'
-              }
+              title={you.passesLeft > 0 ? t.draft.passTitle : t.draft.noPassesTitle}
               onClick={() => void submitPass()}
             >
-              Pas geç ({you.passesLeft})
+              {t.draft.pass(you.passesLeft)}
             </button>
           )}
         </div>
@@ -318,29 +316,28 @@ export function DraftPage({ room }: Props) {
         {auction.eligibleIds.length === 1 ? (
           <p className="footnote" style={{ color: 'var(--accent-gold, #f59e0b)', fontWeight: 600 }}>
             {auction.eligibleIds[0] === you.id
-              ? `⚡ Diğer tüm oyuncuların ${f.position} kontenjanı dolu olduğu için bu futbolcu otomatik olarak senin kadrona aktarılıyor!`
-              : `⚡ Diğer tüm oyuncuların ${f.position} kontenjanı dolu. Oyuncu otomatik olarak ${room.participants.find((p) => p.id === auction.eligibleIds[0])?.nickname ?? 'rakibe'} atanıyor.`}
+              ? t.draft.autoToYou(f.position)
+              : t.draft.autoToOther(
+                  f.position,
+                  room.participants.find((p) => p.id === auction.eligibleIds[0])?.nickname ??
+                    t.draft.rival,
+                )}
           </p>
         ) : (
           <>
             {youOpen && (
               <p className="footnote turn-alert">
-                Açılış sırası sende — vermezsen süre sonunda {minInc}M ile senin adına açılır.
-                {you.passesLeft > 0 &&
-                  ' Bu futbolcuyu istemiyorsan pas geç: açılış rastgele başka birine geçer, sen bu turda teklif veremezsin.'}
+                {t.draft.yourOpening(minInc)}
+                {you.passesLeft > 0 && t.draft.yourOpeningPass}
               </p>
             )}
             {isOpening && !youOpen && openerNick && (
-              <p className="footnote">Açılışı {openerNick} yapıyor…</p>
+              <p className="footnote">{t.draft.openerIs(openerNick)}</p>
             )}
-            {youPassed && (
-              <p className="footnote">Bu turda pas geçtin — bu futbolcuya teklif veremezsin.</p>
-            )}
-            {!eligible && !youPassed && (
-              <p className="footnote">{f.position} kadron dolu — teklif veremezsin.</p>
-            )}
-            {youAreLeading && <p className="footnote">En yüksek teklif sende.</p>}
-            {budgetShort && eligible && <p className="footnote">Bütçen bu teklif için yetmiyor.</p>}
+            {youPassed && <p className="footnote">{t.draft.youPassed}</p>}
+            {!eligible && !youPassed && <p className="footnote">{t.draft.posFull(f.position)}</p>}
+            {youAreLeading && <p className="footnote">{t.draft.youLead}</p>}
+            {budgetShort && eligible && <p className="footnote">{t.draft.budgetShort}</p>}
           </>
         )}
         {bidError && <p className="error">{bidError}</p>}
@@ -387,7 +384,7 @@ export function DraftPage({ room }: Props) {
           }}
         >
           <div className="section-label" style={{ margin: 0 }}>
-            Kadrom ({you.squad.length}/{room.config.squadSize})
+            {t.draft.mySquad(you.squad.length, room.config.squadSize)}
           </div>
           {you.squad.length > 0 && (
             <div
@@ -403,19 +400,20 @@ export function DraftPage({ room }: Props) {
               }}
             >
               <span>
-                HÜC: <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.attack}</strong>
+                {t.common.att}:{' '}
+                <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.attack}</strong>
               </span>
               <span>·</span>
               <span>
-                SAV: <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.defense}</strong>
+                {t.common.def}:{' '}
+                <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.defense}</strong>
               </span>
             </div>
           )}
         </div>
         {you.squad.length === 0 ? (
           <p className="footnote" style={{ margin: '6px 0 0' }}>
-            Henüz futbolcu almadın. Aldığın futbolcular mevkilerine göre gruplanarak burada
-            listelenecek.
+            {t.draft.squadEmpty}
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -427,11 +425,11 @@ export function DraftPage({ room }: Props) {
                   <div className="position-group-header">
                     <PositionBadge position={pos} size="sm" />
                     <span className="position-group-count">
-                      {posPlayers.length}/{quota} Oyuncu
+                      {t.common.playersCount(posPlayers.length, quota)}
                     </span>
                   </div>
                   {posPlayers.length === 0 ? (
-                    <div className="squad-empty-slot">Henüz oyuncu alınmadı</div>
+                    <div className="squad-empty-slot">{t.draft.slotEmpty}</div>
                   ) : (
                     <div className="squad-player-list" style={{ marginTop: 2, gap: 5 }}>
                       {posPlayers.map((pl) => (
@@ -440,9 +438,11 @@ export function DraftPage({ room }: Props) {
                             <span className="squad-player-name">{pl.name}</span>
                           </div>
                           <div className="squad-player-stats">
-                            <span className="stat-tag gen">GEN {pl.overall}</span>
+                            <span className="stat-tag gen">
+                              {t.common.ovr} {pl.overall}
+                            </span>
                             <span className="sep">|</span>
-                            <span className="stat-tag">{powerRoleLabel(pl.position)}</span>
+                            <span className="stat-tag">{roleLabel(pl.position, t)}</span>
                           </div>
                         </div>
                       ))}
@@ -457,10 +457,10 @@ export function DraftPage({ room }: Props) {
 
       <div className="panel">
         <div className="section-label">
-          Rakipler
+          {t.draft.rivals}
           {room.config.hiddenBudgets && (
             <span className="tag" style={{ marginLeft: 8 }}>
-              🔒 gizli bütçe
+              {t.common.hiddenBudgetTag}
             </span>
           )}
         </div>
@@ -471,17 +471,17 @@ export function DraftPage({ room }: Props) {
               <span className="roster-name">
                 <span className={`dot ${p.connected ? '' : 'off'}`} />
                 {p.nickname}
-                {p.isBot && <span className="tag bot">bot</span>}
+                {p.isBot && <span className="tag bot">{t.common.bot}</span>}
               </span>
               <span className="mono" style={{ color: 'var(--chalk-faint)' }}>
-                {p.squad.length}/{room.config.squadSize} kadro · {p.passesLeft} pas
+                {t.draft.rivalLine(p.squad.length, room.config.squadSize, p.passesLeft)}
               </span>
             </div>
           ))}
       </div>
 
       <div className="panel">
-        <div className="section-label">Teklif geçmişi</div>
+        <div className="section-label">{t.draft.bidHistory}</div>
         {auction.history.length === 0 && (
           <p className="footnote" style={{ marginTop: 0 }}>
             —
@@ -509,31 +509,29 @@ export function DraftPage({ room }: Props) {
       </div>
 
       <div className="panel">
-        <div className="section-label">Odadan çık</div>
+        <div className="section-label">{t.draft.leaveTitle}</div>
         {confirmLeave ? (
           <>
             <p className="footnote" style={{ marginTop: 0 }}>
-              Yerine bir bot geçecek ve kadronla oynamaya devam edecek.{' '}
-              <strong>Bu oyuna geri dönemezsin.</strong>
+              {t.draft.leaveConfirm} <strong>{t.draft.leaveNoReturn}</strong>
             </p>
             <div className="btn-row">
               <button className="btn-outline" onClick={() => setConfirmLeave(false)}>
-                Vazgeç
+                {t.common.cancel}
               </button>
               <button className="btn-primary" onClick={handleLeave}>
-                Evet, çık
+                {t.draft.leaveYes}
               </button>
             </div>
           </>
         ) : (
           <>
             <p className="footnote" style={{ marginTop: 0 }}>
-              Açık artırma devam ederken çıkabilirsin — yerine bot geçer, diğer oyuncular oynamaya
-              devam eder.
+              {t.draft.leaveInfo}
             </p>
             <div className="btn-row">
               <button className="btn-outline" onClick={() => setConfirmLeave(true)}>
-                Odadan çık
+                {t.draft.leaveTitle}
               </button>
             </div>
           </>
@@ -580,9 +578,9 @@ function wonText(
     winnerNickname: string | null;
     amount: number;
   },
-  f?: Footballer | null,
+  f: Footballer | null | undefined,
+  t: Dict,
 ): string {
-  if (!w.winnerNickname) return `${w.footballerName} satılmadı (teklif gelmedi).`;
-  const stats = f ? ` (GEN ${f.overall})` : '';
-  return `${w.winnerNickname}, ${w.footballerName}${stats} oyuncusunu ${w.amount}M'ye aldı.`;
+  if (!w.winnerNickname) return t.draft.wonNoBid(w.footballerName);
+  return t.draft.won(w.winnerNickname, w.footballerName, f ? f.overall : null, w.amount);
 }

@@ -6,6 +6,7 @@ import {
   type PenaltyShootoutAttempt,
   type ShootoutState,
 } from '@fal/shared';
+import { useT, type Dict } from '../i18n/index.js';
 import { PenaltyScene } from './PenaltyScene.js';
 
 interface LiveMatchTickerProps {
@@ -43,46 +44,12 @@ interface LiveMatchTickerProps {
   startedAt?: number;
 }
 
-const AIMING_PHRASES = [
-  'Nefesler tutuldu... Topun arkasına geçti, vuruş geliyor!',
-  'Gerildi, gözler hakemde... Vuruş için odaklandı!',
-  'Topu beyaz noktaya koydu, stadyumda büyük sessizlik!',
-  'Derin bir nefes aldı... Hakem düdüğünü çaldı!',
-  'Kaleciyle göz göze geldi... Gerilim dorukta!',
-];
-
-const GOAL_PHRASES = [
-  'Topu doksana astı!',
-  'Kaleciyi ters köşeye yatırdı!',
-  'İnanılmaz bir soğukkanlılık, top filelerle buluştu!',
-  'Kalecinin uzanamayacağı köşeye adeta çivi gibi çaktı!',
-  'Ağları adeta sarstı, kusursuz bir penaltı vuruşu!',
-  'Örümcek ağlarını temizledi, müthiş bir vuruş!',
-];
-
-/** Kaleci köşeyi bildi ama top yine de girdi. */
-const GOAL_SAME_SIDE_PHRASES = [
-  'Kaleci köşeyi tahmin etti ama top o kadar sert ki filelerle buluştu!',
-  'Doğru tarafa uzandı, yine de yetişemedi — top fileye gitti!',
-  'Eldivenine sürdü ama engelleyemedi, GOL!',
-];
-
-const SAVE_PHRASES = [
-  'Kaleci devleşti, köşeden müthiş uzandı ve kurtardı!',
-  'Kaleci köşeyi kusursuz tahmin etti ve penaltıyı çeldi!',
-  'Doğru köşeye yattı, topu eldivenleriyle uzaklaştırdı!',
-  'Çok zayıf bir vuruş, kaleci zorlanmadan kontrol etti!',
-];
-
-const MISS_PHRASES = [
-  'Dağa taşa vurdu, top auta gitti!',
-  'Direğe nişanladı, inanılmaz bir şanssızlık!',
-  'Çerçeveyi bulamadı, top dışarıda!',
-  'Direkten döndü! Büyük talihsizlik!',
-  'Topun altına girdi, üstten aut!',
-];
-
-const DIR_LABEL: Record<PenaltyDirection, string> = { left: 'sol', center: 'orta', right: 'sağ' };
+/**
+ * Anlatım satırı: metin değil, sözlükle çizilen fonksiyon — dil maç sırasında
+ * değişirse akışın tamamı yeni dilde görünür. Cümle listeleri iki dilde de
+ * aynı uzunlukta (aynı olay → aynı sıradaki cümle).
+ */
+type LogLine = (t: Dict) => string;
 
 function getPhrase(list: string[], seedKey: string | number): string {
   const num =
@@ -93,20 +60,25 @@ function getPhrase(list: string[], seedKey: string | number): string {
 }
 
 /** Açıklanan vuruşun anlatım satırı (her iki modda ortak). */
-function describeKick(attempt: PenaltyShootoutAttempt, teamName: string, idx: number): string {
+function describeKick(
+  attempt: PenaltyShootoutAttempt,
+  teamName: string,
+  idx: number,
+  t: Dict,
+): string {
   const key = attempt.playerName + idx + (attempt.playerId ?? '');
-  const corners = `(vuruş ${DIR_LABEL[attempt.shotDirection]} · kaleci ${DIR_LABEL[attempt.keeperDirection]})`;
+  const L = t.live;
+  const corners = L.corners(L.dir[attempt.shotDirection], L.dir[attempt.keeperDirection]);
   const score = `(${attempt.scoreHomeAfter} - ${attempt.scoreAwayAfter})`;
   if (attempt.outcome === 'goal') {
     const same = attempt.shotDirection === attempt.keeperDirection;
-    const text = getPhrase(same ? GOAL_SAME_SIDE_PHRASES : GOAL_PHRASES, key);
-    return `⚽ GOOOL! ${attempt.playerName} (${teamName}) — ${text} ${corners} ${score}`;
+    const text = getPhrase(same ? L.goalSameSide : L.goal, key);
+    return `${L.kickGoal(attempt.playerName, teamName, text)} ${corners} ${score}`;
   }
   if (attempt.outcome === 'saved') {
-    const keeper = attempt.keeperName ? `${attempt.keeperName} ` : 'Kaleci ';
-    return `🧤 KURTARDI! ${keeper}— ${getPhrase(SAVE_PHRASES, key)} ${attempt.playerName} kaçırdı ${corners} ${score}`;
+    return `${L.kickSaved(attempt.keeperName ?? null, getPhrase(L.save, key), attempt.playerName)} ${corners} ${score}`;
   }
-  return `❌ DIŞARI! ${attempt.playerName} (${teamName}) — ${getPhrase(MISS_PHRASES, key)} ${corners} ${score}`;
+  return `${L.kickMiss(attempt.playerName, teamName, getPhrase(L.miss, key))} ${corners} ${score}`;
 }
 
 /* ---------------- seri görünüm modeli (senaryolu + canlı ortak) ---------------- */
@@ -138,10 +110,10 @@ interface ShootoutView {
 }
 
 /** Senaryolu seride açıklanmadan önce kalecinin adı bilinmez; kadrodan tahmin. */
-function scriptedKeeperName(result: MatchResult, shooterTeamId: string): string {
+function scriptedKeeperName(result: MatchResult, shooterTeamId: string, t: Dict): string {
   const other = result.penaltyShootout?.find((a) => a.teamId !== shooterTeamId && a.keeperName);
   const own = result.penaltyShootout?.find((a) => a.teamId === shooterTeamId && a.keeperName);
-  return own?.keeperName ?? other?.keeperName ?? 'Kaleci';
+  return own?.keeperName ?? other?.keeperName ?? t.live.keeperFallback;
 }
 
 export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
@@ -159,12 +131,13 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   onChoose,
   startedAt,
 }) => {
+  const t = useT();
   const [phase, setPhase] = useState<'regular' | 'extra' | 'shootout' | 'finished'>('regular');
   const [minute, setMinute] = useState(1);
   const [liveHomeScore, setLiveHomeScore] = useState(0);
   const [liveAwayScore, setLiveAwayScore] = useState(0);
-  const [tickerLogs, setTickerLogs] = useState<string[]>([]);
-  const [latestGoal, setLatestGoal] = useState<string | null>(null);
+  const [tickerLogs, setTickerLogs] = useState<LogLine[]>([]);
+  const [latestGoal, setLatestGoal] = useState<LogLine | null>(null);
   const [isFinished, setIsFinished] = useState(false);
 
   // Senaryolu seri (bot–bot / önizleme) durumu
@@ -191,7 +164,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     interactive && shootout && shootout.matchId === result.matchId ? shootout : null;
   const lastMinute = result.extraTime ? 120 : 90;
 
-  const log = useCallback((line: string) => setTickerLogs((prev) => [line, ...prev]), []);
+  const log = useCallback((line: LogLine) => setTickerLogs((prev) => [line, ...prev]), []);
 
   // Seriye geçiş iki yoldan tetiklenebilir (saat 120'ye geldi / sunucu seriyi
   // başlattı); anons ve faz değişimi maç başına bir kez uygulanır.
@@ -201,10 +174,16 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       if (enteredRef.current === result.matchId) return;
       enteredRef.current = result.matchId;
       setPhase('shootout');
-      const endLabel = result.extraTime ? 'Uzatma da' : '90 Dakika';
+      const extra = result.extraTime;
+      const { scoreHome, scoreAway } = result;
       if (!silent) {
-        log(
-          `${lastMinute}' ⏱️ ${endLabel} Berabere Bitti (${result.scoreHome} - ${result.scoreAway})! Kazananı SERİ PENALTI ATIŞLARI belirleyecek! 🔥`,
+        log((t) =>
+          t.live.toShootout(
+            lastMinute,
+            extra ? t.live.endExtra : t.live.end90,
+            scoreHome,
+            scoreAway,
+          ),
         );
       }
     },
@@ -223,7 +202,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     setCurrentKickIndex(-1);
     setKickState('aiming');
     setCompletedAttempts([]);
-    setTickerLogs([`0' ⏱️ Karşılaşma başladı! ${homeName} vs ${awayName}`]);
+    setTickerLogs([(t) => t.live.kickoff(homeName, awayName)]);
 
     // Yeniden bağlanma: dakikayı sunucu başlangıcından türet; seri zaten
     // sürüyorsa doğrudan seriye geç (maçı baştan oynatma).
@@ -246,7 +225,9 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       setLiveAwayScore(aScore);
       setMinute(Math.min(min, lastMinute));
       if (min > 90) setPhase('extra');
-      log(`↻ Maça yeniden bağlandın (${Math.min(min, lastMinute)}' · ${hScore} - ${aScore})`);
+      const at = Math.min(min, lastMinute);
+      const [h0, a0] = [hScore, aScore];
+      log((t) => t.live.rejoined(at, h0, a0));
     }
 
     const finishMatch = (): void => {
@@ -256,10 +237,9 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       } else {
         setPhase('finished');
         setIsFinished(true);
-        const suffix = result.extraTime ? ' (uzatmalar sonunda)' : '';
-        log(
-          `${lastMinute}' 🏁 Maç Bitti${suffix}! Sonuç: ${homeName} ${result.scoreHome} - ${result.scoreAway} ${awayName}`,
-        );
+        const extra = Boolean(result.extraTime);
+        const { scoreHome, scoreAway } = result;
+        log((t) => t.live.fullTime(lastMinute, extra, homeName, scoreHome, scoreAway, awayName));
       }
     };
 
@@ -282,9 +262,8 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       if (min === 91) {
         // Normal süre berabere bitti, uzatmaya gidiliyor.
         setPhase('extra');
-        log(
-          `90' ⏱️ Normal Süre Berabere Bitti (${hScore} - ${aScore})! 30 dakikalık UZATMA başlıyor! ⚡`,
-        );
+        const [h90, a90] = [hScore, aScore];
+        log((t) => t.live.toExtra(h90, a90));
       }
 
       setMinute(min);
@@ -300,8 +279,9 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
 
         const teamName = isHome ? homeName : awayName;
         const scorer = goal.playerName ? `${goal.playerName} (${teamName})` : teamName;
-        const msg = `⚽ ${min}' GOOOL! ${scorer} topu ağlara gönderdi! (${hScore} - ${aScore})`;
-        setLatestGoal(msg);
+        const [gm, gh, ga] = [min, hScore, aScore];
+        const msg: LogLine = (t) => t.live.goalLine(gm, scorer, gh, ga);
+        setLatestGoal(() => msg);
         log(msg);
       }
     }, speedMs);
@@ -357,9 +337,8 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       if (!active) return;
       if (index >= shootoutList.length) {
         const winnerName = result.winnerId === result.homeId ? homeName : awayName;
-        log(
-          `🏆 SERİ PENALTILAR SONUCU: ${homeName} ${result.penaltiesHome} - ${result.penaltiesAway} ${awayName}! Kazanan: ${winnerName}!`,
-        );
+        const [ph, pa] = [result.penaltiesHome ?? 0, result.penaltiesAway ?? 0];
+        log((t) => t.live.shootoutResult(homeName, ph, pa, awayName, winnerName));
         setPhase('finished');
         setIsFinished(true);
         return;
@@ -369,19 +348,24 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       if (!attempt) return;
       const isHome = attempt.teamId === result.homeId;
       const teamName = isHome ? homeName : awayName;
-      const aimText = getPhrase(AIMING_PHRASES, attempt.playerName + index);
+      const aimKey = attempt.playerName + index;
 
       setCurrentKickIndex(index);
       setKickState('aiming');
-      log(
-        `🎯 ${attempt.round}. Penaltı: ${attempt.playerName} (${teamName}) topun başına geçti... ${aimText}`,
+      log((t) =>
+        t.live.kickUp(
+          attempt.round,
+          attempt.playerName,
+          teamName,
+          getPhrase(t.live.aiming, aimKey),
+        ),
       );
 
       shootoutTimerRef.current = setTimeout(() => {
         if (!active) return;
         setKickState('revealed');
         setCompletedAttempts((prev) => [...prev, attempt]);
-        log(describeKick(attempt, teamName, index));
+        log((t) => describeKick(attempt, teamName, index, t));
 
         shootoutTimerRef.current = setTimeout(() => {
           if (!active) return;
@@ -410,14 +394,24 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
     const teamName = liveShootout.shooterTeamId === result.homeId ? homeName : awayName;
     if (liveShootout.phase === 'choosing' && promptedRef.current !== liveShootout.kickIndex) {
       promptedRef.current = liveShootout.kickIndex;
-      const you =
+      const role =
         youId === liveShootout.shooterTeamId
-          ? ' — SEN ATIYORSUN, köşeyi seç!'
+          ? 'shoot'
           : youId === liveShootout.keeperTeamId
-            ? ' — SEN KALEDESİN, bir tarafa uzan!'
-            : '';
+            ? 'keep'
+            : null;
+      const { round, kickIndex } = liveShootout;
+      const shooterName = liveShootout.shooter.name;
+      const keeperName = liveShootout.keeper.name;
       log(
-        `🎯 ${liveShootout.round}. Penaltı: ${liveShootout.shooter.name} (${teamName}) topun başına geçti, karşısında ${liveShootout.keeper.name}... ${getPhrase(AIMING_PHRASES, liveShootout.kickIndex)}${you}`,
+        (t) =>
+          t.live.kickUpLive(
+            round,
+            shooterName,
+            teamName,
+            keeperName,
+            getPhrase(t.live.aiming, kickIndex),
+          ) + (role === 'shoot' ? t.live.youShoot : role === 'keep' ? t.live.youKeep : ''),
       );
     }
     if (
@@ -426,12 +420,13 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       revealedRef.current !== liveShootout.kickIndex
     ) {
       revealedRef.current = liveShootout.kickIndex;
-      log(describeKick(liveShootout.lastAttempt, teamName, liveShootout.kickIndex));
+      const attempt = liveShootout.lastAttempt;
+      const kickIndex = liveShootout.kickIndex;
+      log((t) => describeKick(attempt, teamName, kickIndex, t));
       if (liveShootout.winnerId) {
         const winnerName = liveShootout.winnerId === result.homeId ? homeName : awayName;
-        log(
-          `🏆 SERİ PENALTILAR SONUCU: ${homeName} ${liveShootout.penaltiesHome} - ${liveShootout.penaltiesAway} ${awayName}! Kazanan: ${winnerName}!`,
-        );
+        const { penaltiesHome: ph, penaltiesAway: pa } = liveShootout;
+        log((t) => t.live.shootoutResult(homeName, ph, pa, awayName, winnerName));
       }
     }
   }, [liveShootout, homeName, awayName, youId, log, result.homeId]);
@@ -540,7 +535,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         shooterTeamId: current?.teamId ?? null,
         shooterName: current?.playerName ?? '',
         keeperName:
-          current?.keeperName ?? (current ? scriptedKeeperName(result, current.teamId) : ''),
+          current?.keeperName ?? (current ? scriptedKeeperName(result, current.teamId, t) : ''),
         revealed: !done && kickState === 'revealed' && current ? current : null,
         winnerId: done ? (result.winnerId ?? null) : null,
         kickKey: Math.max(0, currentKickIndex),
@@ -558,16 +553,19 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   viewRef.current = view;
   const onChooseRef = useRef(onChoose);
   onChooseRef.current = onChoose;
-  const choose = useCallback((direction: PenaltyDirection) => {
-    const v = viewRef.current;
-    const send = onChooseRef.current;
-    if (!v?.live || v.stage !== 'aiming' || v.live.role === 'spectator' || !send) return;
-    setMyChoice(direction);
-    setChooseError(null);
-    send(v.live.kickIndex, direction).catch((err: unknown) => {
-      setChooseError(err instanceof Error ? err.message : 'Seçim gönderilemedi.');
-    });
-  }, []);
+  const choose = useCallback(
+    (direction: PenaltyDirection) => {
+      const v = viewRef.current;
+      const send = onChooseRef.current;
+      if (!v?.live || v.stage !== 'aiming' || v.live.role === 'spectator' || !send) return;
+      setMyChoice(direction);
+      setChooseError(null);
+      send(v.live.kickIndex, direction).catch((err: unknown) => {
+        setChooseError(err instanceof Error ? err.message : t.live.chooseFailed);
+      });
+    },
+    [t],
+  );
 
   // Klavye: ← ↑ → (ya da 1 2 3) ile seçim.
   useEffect(() => {
@@ -612,7 +610,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         : null;
 
     return (
-      <div className="pen-dots" aria-label="Penaltı atışları">
+      <div className="pen-dots" aria-label={t.live.penDotsLabel}>
         {shootoutRounds.map((rnd) => {
           const attempt = view.attempts.find((a) => a.teamId === teamId && a.round === rnd);
           const isCurrent = current !== null && current.teamId === teamId && current.round === rnd;
@@ -624,10 +622,10 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               ? 'pen-dot current'
               : 'pen-dot';
           const title = attempt
-            ? `${attempt.playerName}: ${attempt.outcome === 'goal' ? 'Gol' : attempt.outcome === 'saved' ? 'Kurtarıldı' : 'Dışarı'}`
+            ? `${attempt.playerName}: ${attempt.outcome === 'goal' ? t.live.outcomeGoal : attempt.outcome === 'saved' ? t.live.outcomeSaved : t.live.outcomeOut}`
             : isCurrent
-              ? 'Vuruş yapılıyor'
-              : `${rnd}. penaltı`;
+              ? t.live.shooting
+              : t.live.nthPenalty(rnd);
           return (
             <span key={rnd} className={cls} title={title}>
               {attempt ? (attempt.scored ? '✓' : '✕') : ''}
@@ -652,12 +650,12 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   const cardState = phase === 'shootout' ? 'gold' : isFinished ? 'ready' : 'crimson';
   const statusLabel =
     phase === 'shootout'
-      ? 'Seri penaltı atışları'
+      ? t.live.statusShootout
       : isFinished
-        ? 'Maç tamamlandı'
+        ? t.live.statusDone
         : phase === 'extra'
-          ? 'Uzatma · canlı'
-          : 'Canlı maç';
+          ? t.live.statusExtra
+          : t.live.statusLive;
   const clockText =
     phase === 'shootout'
       ? view
@@ -666,22 +664,22 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       : `${minute}'`;
   const clockLabel =
     phase === 'shootout'
-      ? 'Penaltılar'
+      ? t.live.clockPens
       : isFinished
-        ? `Maç sonu${result.extraTime ? ' · u.s.' : ''}`
+        ? t.live.clockFullTime(Boolean(result.extraTime))
         : phase === 'extra'
-          ? 'Uzatma'
-          : 'Dakika';
+          ? t.live.clockExtra
+          : t.live.clockMinute;
 
   const revealedPhrase = (a: PenaltyShootoutAttempt): string => {
     const key = a.playerName + (view?.kickKey ?? 0) + (a.playerId ?? '');
     if (a.outcome === 'goal') {
       return getPhrase(
-        a.shotDirection === a.keeperDirection ? GOAL_SAME_SIDE_PHRASES : GOAL_PHRASES,
+        a.shotDirection === a.keeperDirection ? t.live.goalSameSide : t.live.goal,
         key,
       );
     }
-    return getPhrase(a.outcome === 'saved' ? SAVE_PHRASES : MISS_PHRASES, key);
+    return getPhrase(a.outcome === 'saved' ? t.live.save : t.live.miss, key);
   };
 
   return (
@@ -710,8 +708,12 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           <div className="name">{homeName}</div>
           <div className="score">{liveHomeScore}</div>
           <div className="lm-side-meta">
-            <span>Ev sahibi</span>
-            {homePower != null && <span className="lm-power">Güç {homePower}</span>}
+            <span>{t.live.home}</span>
+            {homePower != null && (
+              <span className="lm-power">
+                {t.common.power} {homePower}
+              </span>
+            )}
           </div>
           {hasShootout && renderPenaltyDots(result.homeId)}
         </div>
@@ -720,8 +722,12 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           <div className="name">{awayName}</div>
           <div className="score">{liveAwayScore}</div>
           <div className="lm-side-meta">
-            <span>Deplasman</span>
-            {awayPower != null && <span className="lm-power">Güç {awayPower}</span>}
+            <span>{t.live.away}</span>
+            {awayPower != null && (
+              <span className="lm-power">
+                {t.common.power} {awayPower}
+              </span>
+            )}
           </div>
           {hasShootout && renderPenaltyDots(result.awayId)}
         </div>
@@ -741,7 +747,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             <circle cx="12" cy="12" r="9" />
             <path d="M12 7l4.5 3.3-1.7 5.4H9.2L7.5 10.3z" />
           </svg>
-          <span>{latestGoal}</span>
+          <span>{latestGoal(t)}</span>
         </div>
       )}
 
@@ -754,7 +760,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
         >
           <div className="pen-head">
             <span className="section-label">
-              {view.stage === 'waiting' ? 'Seri penaltı' : `${view.round}. seri penaltı`}
+              {view.stage === 'waiting' ? t.live.shootout : t.live.nthShootout(view.round)}
             </span>
             {view.shooterTeamId && (
               <span className="tag waiting">{teamNameOf(view.shooterTeamId)}</span>
@@ -762,16 +768,16 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           </div>
 
           {view.stage === 'waiting' ? (
-            <div className="pen-waiting">Seri penaltılar başlıyor…</div>
+            <div className="pen-waiting">{t.live.shootoutStarting}</div>
           ) : (
             <div className="pen-matchup">
               <div className="pen-side">
-                <div className="lbl">Atıyor</div>
+                <div className="lbl">{t.live.shooter}</div>
                 <div className="nm">{view.shooterName}</div>
               </div>
-              <div className="pen-vs">vs</div>
+              <div className="pen-vs">{t.live.vs}</div>
               <div className="pen-side right">
-                <div className="lbl">Kalede</div>
+                <div className="lbl">{t.live.keeper}</div>
                 <div className="nm">{view.keeperName}</div>
               </div>
             </div>
@@ -790,12 +796,12 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               <div className="pen-role-row">
                 <div className={`pen-role${view.live.role !== 'spectator' ? ' mine' : ''}`}>
                   {view.live.role === 'shooter'
-                    ? 'Sen atıyorsun — köşeyi seç'
+                    ? t.live.roleShooter
                     : view.live.role === 'keeper'
-                      ? 'Sen kaledesin — bir tarafa uzan'
-                      : 'Taraflar köşe seçiyor'}
+                      ? t.live.roleKeeper
+                      : t.live.roleSpectator}
                   {view.live.role === 'spectator' && (
-                    <span className="pen-role-sub">İzleyicisin, seçimler gizli yapılıyor.</span>
+                    <span className="pen-role-sub">{t.live.spectatorSub}</span>
                   )}
                 </div>
                 <div
@@ -819,23 +825,17 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
                         className={`format-btn${myChoice === dir ? ' active' : ''}`}
                         onClick={() => choose(dir)}
                       >
-                        <span className="ft">{DIR_LABEL[dir]}</span>
-                        <span className="fs">
-                          {dir === 'left'
-                            ? '← ya da 1'
-                            : dir === 'center'
-                              ? '↑ ya da 2'
-                              : '→ ya da 3'}
-                        </span>
+                        <span className="ft">{t.live.dir[dir]}</span>
+                        <span className="fs">{t.live.keyHint[dir]}</span>
                       </button>
                     ))}
                   </div>
                   <p className="footnote pen-footnote">
                     {myChoice
-                      ? `Seçimin ${DIR_LABEL[myChoice]} — süre dolana kadar değiştirebilirsin.`
+                      ? t.live.yourChoice(t.live.dir[myChoice])
                       : view.live.role === 'shooter'
-                        ? 'Süre dolarsa ortaya vurursun. Kaleci yanlış köşeye giderse gol neredeyse kesin.'
-                        : 'Süre dolarsa ortada kalırsın. Doğru köşeyi bilirsen kurtarma şansın yüksek.'}
+                        ? t.live.shooterHint
+                        : t.live.keeperHint}
                   </p>
                   {chooseError && <p className="error pen-error">{chooseError}</p>}
                 </>
@@ -844,11 +844,11 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               <div className="pen-tags">
                 <span className={`tag ${view.live.shooterChosen ? 'ready' : 'waiting'}`}>
                   {teamNameOf(view.shooterTeamId)} ·{' '}
-                  {view.live.shooterChosen ? 'köşeyi seçti' : 'seçiyor…'}
+                  {view.live.shooterChosen ? t.live.shooterChose : t.live.choosing}
                 </span>
                 <span className={`tag ${view.live.keeperChosen ? 'ready' : 'waiting'}`}>
                   {teamNameOf(view.shooterTeamId === result.homeId ? result.awayId : result.homeId)}{' '}
-                  · {view.live.keeperChosen ? 'tarafını seçti' : 'seçiyor…'}
+                  · {view.live.keeperChosen ? t.live.keeperChose : t.live.choosing}
                 </span>
               </div>
             </div>
@@ -857,7 +857,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           {!view.live && view.stage === 'aiming' && (
             <div className="pen-aim">
               <span className="lm-dot crimson" />
-              {getPhrase(AIMING_PHRASES, view.shooterName + view.kickKey)}
+              {getPhrase(t.live.aiming, view.shooterName + view.kickKey)}
             </div>
           )}
 
@@ -866,23 +866,25 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
               <div className={`ticker pen-result is-${view.revealed.outcome}`}>
                 <b>
                   {view.revealed.outcome === 'goal'
-                    ? 'Gol'
+                    ? t.live.resultGoal
                     : view.revealed.outcome === 'saved'
-                      ? 'Kurtardı'
-                      : 'Dışarı'}
+                      ? t.live.resultSaved
+                      : t.live.resultOut}
                 </b>
                 <span>{revealedPhrase(view.revealed)}</span>
               </div>
               {/* İki tarafın seçimi açıkça: atış köşesi ve kalecinin uzandığı taraf */}
               <div className="pen-picks">
-                <span className="tag waiting">Atış · {DIR_LABEL[view.revealed.shotDirection]}</span>
+                <span className="tag waiting">
+                  {t.live.shotTag(t.live.dir[view.revealed.shotDirection])}
+                </span>
                 <span
                   className={`tag ${view.revealed.shotDirection === view.revealed.keeperDirection ? 'host' : 'waiting'}`}
                 >
-                  Kaleci · {DIR_LABEL[view.revealed.keeperDirection]}
-                  {view.revealed.shotDirection === view.revealed.keeperDirection
-                    ? ' · köşeyi bildi'
-                    : ' · ters köşe'}
+                  {t.live.keeperTag(
+                    t.live.dir[view.revealed.keeperDirection],
+                    view.revealed.shotDirection === view.revealed.keeperDirection,
+                  )}
                 </span>
               </div>
             </>
@@ -891,12 +893,10 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
           {view.stage === 'revealed' && view.winnerId && (
             <div className="pen-winner">
               <div className="section-label">
-                Penaltılar {view.scoreHome} – {view.scoreAway}
+                {t.live.pensScore(view.scoreHome, view.scoreAway)}
               </div>
               <div className="pen-winner-name">{teamNameOf(view.winnerId)}</div>
-              <div className="pen-winner-meta">
-                penaltılar sonucunda tur atladı{view.winnerId === youId ? ' · tebrikler' : ''}
-              </div>
+              <div className="pen-winner-meta">{t.live.wonOnPens(view.winnerId === youId)}</div>
             </div>
           )}
         </div>
@@ -905,13 +905,11 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       {/* Penaltı sonucu özeti (maç bittiğinde) */}
       {isFinished && hasShootout && (
         <div className="pen-winner lm-final">
-          <div className="section-label">
-            Penaltılar {finalPenH} – {finalPenA}
-          </div>
+          <div className="section-label">{t.live.pensScore(finalPenH ?? 0, finalPenA ?? 0)}</div>
           <div className="pen-winner-name">
             {finalWinnerId === result.homeId ? homeName : awayName}
           </div>
-          <div className="pen-winner-meta">penaltılar sonucunda tur atladı</div>
+          <div className="pen-winner-meta">{t.live.wonOnPens(false)}</div>
         </div>
       )}
 
@@ -919,7 +917,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
       <div className="lm-feed">
         {tickerLogs.slice(0, 4).map((line, idx) => (
           <div key={idx} className={`lm-feed-row${idx === 0 ? ' latest' : ''}`}>
-            {line}
+            {line(t)}
           </div>
         ))}
       </div>
@@ -932,11 +930,11 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             className="btn-primary"
             onClick={() => onCompleteRef.current?.(resultRef.current)}
           >
-            Ağaca işle ve sonraki tura geç
+            {t.live.advanceBtn}
           </button>
         </div>
       )}
-      {isFinished && serverPaced && <p className="footnote lm-next">Sonraki maç birazdan…</p>}
+      {isFinished && serverPaced && <p className="footnote lm-next">{t.live.nextSoon}</p>}
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import type { Position } from '@fal/shared';
+import { useT } from '../i18n/index.js';
 
 interface Props {
   position: Position;
@@ -6,27 +7,11 @@ interface Props {
   showLabel?: boolean;
 }
 
-const POSITION_CONFIG = {
-  GK: {
-    label: 'Kaleci',
-    short: 'GK',
-    className: 'pos-gk',
-  },
-  DEF: {
-    label: 'Defans',
-    short: 'DEF',
-    className: 'pos-def',
-  },
-  MID: {
-    label: 'Orta Saha',
-    short: 'MID',
-    className: 'pos-mid',
-  },
-  FWD: {
-    label: 'Forvet',
-    short: 'FWD',
-    className: 'pos-fwd',
-  },
+const POSITION_CLASS: Record<Position, string> = {
+  GK: 'pos-gk',
+  DEF: 'pos-def',
+  MID: 'pos-mid',
+  FWD: 'pos-fwd',
 };
 
 function PositionIcon({ position, size }: { position: Position; size: number }) {
@@ -106,16 +91,16 @@ function PositionIcon({ position, size }: { position: Position; size: number }) 
 }
 
 export function PositionBadge({ position, size = 'md' }: Props) {
-  const conf = POSITION_CONFIG[position];
+  const t = useT();
   const iconSize = size === 'sm' ? 10 : size === 'lg' ? 14 : 12;
 
   return (
     <span
-      className={`position-chip ${conf.className} size-${size}`}
-      title={`${conf.label} (${position})`}
+      className={`position-chip ${POSITION_CLASS[position]} size-${size}`}
+      title={`${t.common.positions[position]} (${position})`}
     >
       <PositionIcon position={position} size={iconSize} />
-      <span>{conf.short}</span>
+      <span>{position}</span>
     </span>
   );
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { BotDifficulty, RoomState, TournamentSize } from '@fal/shared';
+import type { RoomState, TournamentSize } from '@fal/shared';
+import { useT } from '../i18n/index.js';
 import { leaveRoom, setFormat, setReady, startGame } from '../lib/roomClient.js';
 import { clearSession } from '../lib/session.js';
 import { selectYou, useRoomStore } from '../store.js';
@@ -8,13 +9,8 @@ interface Props {
   room: RoomState;
 }
 
-const DIFFICULTY_LABEL: Record<BotDifficulty, string> = {
-  easy: 'Kolay',
-  normal: 'Normal',
-  hard: 'Zor',
-};
-
 export function LobbyPage({ room }: Props) {
+  const t = useT();
   const you = useRoomStore(selectYou);
   const exitRoom = useRoomStore((s) => s.exitRoom);
   const [copied, setCopied] = useState(false);
@@ -39,7 +35,7 @@ export function LobbyPage({ room }: Props) {
     try {
       await setFormat(size);
     } catch (err) {
-      setStartError(err instanceof Error ? err.message : 'Format değiştirilemedi');
+      setStartError(err instanceof Error ? err.message : t.lobby.formatError);
     }
   }
 
@@ -55,7 +51,7 @@ export function LobbyPage({ room }: Props) {
     try {
       await startGame();
     } catch (err) {
-      setStartError(err instanceof Error ? err.message : 'Başlatılamadı');
+      setStartError(err instanceof Error ? err.message : t.lobby.startError);
     }
   }
 
@@ -68,19 +64,17 @@ export function LobbyPage({ room }: Props) {
   return (
     <div className="panel cobalt">
       <h1 className="headline" style={{ fontSize: 30 }}>
-        {room.gameNumber > 1 ? `Rövanş #${room.gameNumber} lobisi` : 'Lobi'}
+        {room.gameNumber > 1 ? t.lobby.rematchTitle(room.gameNumber) : t.lobby.title}
       </h1>
       <p className="lede" style={{ marginBottom: 22 }}>
-        {connectedPlayers.length}/{format} oyuncu bağlandı
-        {otherPlayers.length > 0
-          ? `, ${otherReadyCount}/${otherPlayers.length} katılımcı hazır.`
-          : '.'}
+        {t.lobby.connectedCount(connectedPlayers.length, format)}
+        {otherPlayers.length > 0 ? t.lobby.readyCount(otherReadyCount, otherPlayers.length) : '.'}
       </p>
 
-      <label className="field-label">Oda kodu</label>
+      <label className="field-label">{t.lobby.roomCode}</label>
       <div className="code-panel">
         <span className="code-text">{room.code}</span>
-        <button className="icon-btn" aria-label="Kodu kopyala" onClick={copyCode}>
+        <button className="icon-btn" aria-label={t.lobby.copyCode} onClick={copyCode}>
           {copied ? (
             <svg
               viewBox="0 0 24 24"
@@ -108,40 +102,37 @@ export function LobbyPage({ room }: Props) {
         </button>
       </div>
 
-      <div className="section-label">Turnuva boyutu</div>
+      <div className="section-label">{t.lobby.tournamentSize}</div>
       <div className="format-row">
-        {(
-          [
-            { key: 't2', size: 2, title: '2 Takım', sub: 'Büyük Final · 1 pas' },
-            { key: 't4', size: 4, title: '4 Takım', sub: 'Yarı final · 2 pas' },
-            { key: 't8', size: 8, title: '8 Takım', sub: 'Çeyrek final · 2 pas' },
-          ] as const
-        ).map((opt) => (
+        {([2, 4, 8] as const).map((size) => (
           <button
-            key={opt.key}
-            className={`format-btn${format === opt.size ? ' active' : ''}`}
-            disabled={!isHost || room.participants.length > opt.size}
-            onClick={() => void chooseFormat(opt.size)}
+            key={size}
+            className={`format-btn${format === size ? ' active' : ''}`}
+            disabled={!isHost || room.participants.length > size}
+            onClick={() => void chooseFormat(size)}
           >
-            <span className="ft">{opt.title}</span>
-            <span className="fs">{opt.sub}</span>
+            <span className="ft">{t.lobby.formats[size].title}</span>
+            <span className="fs">{t.lobby.formats[size].sub}</span>
           </button>
         ))}
       </div>
       {botCount > 0 && (
         <p className="footnote" style={{ marginTop: 8 }}>
-          Eksik {botCount} takım yapay zekâ botlarıyla tamamlanacak — botlar açık artırmaya da
-          katılır.
+          {t.lobby.botsFill(botCount)}
         </p>
       )}
       <p className="footnote" style={{ marginTop: 8 }}>
-        Bütçe modu: <strong>{room.config.hiddenBudgets ? '🔒 gizli' : 'açık'}</strong> · Bot
-        zorluğu: <strong>{DIFFICULTY_LABEL[room.config.botDifficulty] ?? 'Normal'}</strong> — oda
-        kurulurken seçildi, değiştirilemez.
+        {t.lobby.budgetMode}:{' '}
+        <strong>{room.config.hiddenBudgets ? t.lobby.budgetHidden : t.lobby.budgetOpen}</strong> ·{' '}
+        {t.lobby.botDifficulty}:{' '}
+        <strong>
+          {t.difficulty.labels[room.config.botDifficulty] ?? t.difficulty.labels.normal}
+        </strong>{' '}
+        — {t.lobby.fixedAtCreate}
       </p>
 
       <div className="section-label" style={{ marginTop: 22 }}>
-        Katılımcılar
+        {t.lobby.participants}
       </div>
       <div className="roster-list">
         {room.participants.map((p) => (
@@ -149,14 +140,14 @@ export function LobbyPage({ room }: Props) {
             <div className="roster-name">
               <span className={`dot ${p.connected ? '' : 'off'}`} />
               {p.nickname}
-              {p.id === you.id && <span className="sub">(sen)</span>}
+              {p.id === you.id && <span className="sub">({t.common.you})</span>}
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
-              {p.isBot && <span className="tag bot">bot</span>}
-              {p.isHost && <span className="tag host">host</span>}
+              {p.isBot && <span className="tag bot">{t.common.bot}</span>}
+              {p.isHost && <span className="tag host">{t.common.host}</span>}
               {!p.isHost && !p.isBot && (
                 <span className={`tag ${p.isReady ? 'ready' : 'waiting'}`}>
-                  {p.isReady ? 'hazır' : 'bekliyor'}
+                  {p.isReady ? t.common.ready : t.common.waiting}
                 </span>
               )}
             </div>
@@ -166,16 +157,16 @@ export function LobbyPage({ room }: Props) {
 
       <div className="btn-row">
         <button className="btn-outline" onClick={handleLeave}>
-          Odadan çık
+          {t.lobby.leave}
         </button>
         {!isHost && (
           <button className="btn-outline" onClick={() => setReady(!you.isReady)}>
-            {you.isReady ? 'Hazır değilim' : 'Hazırım'}
+            {you.isReady ? t.lobby.notReady : t.lobby.imReady}
           </button>
         )}
         {isHost && (
           <button className="btn-primary" disabled={!canStart} onClick={() => void handleStart()}>
-            Başlat
+            {t.lobby.start}
           </button>
         )}
       </div>
@@ -183,23 +174,19 @@ export function LobbyPage({ room }: Props) {
       {isHost && !canStart && (
         <p className="footnote">
           {otherPlayers.length > 0 && !othersReady
-            ? 'Diğer oyuncuların tamamı hazır vermeden oyun başlatılamaz.'
+            ? t.lobby.othersNotReady
             : !enoughPlayers
-              ? 'Başlatmak için en az 1 bağlı oyuncu gerekli.'
-              : 'Oyun başlatılamıyor.'}
+              ? t.lobby.needOnePlayer
+              : t.lobby.cannotStart}
         </p>
       )}
       {isHost && canStart && otherPlayers.length > 0 && (
         <p className="footnote" style={{ color: 'var(--accent-green, #10b981)' }}>
-          ✓ Tüm oyuncular hazır! Oyunu başlatabilirsin.
+          {t.lobby.allReady}
         </p>
       )}
       {!isHost && (
-        <p className="footnote">
-          {you.isReady
-            ? '✓ Hazırsın! Host oyunu başlattığında açık artırma başlayacak.'
-            : 'Başlamaya hazırsan "Hazırım" butonuna tıkla.'}
-        </p>
+        <p className="footnote">{you.isReady ? t.lobby.youAreReady : t.lobby.pressReady}</p>
       )}
       {startError && <p className="error">{startError}</p>}
     </div>
