@@ -31,6 +31,7 @@ const EXACT: Record<string, string> = {
   'Bu odada kayıtlı değilsin': "You're not registered in this room",
   'Bu odada oyuncu değilsin': "You're not a player in this room",
   'Bu takma ad odada kullanılıyor': 'This nickname is already taken in the room',
+  'Bu tur bitti': 'This round is over',
   'Bu turda pas geçtin, teklif veremezsin': "You passed this round, so you can't bid",
   'Bu turda zaten pas geçtin': 'You already passed this round',
   'Bu vuruş için süre doldu.': 'Time is up for this kick.',
