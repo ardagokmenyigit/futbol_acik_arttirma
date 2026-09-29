@@ -137,6 +137,16 @@ varsa istemediği futbolcuya pas diyebilir. Oyun başına hak `passesForSize`:
   Herkes pas dediyse bidding'de kimse teklif veremez → zorunlu açıcı
   futbolcuyu asgariden alır (bilinçli: pası herkes harcadıysa bedeli budur).
 - Süre dolunca sunucu pas DEĞİL asgari açılış yapar (`autoOpen`).
+- **Seçeneği olmayan açıcı beklenmez** (29 Eylül 2026, kullanıcı isteği):
+  açılış sırası pas hakkı bitmiş VE bütçesi asgari teklifin üstüne çıkamayan
+  (0M ya da tam `minBidIncrement`) birine gelirse sunucu `turnDurationSec`'i
+  beklemeden hemen asgari açılışı yapar (`openerHasNoChoice` → `applyOpening`,
+  `auto: true`) — turun başında da, pas sonrası açılış ona geçtiğinde de.
+  Serbest teklif evresi diğerleri için aynen işler. Pas hakkı olan beklenir.
+  Bütçesi 0M olan kazanırsa bütçeyle sınırlı öder (0M). Doğrulama:
+  `npm run build && caffeinate -i npx tsx packages/server/src/scripts/e2eForcedOpening.ts`
+  (insan tüm bütçeyi basar → 0M + pas varken sunucu bekler → 0M + pas yokken
+  açılış ~1 ms'de, açılış süresi 20 sn).
 - Botlar (`botShouldPass`, 27 Eylül 2026): pas = "sıcak patatesi başkasına
   at". Futbolcu mevkide kalanların alt diliminde VE medyanlarından en az
   `PASS_MIN_GAP` (2) GEN kötüyse pas; eşik kişilik + **hak baskısı**

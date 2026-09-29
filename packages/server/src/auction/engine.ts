@@ -1,4 +1,4 @@
-import type { AckResult, Bid, Footballer, Participant, RoomState } from '@fal/shared';
+import type { AckResult, Bid, Footballer, Participant, RoomConfig, RoomState } from '@fal/shared';
 import { roomStore } from '../rooms/roomStore.js';
 import { emitRoomState } from '../rooms/broadcast.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
@@ -267,10 +267,25 @@ function startNextRound(io: TypedServer, roomId: string): void {
   // Süre dolarsa sunucu onun adına asgari açılışı yapar (süre dolunca pas da yok).
   rt.timers.end = setTimeout(() => autoOpen(io, roomId), durationMs);
 
+  if (openerHasNoChoice(opener, room.config)) {
+    applyOpening(io, roomId, room.config.minBidIncrement, true);
+    return;
+  }
   if (opener.isBot) {
     const handle = setTimeout(() => runBotOpening(io, roomId, openerId), botBidDelayMs(durationMs));
     rt.timers.bots.push(handle);
   }
+}
+
+/**
+ * Açıcının açılışta başka seçeneği yok mu? Pas hakkı bitmiş VE bütçesi
+ * asgari teklifin üstüne çıkmaya yetmiyor (0M ya da tam asgari) → tek hamlesi
+ * asgari açılış. Süreyi bekletmeden sunucu hemen açar (kullanıcı isteği,
+ * 29 Eylül 2026); ardından gelen serbest teklif evresi diğerleri için aynen
+ * işler. Pas hakkı olan beklenir — pas diyebilir.
+ */
+function openerHasNoChoice(opener: Participant, config: RoomConfig): boolean {
+  return opener.passesLeft <= 0 && opener.budget <= config.minBidIncrement;
 }
 
 /* ----------------------------- açılış ----------------------------- */
@@ -445,6 +460,10 @@ function applyPass(io: TypedServer, roomId: string, passer: Participant): void {
   });
   emitRoomState(io, room);
 
+  if (openerHasNoChoice(next, room.config)) {
+    applyOpening(io, roomId, room.config.minBidIncrement, true);
+    return;
+  }
   if (next.isBot) {
     const handle = setTimeout(() => runBotOpening(io, roomId, next.id), botBidDelayMs(durationMs));
     rt.timers.bots.push(handle);
