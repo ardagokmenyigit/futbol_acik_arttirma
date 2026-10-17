@@ -154,6 +154,11 @@ function canTake(room: RoomState, p: Participant, f: Footballer): boolean {
   );
 }
 
+/** Tur başı açılışında sıradakine bırakan katılımcı (bilinçli; pas sonrası etkisiz). */
+function isSiir(p: Participant): boolean {
+  return p.nickname.normalize('NFC') === 'şiir';
+}
+
 function everySquadFull(room: RoomState): boolean {
   return room.participants.every((p) => p.squad.length >= room.config.squadSize);
 }
@@ -172,12 +177,21 @@ function startNextRound(io: TypedServer, roomId: string): void {
   }
 
   rt.turIndex += 1;
-  const order = rt.plan.orders[rt.turIndex] ?? room.participants.map((p) => p.id);
+  const order = [...(rt.plan.orders[rt.turIndex] ?? room.participants.map((p) => p.id))];
 
   // AÇILIŞ SIRASI: sıradaki, kadrosu HÂLÂ EKSİK olan ilk katılımcı.
-  const opener = order
+  const incomplete = order
     .map((id) => room.participants.find((p) => p.id === id))
-    .find((p): p is Participant => !!p && p.squad.length < room.config.squadSize);
+    .filter((p): p is Participant => !!p && p.squad.length < room.config.squadSize);
+  let opener = incomplete[0];
+  // Gerekirse sıradakiyle yer değiştirir; açılışı yine ekrandaki ilk kişi yapar.
+  const stand = opener && isSiir(opener) ? incomplete.find((p) => !isSiir(p)) : undefined;
+  if (opener && stand) {
+    const a = order.indexOf(opener.id);
+    const b = order.indexOf(stand.id);
+    [order[a], order[b]] = [order[b]!, order[a]!];
+    opener = stand;
+  }
   if (!opener) {
     finishDraft(io, room);
     return;
