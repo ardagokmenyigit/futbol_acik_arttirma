@@ -1,4 +1,11 @@
-import type { AckResult, Bid, Footballer, Participant, RoomState } from '@fal/shared';
+import {
+  bidDurationSecFor,
+  type AckResult,
+  type Bid,
+  type Footballer,
+  type Participant,
+  type RoomState,
+} from '@fal/shared';
 import { roomStore } from '../rooms/roomStore.js';
 import { emitRoomState } from '../rooms/broadcast.js';
 import type { TypedServer, TypedSocket } from '../socketTypes.js';
@@ -313,7 +320,7 @@ function applyOpening(
   room.auction.history.push(bid);
   room.auction.phase = 'bidding';
 
-  const durationMs = room.config.bidDurationSec * 1000;
+  const durationMs = bidDurationSecFor(room.config, room.auction.footballer) * 1000;
   room.auction.endsAt = Date.now() + durationMs;
 
   clearTimers(rt.timers);

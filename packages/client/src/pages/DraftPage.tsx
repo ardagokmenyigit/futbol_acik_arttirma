@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  bidDurationSecFor,
   calculateTeamStats,
   isBudgetHidden,
   type Footballer,
@@ -81,7 +82,7 @@ export function DraftPage({ room }: Props) {
   const isOpening = auction.phase === 'opening';
   const totalMs = Math.max(
     1,
-    (isOpening ? room.config.turnDurationSec : room.config.bidDurationSec) * 1000,
+    (isOpening ? room.config.turnDurationSec : bidDurationSecFor(room.config, f)) * 1000,
   );
   const progress = Math.max(0, Math.min(1, remainingMs / totalMs));
   const ringLead = secs <= 5 ? 'var(--crimson)' : 'var(--gold)';

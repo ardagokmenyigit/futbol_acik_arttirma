@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { DEFAULT_ROOM_CONFIG } from '@fal/shared';
+import { DEFAULT_ROOM_CONFIG, SHORT_BID_CUT_SEC, SHORT_BID_OVR_THRESHOLD } from '@fal/shared';
 import { useLang, useT } from '../i18n/index.js';
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
 
 const { squad, squadSize, startingBudget, turnDurationSec, bidDurationSec, minBidIncrement } =
   DEFAULT_ROOM_CONFIG;
+const shortBidSec = bidDurationSec - SHORT_BID_CUT_SEC;
 
 /**
  * Oynanış anlatımı — ayrı sayfaya gitmeden, ekranın üstünde açılan pencere.
@@ -136,9 +137,12 @@ function BodyTr() {
               diyen hariç) rastgele birine geri döner; hakkı kalmayan açmak zorunda kalır.
             </li>
             <li>
-              <strong>Serbest teklif ({bidDurationSec} sn)</strong> — o pozisyona hâlâ ihtiyacı olan
-              herkes teklif verebilir. Son saniyede gelen teklif süreyi <strong>5 sn uzatır</strong>
-              , böylece kimse son anda kapıp kaçamaz.
+              <strong>
+                Serbest teklif ({bidDurationSec} sn; {SHORT_BID_OVR_THRESHOLD} altı reytingde{' '}
+                {shortBidSec} sn)
+              </strong>{' '}
+              — o pozisyona hâlâ ihtiyacı olan herkes teklif verebilir. Son saniyede gelen teklif
+              süreyi <strong>5 sn uzatır</strong>, böylece kimse son anda kapıp kaçamaz.
             </li>
           </ul>
           <p className="htp-note">
@@ -287,9 +291,12 @@ function BodyEn() {
               open.
             </li>
             <li>
-              <strong>Open bidding ({bidDurationSec} s)</strong> — anyone who still needs that
-              position can bid. A bid in the final seconds <strong>adds 5 s</strong> to the clock,
-              so nobody can snipe at the last moment.
+              <strong>
+                Open bidding ({bidDurationSec} s; {shortBidSec} s for players rated below{' '}
+                {SHORT_BID_OVR_THRESHOLD})
+              </strong>{' '}
+              — anyone who still needs that position can bid. A bid in the final seconds{' '}
+              <strong>adds 5 s</strong> to the clock, so nobody can snipe at the last moment.
             </li>
           </ul>
           <p className="htp-note">
