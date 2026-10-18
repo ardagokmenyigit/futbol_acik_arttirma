@@ -116,8 +116,11 @@ futbolcunun açık artırmasıdır ve iki evrelidir:
    mutlaka gerçek bir teklif olur; "kimse teklif vermedi, bedavaya gitti"
    durumu ortadan kalkar. Tek istisna aşağıdaki **açılış pası**.
 2. **`bidding` — serbest teklif.** Pozisyona girebilen herkes teklif verebilir,
-   istemeyen vermez, fikri değişirse geri girer. Süre `bidDurationSec`;
-   son saniye teklifi mümkün olduğu için **anti-snipe (5sn) devrede.**
+   istemeyen vermez, fikri değişirse geri girer. Süre `bidDurationSec`
+   (15 sn); GEN'i 85 altı futbolcuda 4 sn kısa (11 sn) — havuzun ~%60'ı, az
+   rekabet gören turlar draft'ı uzatmasın (`bidDurationSecFor`,
+   shared/config.ts; istemciler sayaç halkası için aynı kuralı kullanır).
+   Son saniye teklifi mümkün olduğu için **anti-snipe (5sn) devrede.**
    Süre bitiminde en yüksek teklif kazanır (`auction:won`).
 
 **AÇILIŞ PASI (`auction:pass`).** Açıcının `Participant.passesLeft` hakkı

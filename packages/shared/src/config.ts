@@ -1,4 +1,4 @@
-import type { BotDifficulty, Lang, RoomConfig, TournamentSize } from './types.js';
+import type { BotDifficulty, Footballer, Lang, RoomConfig, TournamentSize } from './types.js';
 
 /**
  * FAZ 0 TASLAĞI — varsayılan oda ayarları.
@@ -41,6 +41,24 @@ export const DEFAULT_ROOM_CONFIG: RoomConfig = {
   hiddenBudgets: false,
   botDifficulty: 'normal',
 };
+
+/**
+ * Reytingi bu eşiğin ALTINDA olan futbolcuda serbest teklif evresi
+ * `SHORT_BID_CUT_SEC` kısalır (15 → 11 sn): az rekabet gören futbolcularda
+ * draft gereksiz beklemesin. Havuzun ~%60'ı bu eşiğin altında.
+ */
+export const SHORT_BID_OVR_THRESHOLD = 85;
+export const SHORT_BID_CUT_SEC = 4;
+
+/** Bu futbolcunun serbest teklif evresi süresi (sn). Sunucu ve istemci aynı kuralı kullanır. */
+export function bidDurationSecFor(
+  config: RoomConfig,
+  footballer: Pick<Footballer, 'overall'>,
+): number {
+  return footballer.overall < SHORT_BID_OVR_THRESHOLD
+    ? Math.max(1, config.bidDurationSec - SHORT_BID_CUT_SEC)
+    : config.bidDurationSec;
+}
 
 export const BOT_DIFFICULTIES: readonly BotDifficulty[] = ['easy', 'normal', 'hard'];
 
