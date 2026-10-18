@@ -654,7 +654,8 @@ yalnız 1.65. Bu yüzden **her maçın** sonucuna gerekçe eklenir.
   turnuva sayfasında kalıcı kart: varsayılan bir insanın oynadığı son maç
   (bot maçları 0.9 sn arayla bittiği için "son maç" kartı titretirdi), ağaçta
   bitmiş herhangi bir maça dokununca o maçın raporu. Pozisyon / gol beklentisi
-  / form tablosu her maçta.
+  / form tablosu her maçta. Sıradaki canlı maç başlayınca kart gizlenir; arada
+  `POST_LIVE_GAP_MS` = 4 sn okuma payı var (1.2 sn yetmiyordu).
 
 ### 3.3.1 Sunucu sağlamlığı (`server/src/harden.ts`)
 
