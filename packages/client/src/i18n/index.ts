@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { DEFAULT_LANG, LANGS, type Lang } from '@fal/shared';
+import { DEFAULT_LANG, LANGS, formatPower, type Lang } from '@fal/shared';
 import { en } from './en.js';
 import { tr, type Dict } from './tr.js';
 
@@ -52,6 +52,12 @@ export function useT(): Dict {
 
 export function useLang(): Lang {
   return useLangStore((s) => s.lang);
+}
+
+/** Takım gücünü seçili dilde tek ondalıkla yazar (TR "84,6", EN "84.6"). */
+export function useFormatPower(): (value: number) => string {
+  const lang = useLang();
+  return (value) => formatPower(value, lang);
 }
 
 /** Bileşen dışı kod için anlık dil / sözlük. */

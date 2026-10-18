@@ -321,6 +321,13 @@ export function powerRoleLabel(position: Position): string {
  * gerekmez. Payda gerçek kadrodan toplanır — host kadro dizilişini
  * değiştirse de formül geçerli kalır. Bir eksene hiç oyuncu düşmemişse
  * (ör. yalnız kaleci + defans alınmış eksik kadro) o eksen 50 sayılır.
+ *
+ * ONDALIK (18 Ekim 2026): değerler 0.1 hassasiyetle döner ve motor bunları
+ * olduğu gibi kullanır — ekranda görünen sayı maçı oynayan sayıdır. Eskiden
+ * tam sayıya yuvarlanıyordu: yarım puanlık fark güç duyarlılığı (^5) yüzünden
+ * tur geçme olasılığını ortalama 1.8, en çok 7.3 puan oynatıyor ve rastgele
+ * kadro çiftlerinin %8'i ekranda eşit görünüyordu. 0.1'e yuvarlama (hata
+ * ≤0.05) istemcilerin (web + Flutter) aynı sayıyı birebir üretmesi içindir.
  */
 export function calculateTeamStats(players: Footballer[]): CalculatedStats {
   if (!players || players.length === 0) {
@@ -344,9 +351,20 @@ export function calculateTeamStats(players: Footballer[]): CalculatedStats {
   const defense = defenseWeight > 0 ? defenseSum / defenseWeight : 50;
 
   return {
-    attack: Math.max(20, Math.min(99, Math.round(attack))),
-    defense: Math.max(20, Math.min(99, Math.round(defense))),
+    attack: roundPower(Math.max(20, Math.min(99, attack))),
+    defense: roundPower(Math.max(20, Math.min(99, defense))),
   };
+}
+
+/** Güç değerlerinin hassasiyeti: 0.1. */
+export function roundPower(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+/** Güç değerini tek ondalıkla yazar: TR "84,6", EN "84.6". */
+export function formatPower(value: number, lang: Lang = 'tr'): string {
+  const text = value.toFixed(1);
+  return lang === 'tr' ? text.replace('.', ',') : text;
 }
 
 /**
@@ -365,7 +383,7 @@ export function calculateTeamStats(players: Footballer[]): CalculatedStats {
  */
 export function calculateTeamPower(players: Footballer[]): number {
   const { attack, defense } = calculateTeamStats(players);
-  return Math.round((attack + defense) / 2);
+  return roundPower((attack + defense) / 2);
 }
 
 /** Maç içindeki bir olay (gol). */

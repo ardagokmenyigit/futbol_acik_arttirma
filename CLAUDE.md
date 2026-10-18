@@ -190,6 +190,17 @@ Takım hücumu = GEN'lerin hücum ağırlıklı ortalaması, savunma = savunma
 ağırlıklı ortalaması; güç = ikisinin ortalaması. Sonuç doğal olarak 0–100'de
 kalır, veri setine bağlı kalibrasyon yoktur.
 
+**ONDALIK GÜÇ (18 Ekim 2026).** Hücum/savunma/güç 0.1 hassasiyetle hesaplanır
+(`roundPower`) ve motor bu değerlerle oynar; ekranda tek ondalık (`formatPower`:
+TR "84,6", EN "84.6"). Eskiden tam sayıya yuvarlanıyordu: güç duyarlılığı ^5
+olduğu için yarım puanlık yuvarlama tur geçme olasılığını ortalama 1.8, en çok
+7.3 puan oynatıyor, rastgele kadro çiftlerinin %8'i ekranda eşit görünüyordu;
+MID iki ekseni birden yuvarlattığı için +7 GEN'de +2 güç veriyordu (diğer
+mevkiler +1). Denge değişmedi (measureBalance 3000 draft, iki koşu: şampiyonluk
+oranları koşu gürültüsü içinde, gol/maç 3.66); güçlünün tur geçme eğrisi
+biraz dikleşti (1 puan farkta %56.5 → %58), çünkü "güçlü" artık doğru tespit
+ediliyor. Flutter `team_stats.dart` aynı yuvarlamayı birebir uygular.
+
 **NEDEN GEN TABANLI (17 Eylül 2026).** Eski model oyuncu başına elle
 kalibre edilmiş HÜC/SAV alanlarını mevki ağırlığıyla (+ MID rol ağırlığı)
 topluyordu ve "aynı mevkide GEN yüksek olanın katkısı yüksektir" sözleşmesini

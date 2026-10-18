@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   calculateTeamStats,
+  roundPower,
   expectMatch,
   type MatchResult,
   type RoomState,
@@ -150,9 +151,9 @@ function snapshot(room: RoomState, team: Team): TeamSnapshot {
     id: team.participantId,
     nickname: p?.nickname ?? team.nickname,
     isBot: p?.isBot ?? false,
-    power: Math.round((attack + defense) / 2),
-    attack: Math.round(attack * 10) / 10,
-    defense: Math.round(defense * 10) / 10,
+    power: roundPower((attack + defense) / 2),
+    attack,
+    defense,
   };
 }
 
