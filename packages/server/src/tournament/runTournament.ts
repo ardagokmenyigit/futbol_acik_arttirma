@@ -28,8 +28,12 @@ const BOT_MATCH_MS = 900;
 const LIVE_MATCH_MS = 14000;
 /** Uzatmaya giden maçta 30 dakikanın (91–120) canlı oynanma payı (30 × 140 ms + pay). */
 const EXTRA_TIME_LIVE_MS = 4600;
-/** Canlı maç bittikten sonra sonraki maça geçmeden önceki kısa nefes. */
-const POST_LIVE_GAP_MS = 1200;
+/**
+ * Canlı maç bittikten sonra sonraki maça geçmeden önceki bekleme. Bu sırada
+ * turnuva sayfasında maç raporu görünür; sıradaki canlı maç başlayınca kart
+ * gizlenir. 1.2 sn okumaya yetmiyordu, kullanıcı isteğiyle 4 sn (18 Ekim 2026).
+ */
+const POST_LIVE_GAP_MS = 4000;
 /** Seri penaltı bitince (son vuruş açıklandıktan sonra) kazanan banner'ının kalma payı. */
 const POST_SHOOTOUT_GAP_MS = 3000;
 /** Açık artırma sonrası kadroların incelenmesi için başlangıç bekleme süresi. */
