@@ -257,6 +257,9 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
 
   let scoreHome = 0;
   let scoreAway = 0;
+  // Maç istatistikleri — yalnız kayıt; zar akışına dokunmaz (aynı tohum → aynı maç).
+  const homeStats = { chances: 0, xg: 0 };
+  const awayStats = { chances: 0, xg: 0 };
 
   // Sıfıra bölünmeyi önlemek için taban değerler
   const baseHomeAtt = Math.max(10, homeTeam.attack);
@@ -324,6 +327,9 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     // 3. POZİSYON KALİTESİ — gole dönme oranı da güce bağlı
     const threat = isHomeChance ? homeThreat : awayThreat;
     const conversion = Math.min(0.55, baseConversion * threat ** strengthSensitivity);
+    const chanceStats = isHomeChance ? homeStats : awayStats;
+    chanceStats.chances++;
+    chanceStats.xg += conversion;
 
     if (prng() < conversion) {
       if (isHomeChance) {
@@ -399,5 +405,12 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     penaltiesAway,
     winnerId,
     penaltyShootout,
+    stats: {
+      home: { chances: homeStats.chances, xg: round2(homeStats.xg), form: round3(homeForm) },
+      away: { chances: awayStats.chances, xg: round2(awayStats.xg), form: round3(awayForm) },
+    },
   };
 }
+
+const round2 = (v: number) => Math.round(v * 100) / 100;
+const round3 = (v: number) => Math.round(v * 1000) / 1000;

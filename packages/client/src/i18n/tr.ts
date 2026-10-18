@@ -216,6 +216,38 @@ export const tr = {
     placeholderWinner: (round: 'quarter' | 'semi', n: string) =>
       `${round === 'quarter' ? 'Çeyrek Final' : 'Yarı Final'} ${n} Kazananı`,
   },
+  report: {
+    title: 'Maç raporu',
+    hint: 'Başka bir maçın raporu için ağaçtaki maça dokun.',
+    expected: (fav: string, gap: string) =>
+      `Beklenen sonuç — ${fav} kağıt üstünde ${gap} puan güçlüydü.`,
+    upset: (fav: string, gap: string) => `Sürpriz — ${fav} kağıt üstünde ${gap} puan güçlüydü.`,
+    even: (gap: string) => `Denk kadrolar — güç farkı yalnızca ${gap}.`,
+    chances: 'Pozisyon',
+    xg: 'Gol beklentisi',
+    form: 'Form',
+    pct: (v: number) => (v > 0 ? `+%${v}` : v < 0 ? `−%${-v}` : '%0'),
+    penalties: (s: string) =>
+      `Uzatma da eşitliği bozamadı; ${s} seri penaltılarda daha soğukkanlıydı.`,
+    extraTime: (s: string) => `Maç uzatmada çözüldü — ${s} son 30 dakikada farkı yarattı.`,
+    wasteful: (s: string, xg: string, goals: number) =>
+      `${s} pozisyonları harcadı: ${xg} gol beklentisine karşı ${goals} gol.`,
+    clinical: (s: string, xg: string, goals: number) =>
+      `${s} fırsatçıydı: ${xg} gol beklentisinden ${goals} gol çıkardı.`,
+    dominated: (s: string, c: number, oc: number) =>
+      `${s} oyunu domine etti (${c}–${oc} pozisyon) ama skora yansıtamadı.`,
+    formFavoured: (s: string, f: string, of: string) =>
+      `Maç günü formu ${s} lehineydi: ${f}, rakibi ${of}.`,
+    comeback: (s: string) => `${s} geriye düştü ama skoru çevirdi.`,
+    earlyGoal: (s: string, m: number) => `${s} ${m}. dakikada erken golü buldu.`,
+    openedUp: (s: string, goals: number) =>
+      `${s} geriye düşünce öne açıldı, arkada boşluk verip ${goals} gol daha yedi.`,
+    lateWinner: (s: string, m: number) => `${s} farkı yaratan golü ${m}. dakikada buldu.`,
+    powerShowed: (s: string, xg: string, oxg: string) =>
+      `${s} güç farkını sahaya yansıttı: gol beklentisi ${xg}–${oxg}.`,
+    tight: (c: number, oc: number) =>
+      `Kıl payı bir maç: iki takım da benzer pozisyon buldu (${c}–${oc}).`,
+  },
   rematch: {
     you: '(sen)',
     accepted: 'kabul etti',

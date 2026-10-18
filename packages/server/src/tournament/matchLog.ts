@@ -54,6 +54,8 @@ export interface MatchLogEntry {
   extraTime: boolean;
   penalties: { home: number; away: number } | null;
   winnerId: string | null;
+  /** Oyunculara gösterilen gerekçe (bkz. shared/simulation/explain.ts). */
+  explanation?: { verdict: string; reasons: string[] };
 }
 interface TeamSnapshot {
   id: string;
@@ -193,6 +195,14 @@ export function logMatch(
           ? { home: result.penaltiesHome, away: result.penaltiesAway }
           : null,
       winnerId: result.winnerId ?? null,
+      ...(result.explanation
+        ? {
+            explanation: {
+              verdict: result.explanation.verdict,
+              reasons: result.explanation.reasons.map((r) => r.code),
+            },
+          }
+        : {}),
     };
     const h = entry.home;
     const a = entry.away;

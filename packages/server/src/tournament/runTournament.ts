@@ -1,4 +1,9 @@
-import type { MatchResult, TournamentMatch, TournamentState } from '@fal/shared';
+import {
+  explainMatch,
+  type MatchResult,
+  type TournamentMatch,
+  type TournamentState,
+} from '@fal/shared';
 import { roomStore } from '../rooms/roomStore.js';
 import { emitRoomState } from '../rooms/broadcast.js';
 import { createPRNG } from '../simulation/random.js';
@@ -236,9 +241,16 @@ export function runTournament(io: TypedServer, roomId: string): void {
     if (FORCE_SHOOTOUT && human) {
       for (let i = 1; i <= 400 && !result.pendingShootout; i++) result = simulate(seed + i);
     }
+    // Gerekçe kazanan bellidir hesaplanır; canlı seride `finalize` ekler.
+    const explained = (r: MatchResult): MatchResult => {
+      const explanation = explainMatch(r, homeTeam, awayTeam);
+      return explanation ? { ...r, explanation } : r;
+    };
+    result = explained(result);
 
     // Sonucu ağaca işle + yayınla, sonra sıradaki maça geç.
-    const finalize = (finalResult: MatchResult, gapMs: number): void => {
+    const finalize = (rawResult: MatchResult, gapMs: number): void => {
+      const finalResult = explained(rawResult);
       const room2 = roomStore.getRoom(roomId);
       if (!room2) {
         cancelTournament(roomId);
