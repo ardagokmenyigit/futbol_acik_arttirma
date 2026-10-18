@@ -618,6 +618,44 @@ sapma tesadüf mü" p-değeri; insan katılımcı başına G-B-M, beklenen vs ge
 Plan: belli bir kullanımdan sonra bantlar beklentiden sistematik sapıyorsa
 motor (sens / baskı kolları) yeniden ele alınır; sapmıyorsa şüphe kapanır.
 
+### 3.2.2 Maç raporu — "neden bu sonuç?" (`shared/simulation/explain.ts`, 18 Ekim 2026)
+
+Kullanıcı: "oyuncular emek verip kadro kuruyor, güçte önde olsa da yenilebiliyor;
+bu 'bu oyun ne böyle' etkisi yaratıyor. Gerçekte de güçlü hep kazanmaz ama bir
+sebebi olur, insanlar futbolu suçlar." Ölçüm (1500 bot draft × 6 maç): güçlü
+takım maçların **%35'inde** turu geçemiyor, bu sürprizlerde ortalama güç farkı
+yalnız 1.65. Bu yüzden **her maçın** sonucuna gerekçe eklenir.
+
+- **Motor kayıt tutar, zar akışı değişmez:** `simulateMatch` artık
+  `MatchResult.stats` döner (takım başına pozisyon, xG = pozisyonların gole
+  dönme olasılıkları toplamı, maç günü formu). Ek `prng()` çağrısı yok — 2000
+  sabit tohumlu maçın hash'i değişiklikten önce/sonra birebir aynı.
+- **Gerekçe UYDURULMAZ.** Her kod motorun o maçta gerçekten ürettiği bir şeyden
+  çıkar: `wasteful` (gol ≤ xG−1), `clinical` (gol ≥ xG+1), `dominated`
+  (kaybeden ≥1.4× ve +3 pozisyon), `form` (kazananın formu ≥%3 iyi; gücü
+  tersine çevirdiyse öncelikli), `comeback`, `earlyGoal` (≤20'), `openedUp`
+  (kaybeden gerideyken gol daha yedi — `CHASING_DEFENSE`), `lateWinner` (80+,
+  fark 1), `extraTime`, `penalties`, `powerShowed` (favori xG'de ≥1.5× ve
+  +0.8 — beklenen sonuçta asıl hikâye), yedek `tight`. Kırmızı kart / sakatlık
+  gibi motorda olmayan şeyler YAZILMAZ — oyuncu tutarsızlığı yakalar.
+- Çerçeve: `even` (fark < 0.5), `expected`, `upset` + `powerGap`. Puanlamayla
+  en belirgin 1–2 gerekçe seçilir. Ölçüm: sürprizlerin %99.2'sinde en az bir
+  güçlü gerekçe var; sürprizlerde ilk gerekçe form %29, penaltı %20, israf %12,
+  domine %10, fırsatçı %10; yedek `tight` %0.6. Sürprizlerin yalnız ~yarısında
+  favori pozisyon/xG'de üstün — diğer yarısında rakip gerçekten iyi oynadı,
+  baskın sebep maç günü formu (güç farkları küçük, form ±%4).
+- **Hesap sunucuda, metin istemcide:** `runTournament` kazanan belli olunca
+  (`matchLive` başında ve `finalize`'da — canlı seride seri bitince)
+  `explainMatch` ile `MatchResult.explanation` ekler; istemciler (web
+  `MatchReport.tsx`, Flutter `match_report.dart`) yalnız kod → cümle çevirir,
+  bilinmeyen kodu atlar. Cümlelerde takma ad hep yalın özne (Türkçe ek yok).
+  Maç loguna `explanation.{verdict, reasons}` kodları da yazılır.
+- **Arayüz:** canlı maç ekranı bitişten 1.2 sn sonra kapandığı için rapor
+  turnuva sayfasında kalıcı kart: varsayılan bir insanın oynadığı son maç
+  (bot maçları 0.9 sn arayla bittiği için "son maç" kartı titretirdi), ağaçta
+  bitmiş herhangi bir maça dokununca o maçın raporu. Pozisyon / gol beklentisi
+  / form tablosu her maçta.
+
 ### 3.3.1 Sunucu sağlamlığı (`server/src/harden.ts`)
 
 Socket.io dinleyici içindeki istisnayı yakalamaz: **ack bekleyen bir event'e

@@ -3,3 +3,4 @@ export * from './teamStats.js';
 export * from './simulator.js';
 export * from './penalty.js';
 export * from './expectation.js';
+export * from './explain.js';

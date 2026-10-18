@@ -1,3 +1,5 @@
+import type { MatchExplanation } from './simulation/explain.js';
+
 /**
  * ============================================================================
  *  FAZ 0 TASLAĞI — ORTAK TİPLER
@@ -386,6 +388,16 @@ export function calculateTeamPower(players: Footballer[]): number {
   return roundPower((attack + defense) / 2);
 }
 
+/** Bir takımın maç istatistiği — gerekçe kartının ham verisi. */
+export interface TeamMatchStats {
+  /** Bulunan pozisyon sayısı. */
+  chances: number;
+  /** Gol beklentisi: pozisyonların gole dönme olasılıkları toplamı. */
+  xg: number;
+  /** Maç günü formu çarpanı (0.96–1.04). */
+  form: number;
+}
+
 /** Maç içindeki bir olay (gol). */
 export interface MatchEvent {
   minute: number;
@@ -584,6 +596,10 @@ export interface MatchResult {
   winnerId?: string;
   /** Sıralı seri penaltı atışlarının detaylı dökümü. */
   penaltyShootout?: PenaltyShootoutAttempt[];
+  /** Motorun maç içinde ürettiği istatistikler (120'ye kadar; seri hariç). */
+  stats?: { home: TeamMatchStats; away: TeamMatchStats };
+  /** Sonucun gerekçesi — sunucu kesinleşen sonuca ekler (bkz. simulation/explain.ts). */
+  explanation?: MatchExplanation;
 }
 
 export interface StandingRow {

@@ -204,6 +204,38 @@ export const en: Dict = {
     placeholderTeam: (n) => `Team ${n}`,
     placeholderWinner: (round, n) => `Winner of ${round === 'quarter' ? 'QF' : 'SF'} ${n}`,
   },
+  report: {
+    title: 'Match report',
+    hint: 'Tap a match in the bracket to see its report.',
+    expected: (fav: string, gap: string) =>
+      `As expected — ${fav} was ${gap} points stronger on paper.`,
+    upset: (fav: string, gap: string) => `Upset — ${fav} was ${gap} points stronger on paper.`,
+    even: (gap: string) => `Evenly matched — only ${gap} points apart.`,
+    chances: 'Chances',
+    xg: 'Expected goals',
+    form: 'Form',
+    pct: (v: number) => (v > 0 ? `+${v}%` : v < 0 ? `−${-v}%` : '0%'),
+    penalties: (s: string) =>
+      `Extra time couldn't separate them; ${s} kept their nerve in the shootout.`,
+    extraTime: (s: string) =>
+      `Settled in extra time — ${s} made the difference in the last 30 minutes.`,
+    wasteful: (s: string, xg: string, goals: number) =>
+      `${s} wasted their chances: ${goals} from ${xg} expected goals.`,
+    clinical: (s: string, xg: string, goals: number) =>
+      `${s} were clinical: ${goals} ${goals === 1 ? 'goal' : 'goals'} from ${xg} expected.`,
+    dominated: (s: string, c: number, oc: number) =>
+      `${s} dominated (${c}–${oc} chances) but couldn't turn it into goals.`,
+    formFavoured: (s: string, f: string, of: string) =>
+      `Match-day form favoured ${s}: ${f}, opponent ${of}.`,
+    comeback: (s: string) => `${s} fell behind but turned it around.`,
+    earlyGoal: (s: string, m: number) => `${s} struck early, in minute ${m}.`,
+    openedUp: (s: string, goals: number) =>
+      `${s} pushed forward after falling behind and left gaps, conceding ${goals} more.`,
+    lateWinner: (s: string, m: number) => `${s} found the decisive goal in minute ${m}.`,
+    powerShowed: (s: string, xg: string, oxg: string) =>
+      `${s} turned their strength into chances: expected goals ${xg}–${oxg}.`,
+    tight: (c: number, oc: number) => `A tight one: both sides found similar chances (${c}–${oc}).`,
+  },
   rematch: {
     you: '(you)',
     accepted: 'accepted',

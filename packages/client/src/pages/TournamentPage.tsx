@@ -7,6 +7,7 @@ import {
   type TournamentState,
 } from '@fal/shared';
 import { LiveMatchTicker } from '../components/LiveMatchTicker.js';
+import { MatchReport } from '../components/MatchReport.js';
 import { PositionBadge } from '../components/PositionBadge.js';
 import { RematchPanel } from '../components/RematchPanel.js';
 import { SquadsOverview } from '../components/SquadsOverview.js';
@@ -28,6 +29,9 @@ export function TournamentPage({ room, tournament }: Props) {
   const shootout = useRoomStore((s) => s.shootout);
   const { socket } = useSocket();
   const [showSquads, setShowSquads] = useState(true);
+  // Raporu açık maç: ağaçtan seçilen, yoksa bir insanın oynadığı son maç
+  // (bot maçları 0.9 sn arayla bittiği için "son maç" kartı sürekli değiştirirdi).
+  const [reportId, setReportId] = useState<string | null>(null);
 
   // Maçı belirleyen güç bracket'te de görünsün: sonuç "hak edilmiş" okunsun.
   const powerOf = (id: string | null): number | null => {
@@ -59,6 +63,19 @@ export function TournamentPage({ room, tournament }: Props) {
 
   const played = tournament.rounds.flatMap((r) => r.matches).filter((m) => m.result).length;
   const total = tournament.rounds.reduce((s, r) => s + r.matches.length, 0);
+
+  const report = useMemo(() => {
+    const done = tournament.rounds.flatMap((r) =>
+      r.matches.filter((m) => m.result).map((m) => ({ m, round: roundTitle(r, t) })),
+    );
+    const human = (id: string | null) =>
+      !!id && room.participants.some((p) => p.id === id && !p.isBot);
+    return (
+      done.find((d) => d.m.matchId === reportId) ??
+      [...done].reverse().find((d) => human(d.m.homeId) || human(d.m.awayId)) ??
+      null
+    );
+  }, [tournament.rounds, reportId, room.participants, t]);
 
   const liveMatchRound = useMemo(() => {
     if (!liveMatch) return null;
@@ -150,6 +167,15 @@ export function TournamentPage({ room, tournament }: Props) {
         />
       )}
 
+      {report?.m.result && !(liveMatch && !champ) && (
+        <MatchReport
+          result={report.m.result}
+          nameOf={nameOf}
+          roundTitle={report.round}
+          showHint={played > 1}
+        />
+      )}
+
       {played === 0 ? (
         <SquadsOverview
           room={room}
@@ -180,6 +206,8 @@ export function TournamentPage({ room, tournament }: Props) {
                 key={m.matchId}
                 match={m}
                 live={m.matchId === tournament.currentMatchId}
+                selected={!!m.result && m.matchId === report?.m.matchId}
+                onSelect={m.result ? () => setReportId(m.matchId) : undefined}
                 nameOf={nameOf}
                 powerOf={powerOf}
                 isBot={isBot}
@@ -197,6 +225,8 @@ export function TournamentPage({ room, tournament }: Props) {
 interface MatchProps {
   match: TournamentMatch;
   live: boolean;
+  selected: boolean;
+  onSelect?: () => void;
   youId: string | null;
   nameOf: (id: string | null, placeholder?: string) => string;
   powerOf: (id: string | null) => number | null;
@@ -204,7 +234,17 @@ interface MatchProps {
   t: Dict;
 }
 
-function BracketMatch({ match, live, youId, nameOf, powerOf, isBot, t }: MatchProps) {
+function BracketMatch({
+  match,
+  live,
+  selected,
+  onSelect,
+  youId,
+  nameOf,
+  powerOf,
+  isBot,
+  t,
+}: MatchProps) {
   const fp = useFormatPower();
   const res = match.result;
   const homeWon = res ? res.winnerId === match.homeId : false;
@@ -231,7 +271,23 @@ function BracketMatch({ match, live, youId, nameOf, powerOf, isBot, t }: MatchPr
   );
 
   return (
-    <div className={`bracket-match${live ? ' live' : ''}${res ? ' done' : ''}`}>
+    <div
+      className={`bracket-match${live ? ' live' : ''}${res ? ' done' : ''}${selected ? ' selected' : ''}`}
+      {...(onSelect
+        ? {
+            role: 'button',
+            tabIndex: 0,
+            title: t.report.title,
+            onClick: onSelect,
+            onKeyDown: (e: React.KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onSelect();
+              }
+            },
+          }
+        : {})}
+    >
       {side(match.homeId, match.homePlaceholder, homeWon, res?.scoreHome)}
       {side(match.awayId, match.awayPlaceholder, awayWon, res?.scoreAway)}
       {res?.penaltiesHome != null && (
