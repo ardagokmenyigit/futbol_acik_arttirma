@@ -11,7 +11,7 @@ import { PositionBadge } from '../components/PositionBadge.js';
 import { RematchPanel } from '../components/RematchPanel.js';
 import { SquadsOverview } from '../components/SquadsOverview.js';
 import { useSocket } from '../hooks/useSocket.js';
-import { useT, type Dict } from '../i18n/index.js';
+import { useFormatPower, useT, type Dict } from '../i18n/index.js';
 import { placeholderLabel, roundTitle } from '../i18n/labels.js';
 import { choosePenalty } from '../lib/tournamentClient.js';
 import { useRoomStore } from '../store.js';
@@ -205,6 +205,7 @@ interface MatchProps {
 }
 
 function BracketMatch({ match, live, youId, nameOf, powerOf, isBot, t }: MatchProps) {
+  const fp = useFormatPower();
   const res = match.result;
   const homeWon = res ? res.winnerId === match.homeId : false;
   const awayWon = res ? res.winnerId === match.awayId : false;
@@ -221,7 +222,7 @@ function BracketMatch({ match, live, youId, nameOf, powerOf, isBot, t }: MatchPr
         {isBot(id) && <span className="bm-bot">{t.common.bot}</span>}
         {powerOf(id) !== null && (
           <span className="bm-power" title={t.tournament.powerTitle}>
-            {powerOf(id)}
+            {fp(powerOf(id)!)}
           </span>
         )}
       </span>

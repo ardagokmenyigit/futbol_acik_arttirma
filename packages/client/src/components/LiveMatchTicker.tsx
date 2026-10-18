@@ -6,7 +6,7 @@ import {
   type PenaltyShootoutAttempt,
   type ShootoutState,
 } from '@fal/shared';
-import { useT, type Dict } from '../i18n/index.js';
+import { useFormatPower, useT, type Dict } from '../i18n/index.js';
 import { PenaltyScene } from './PenaltyScene.js';
 
 interface LiveMatchTickerProps {
@@ -132,6 +132,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
   startedAt,
 }) => {
   const t = useT();
+  const fp = useFormatPower();
   const [phase, setPhase] = useState<'regular' | 'extra' | 'shootout' | 'finished'>('regular');
   const [minute, setMinute] = useState(1);
   const [liveHomeScore, setLiveHomeScore] = useState(0);
@@ -711,7 +712,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             <span>{t.live.home}</span>
             {homePower != null && (
               <span className="lm-power">
-                {t.common.power} {homePower}
+                {t.common.power} {fp(homePower)}
               </span>
             )}
           </div>
@@ -725,7 +726,7 @@ export const LiveMatchTicker: FC<LiveMatchTickerProps> = ({
             <span>{t.live.away}</span>
             {awayPower != null && (
               <span className="lm-power">
-                {t.common.power} {awayPower}
+                {t.common.power} {fp(awayPower)}
               </span>
             )}
           </div>

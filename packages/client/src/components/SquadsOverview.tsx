@@ -6,7 +6,7 @@ import {
   type RoomState,
 } from '@fal/shared';
 import { PositionBadge } from './PositionBadge.js';
-import { useT } from '../i18n/index.js';
+import { useFormatPower, useT } from '../i18n/index.js';
 import { roleLabel } from '../i18n/labels.js';
 import { useRoomStore } from '../store.js';
 
@@ -103,6 +103,7 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
   const genAvg = count > 0 ? Math.round(squad.reduce((s, x) => s + x.overall, 0) / count) : 0;
   const teamStats = calculateTeamStats(squad);
   const teamPower = calculateTeamPower(squad);
+  const fp = useFormatPower();
 
   return (
     <div
@@ -157,15 +158,17 @@ function TeamSquadCard({ participant, isYou, isHost, squadSize, squadConfig }: T
           {/* Maçı belirleyen sayı GÜÇ'tür; GEN yalnızca bilgi amaçlı. */}
           <span title={t.squads.powerTitle}>
             {t.common.powerCaps}:{' '}
-            <strong style={{ color: 'var(--gold-bright)', fontSize: 15 }}>{teamPower}</strong>
+            <strong style={{ color: 'var(--gold-bright)', fontSize: 15 }}>{fp(teamPower)}</strong>
           </span>
           <span>·</span>
           <span>
-            {t.common.att}: <strong style={{ color: 'var(--chalk)' }}>{teamStats.attack}</strong>
+            {t.common.att}:{' '}
+            <strong style={{ color: 'var(--chalk)' }}>{fp(teamStats.attack)}</strong>
           </span>
           <span>·</span>
           <span>
-            {t.common.def}: <strong style={{ color: 'var(--chalk)' }}>{teamStats.defense}</strong>
+            {t.common.def}:{' '}
+            <strong style={{ color: 'var(--chalk)' }}>{fp(teamStats.defense)}</strong>
           </span>
           <span style={{ color: 'var(--chalk-faint)', opacity: 0.7 }} title={t.squads.avgTitle}>
             {t.squads.avg(genAvg)}

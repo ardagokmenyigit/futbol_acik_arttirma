@@ -8,7 +8,7 @@ import {
   type RoomState,
 } from '@fal/shared';
 import { PositionBadge } from '../components/PositionBadge.js';
-import { useT, type Dict } from '../i18n/index.js';
+import { useFormatPower, useT, type Dict } from '../i18n/index.js';
 import { roleLabel } from '../i18n/labels.js';
 import { passOpening, placeBid } from '../lib/auctionClient.js';
 import { leaveRoom } from '../lib/roomClient.js';
@@ -22,6 +22,7 @@ interface Props {
 const POSITIONS: Position[] = ['GK', 'DEF', 'MID', 'FWD'];
 
 export function DraftPage({ room }: Props) {
+  const fp = useFormatPower();
   const t = useT();
   const you = useRoomStore(selectYou);
   const exitRoom = useRoomStore((s) => s.exitRoom);
@@ -402,12 +403,12 @@ export function DraftPage({ room }: Props) {
             >
               <span>
                 {t.common.att}:{' '}
-                <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.attack}</strong>
+                <strong style={{ color: 'var(--chalk)' }}>{fp(myTeamStats.attack)}</strong>
               </span>
               <span>·</span>
               <span>
                 {t.common.def}:{' '}
-                <strong style={{ color: 'var(--chalk)' }}>{myTeamStats.defense}</strong>
+                <strong style={{ color: 'var(--chalk)' }}>{fp(myTeamStats.defense)}</strong>
               </span>
             </div>
           )}
