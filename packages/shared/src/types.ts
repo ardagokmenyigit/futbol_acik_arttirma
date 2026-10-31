@@ -394,7 +394,7 @@ export interface TeamMatchStats {
   chances: number;
   /** Gol beklentisi: pozisyonların gole dönme olasılıkları toplamı. */
   xg: number;
-  /** Maç günü formu çarpanı (0.96–1.04). */
+  /** Maç günü formu çarpanı (`FORM_SPREAD`; ±%2 → 0.98–1.02). */
   form: number;
 }
 

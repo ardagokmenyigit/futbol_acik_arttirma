@@ -1,4 +1,5 @@
 import type { MatchResult, Team } from '../types.js';
+import { FORM_SPREAD } from './simulator.js';
 
 /**
  * MAÇ GEREKÇESİ — "neden bu sonuç çıktı?" sorusunun cevabı.
@@ -73,8 +74,11 @@ export interface MatchExplanation {
 
 /** Bu farkın altında kadrolar "denk" sayılır. */
 const EVEN_GAP = 0.5;
-/** Gerekçe olarak anılacak en küçük form farkı (0.03 = %3). */
-const FORM_GAP = 0.03;
+/**
+ * Gerekçe olarak anılacak en küçük form farkı: form aralığının %37.5'i
+ * (±%4'te 0.03, ±%2'de 0.015). Sabit sayı olsaydı form daralınca hiç tutmazdı.
+ */
+const FORM_GAP = FORM_SPREAD * 0.375;
 /** Gerekçe olarak anılacak en küçük gol − xG sapması. */
 const FINISHING_GAP = 1;
 
@@ -156,7 +160,7 @@ export function explainMatch(result: MatchResult, home: Team, away: Team): Match
   const formGap = ws.form - ls.form;
   if (formGap >= FORM_GAP) {
     const flipped = power(W) < power(L) && power(W) * ws.form > power(L) * ls.form;
-    add(formGap * 60 + (flipped ? 2 : 0), {
+    add((formGap / FORM_SPREAD) * 4.8 + (flipped ? 2 : 0), {
       code: 'form',
       teamId: W.participantId,
       form: pct(ws.form),

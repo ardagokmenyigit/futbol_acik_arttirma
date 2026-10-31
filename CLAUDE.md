@@ -362,7 +362,10 @@ her satırda gol/maç ~3.66'ya kalibre — gol baseConv ile neredeyse doğrusal)
 | **7.0 / 0.0815** | **%59** | **%68** | **%76** | **%82** | **%87** | **%48.7**       | **%8.9**        | **%37.1 / %2.6**        | **%16.6**       |
 | 8.0 / 0.0758     | %59     | %68     | %77     | %84     | %90     | %49.8           | %8.6            | %41.2 / %1.6            | %17.0           |
 
-7.0 seçildi (öneri; 8.0 8 takımda en zayıfı %1.6'ya itiyordu). **1–2 puanlık
+7.0 seçildi (öneri; 8.0 8 takımda en zayıfı %1.6'ya itiyordu). Aynı gün
+form ±%4 → ±%2 (baseConv 0.0815 → 0.0841, gol/maç 3.66): 1p %60, 2p %71, 3p
+%81, 4p %87, 5p %93; en güçlü %53.5, en zayıf %7.4 (8 takım %45.4 / %1.6);
+uzatma %34, seri %18.2. **1–2 puanlık
 farklar hiçbir ayarda kıpırdamıyor** (%57 → %59): orada belirleyen maç günü
 formu (±%4 ≈ güç farkının iki katı) ve seri penaltı (yazı-tura). Küçük farkı
 da belirleyici yapmak isteyen formu ya da seriyi ele almalı — form için
@@ -451,13 +454,14 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 | + sens 3.7 + baseConv 0.102                            | ~%46      | ~%9      | 5.1x     | ~3.67 (90 dk)    |
 | + akıllı botlar (27 Eylül 2026)                        | %40.2     | %13.5    | 3.0x     | 3.62 (90 dk)     |
 | + sens 5.0 + baseConv 0.094 (normal bot)               | %44.9     | %10.8    | 4.2x     | 3.67 (90 dk)     |
-| **+ sens 7.0 + baseConv 0.0815 (güncel; normal bot)**  | **%48.7** | **%8.9** | **5.5x** | **3.66 (90 dk)** |
+| + sens 7.0 + baseConv 0.0815 (normal bot)              | %48.7     | %8.9     | 5.5x     | 3.66 (90 dk)     |
+| **+ form ±%2 + baseConv 0.0841 (güncel; normal bot)**  | **%53.5** | **%7.4** | **7.3x** | **3.66 (90 dk)** |
 
-(Son on satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
-ayarla en güçlü %37.1, en zayıf %2.6 (sens 5.0'da %33.8 / %2.9; akıllı
+(Son on bir satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
+ayarla en güçlü %45.4, en zayıf %1.6 (sens 5.0'da %33.8 / %2.9; akıllı
 botlardan önce ~%36.5 / ~%1.3). "Akıllı botlar" satırında motor aynı;
 değişen bot kadrolarının eşitlenmesi; sonraki iki satır bunu motor
-duyarlılığıyla geri alır ve aşar. Ölçüm aracı:
+duyarlılığıyla geri alır ve aşar, son satır formu daraltır. Ölçüm aracı:
 `npx tsx packages/server/src/scripts/measureBalance.ts [draft] [sens] [baseConv]`.)
 
 **İki kolun birlikte ayarlanması gerekir.** `strengthSensitivity` tek başına
@@ -474,13 +478,21 @@ gürültü enjekte ediyordu. Gol sabitken 5 puan farkta güçlünün turu geçme
 | ---- | -------- | -------- |
 | ±%12 | %68.2    | %70.0    |
 | ±%8  | %70.6    | %73.4    |
-| ±%4  | %72.6    | %76.8    | ← güncel |
+| ±%4  | %72.6    | %76.8    |
 
-⚠️ **±%4 alt sınırdır, daha aşağı inmeyin.** Burası zaten bilinçli kabul
-edilmiş bir ödünleşme: çeşitlilik ±%8'e göre düştü (88 → 84 farklı skor,
-en sık skor %9.9 → %10.8) ve penaltı sıklığı arttı (aşağıya bkz.). Daha
-dar bir form aralığı aynı iki takımın her karşılaşmada birbirine benzer
-maçlar üretmesine yol açar.
+⚠️ **±%4 alt sınır sayılıyordu** — bilinçli kabul edilmiş bir ödünleşme:
+çeşitlilik ±%8'e göre düştü (88 → 84 farklı skor, en sık skor %9.9 → %10.8)
+ve penaltı sıklığı arttı (aşağıya bkz.). Daha dar bir form aralığı aynı iki
+takımın her karşılaşmada birbirine benzer maçlar üretmesine yol açar.
+
+**±%4 → ±%2 (31 Ekim 2026, GÜNCEL).** Kullanıcı uyarıyı bilerek "şans
+faktörünü azaltalım" dedi (sens 7.0 ile birlikte, bkz. yukarıdaki SENS 5.0 →
+7.0). Bedel ölçüldü (1500 draft × 6 maç, sens 7.0): farklı skor 86 → 80, en
+sık skor (1-1) %11.0 → %12.0, **90'da beraberlik %29.9 → %33.6**, seriye
+giden %16.6 → %18.2. Sürprizlerde ilk gerekçe artık en sık seri penaltı
+(%29) — şansın bir kısmı seriye kaydı. **Bundan daha dara inmeden önce
+seriyi ele alın** (formu daraltmak beraberliği, beraberlik yazı-tura seriyi
+artırıyor).
 
 ⚠️ **ÖDÜNLEŞME — BERABERLİK SIKLIĞI.** Form daralınca denk takımlar denk kalır,
 yani **berabere bitme ihtimali artar**. Maçın 90 dakikada berabere bitme
@@ -506,7 +518,7 @@ beraberliği yalnız 6.5 puan düşürüyor) — uzatma zaten bunun için var.
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
 - `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
   ~3.67 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
-  kayar ve bununla geri kalibre edilmelidir (güncel: 0.0815, sens 7.0 +
+  kayar ve bununla geri kalibre edilmelidir (güncel: 0.0841, sens 7.0 + form ±%2 +
   akıllı botlar için;
   kalibrasyonu gerçek draft kadrolarıyla — `measureBalance.ts` — yapın).
 - **ASIL TAVAN MOTOR DEĞİL, DRAFT.** (27 Eylül 2026 bot zekâsından sonra
@@ -664,7 +676,9 @@ yalnız 1.65. Bu yüzden **her maçın** sonucuna gerekçe eklenir.
   güçlü gerekçe var; sürprizlerde ilk gerekçe form %29, penaltı %20, israf %12,
   domine %10, fırsatçı %10; yedek `tight` %0.6. Sürprizlerin yalnız ~yarısında
   favori pozisyon/xG'de üstün — diğer yarısında rakip gerçekten iyi oynadı,
-  baskın sebep maç günü formu (güç farkları küçük, form ±%4).
+  baskın sebep maç günü formu (güç farkları küçük, form ±%4). Form ±%2'ye
+  inince (31 Ekim) `form` eşiği `FORM_SPREAD`'e oranlandı (aralığın %37.5'i);
+  sürprizler maçların %29'u → %24'ü, sürprizde ilk gerekçe seri %29, form %21.
 - **Hesap sunucuda, metin istemcide:** `runTournament` kazanan belli olunca
   (`matchLive` başında ve `finalize`'da — canlı seride seri bitince)
   `explainMatch` ile `MatchResult.explanation` ekler; istemciler (web
