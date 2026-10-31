@@ -19,8 +19,14 @@ const NICKNAME_MAX = 20;
 /** Oyun sırasında ayrılan oyuncunun takma adına eklenen işaret. */
 const BOT_SUFFIX = '(bot)';
 
-/** Oyuncu bağlantısı koptuktan sonra yerine bot geçene kadar tanınan süre. */
-export const DISCONNECT_GRACE_MS = 60_000;
+/**
+ * Oyuncu bağlantısı koptuktan sonra yerine bot geçene kadar tanınan süre.
+ * 60 sn → 180 sn (31 Ekim 2026, kullanıcı isteği): telefonda uygulama
+ * değiştirme / kısa ağ kopması oyuncuyu çabuk bota çeviriyordu. Oyun
+ * beklemez: açılış süresi dolunca sunucu asgari açar, seride kopuk insanın
+ * yerine bot zekâsı seçer.
+ */
+export const DISCONNECT_GRACE_MS = 180_000;
 
 /** Alan bazlı hata — handler bunu ack.error'a çevirir. */
 export class RoomError extends Error {}
