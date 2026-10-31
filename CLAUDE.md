@@ -351,6 +351,25 @@ yani üç seviye de ~%44–46.) Güç farkına göre tur geçme 4p %72 → %77, 
 aynı yön). 1–2 puan hâlâ yazı-turaya yakın (%56 / %63). Uzatma %29, penaltı
 %14.
 
+**SENS 5.0 → 7.0 (31 Ekim 2026).** Kullanıcı: "güç farkı maç motorunda daha
+etkili olsun". Tarama (3000 draft × 4 bracket, normal bot; `baseConversion`
+her satırda gol/maç ~3.66'ya kalibre — gol baseConv ile neredeyse doğrusal):
+
+| sens/baseConv    | 1p      | 2p      | 3p      | 4p      | 5p      | en güçlü (4 t.) | en zayıf (4 t.) | 8 takım (güçlü / zayıf) | penaltıya giden |
+| ---------------- | ------- | ------- | ------- | ------- | ------- | --------------- | --------------- | ----------------------- | --------------- |
+| 5.0 / 0.094      | %57     | %64     | %72     | %77     | %83     | %44.9           | %10.8           | %33.8 / %2.9            | %14.3           |
+| 6.0 / 0.088      | %58     | %67     | %74     | %80     | %87     | %47.7           | %9.5            | %35.2 / %2.8            | %15.1           |
+| **7.0 / 0.0815** | **%59** | **%68** | **%76** | **%82** | **%87** | **%48.7**       | **%8.9**        | **%37.1 / %2.6**        | **%16.6**       |
+| 8.0 / 0.0758     | %59     | %68     | %77     | %84     | %90     | %49.8           | %8.6            | %41.2 / %1.6            | %17.0           |
+
+7.0 seçildi (öneri; 8.0 8 takımda en zayıfı %1.6'ya itiyordu). **1–2 puanlık
+farklar hiçbir ayarda kıpırdamıyor** (%57 → %59): orada belirleyen maç günü
+formu (±%4 ≈ güç farkının iki katı) ve seri penaltı (yazı-tura). Küçük farkı
+da belirleyici yapmak isteyen formu ya da seriyi ele almalı — form için
+aşağıdaki ±%4 alt sınır uyarısına bakın. Yan etki: daha çok maç uzatmaya
+(%29 → %31) ve seriye (%14.3 → %16.6) gidiyor — güçlü normal sürede daha
+baskın, denkler daha sık berabere.
+
 Uzatma da berabereyse (`isTournament`) seri penaltı — **KÖŞE OYUNU**
 (`shared/src/simulation/penalty.ts`, 17 Eylül 2026). Atıcı ve kaleci eş
 zamanlı SOL / ORTA / SAĞ seçer; vuruş iki bağımsız zara ayrılır:
@@ -415,28 +434,30 @@ olmasıydı — `semi-1`, `final-1`; simülatörün varsayılan seed'i
 (12.000 turnuva; koltuk şansı ortalanır).** "En güçlü takım şampiyon oldu mu?"
 (rastgele olsa %25):
 
-| ayar                                                   | en güçlü  | en zayıf  | oran     | gol/maç          |
-| ------------------------------------------------------ | --------- | --------- | -------- | ---------------- |
-| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1     | 2.0x     | 2.77             |
-| sens 2.5 + saha av. yok                                | %37.7     | %15.0     | 2.5x     | 2.92             |
-| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2     | 3.0x     | 3.48             |
-| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7     | 4.0x     | 3.53             |
-| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3**  | **5.6x** | **3.54**         |
-| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9     | 4.0x     | 3.66             |
-| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1     | 4.5x     | 3.68             |
-| + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9      | 5.3x     | 4.04             |
-| + sens 2.4 + baseConv 0.116                            | %42.8     | %11.6     | 3.7x     | 3.67 (90 dk)     |
-| + sens 3.3 + baseConv 0.110                            | %46.4     | %9.0      | 5.2x     | 3.68 (90 dk)     |
-| + sens 3.5 + baseConv 0.108                            | %47.9     | %8.3      | 5.7x     | 3.66 (90 dk)     |
-| + yıldızlar mevkisiz + baseConv 0.104                  | %45.1     | %9.4      | 4.8x     | 3.68 (90 dk)     |
-| + sens 3.7 + baseConv 0.102                            | ~%46      | ~%9       | 5.1x     | ~3.67 (90 dk)    |
-| + akıllı botlar (27 Eylül 2026)                        | %40.2     | %13.5     | 3.0x     | 3.62 (90 dk)     |
-| **+ sens 5.0 + baseConv 0.094 (güncel; normal bot)**   | **%44.9** | **%10.8** | **4.2x** | **3.67 (90 dk)** |
+| ayar                                                   | en güçlü  | en zayıf | oran     | gol/maç          |
+| ------------------------------------------------------ | --------- | -------- | -------- | ---------------- |
+| sens 1.6 + saha av. 1.05 (eski)                        | %34.6     | %17.1    | 2.0x     | 2.77             |
+| sens 2.5 + saha av. yok                                | %37.7     | %15.0    | 2.5x     | 2.92             |
+| sens 2.5 + form ±%12 + baseConv 0.100                  | %39.1     | %13.2    | 3.0x     | 3.48             |
+| sens 3.2 + form ±%8 + baseConv 0.104                   | %42.7     | %10.7    | 4.0x     | 3.53             |
+| **sens 3.2 + form ±%4 + baseConv 0.108**               | **%46.3** | **%8.3** | **5.6x** | **3.54**         |
+| sens 3.2 + form ±%4 + MID rol + baseConv 0.099         | %43.8     | %10.9    | 4.0x     | 3.66             |
+| sens 3.2 + form ±%4 + GEN tabanlı güç + baseConv 0.111 | %45.6     | %10.1    | 4.5x     | 3.68             |
+| + uzatma (sens 3.2; gol/maç uzatma golleri dahil)      | %47.3     | %8.9     | 5.3x     | 4.04             |
+| + sens 2.4 + baseConv 0.116                            | %42.8     | %11.6    | 3.7x     | 3.67 (90 dk)     |
+| + sens 3.3 + baseConv 0.110                            | %46.4     | %9.0     | 5.2x     | 3.68 (90 dk)     |
+| + sens 3.5 + baseConv 0.108                            | %47.9     | %8.3     | 5.7x     | 3.66 (90 dk)     |
+| + yıldızlar mevkisiz + baseConv 0.104                  | %45.1     | %9.4     | 4.8x     | 3.68 (90 dk)     |
+| + sens 3.7 + baseConv 0.102                            | ~%46      | ~%9      | 5.1x     | ~3.67 (90 dk)    |
+| + akıllı botlar (27 Eylül 2026)                        | %40.2     | %13.5    | 3.0x     | 3.62 (90 dk)     |
+| + sens 5.0 + baseConv 0.094 (normal bot)               | %44.9     | %10.8    | 4.2x     | 3.67 (90 dk)     |
+| **+ sens 7.0 + baseConv 0.0815 (güncel; normal bot)**  | **%48.7** | **%8.9** | **5.5x** | **3.66 (90 dk)** |
 
-(Son dokuz satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
-ayarla en güçlü %32.9, en zayıf %3.4 (akıllı botlardan önce ~%36.5 / ~%1.3).
-"Akıllı botlar" satırında motor aynı; değişen bot kadrolarının eşitlenmesi;
-son satır bunu motor duyarlılığıyla geri alır. Ölçüm aracı:
+(Son on satır 3000 gerçek draft + turnuva, 4 takımlı. 8 takımlıda güncel
+ayarla en güçlü %37.1, en zayıf %2.6 (sens 5.0'da %33.8 / %2.9; akıllı
+botlardan önce ~%36.5 / ~%1.3). "Akıllı botlar" satırında motor aynı;
+değişen bot kadrolarının eşitlenmesi; sonraki iki satır bunu motor
+duyarlılığıyla geri alır ve aşar. Ölçüm aracı:
 `npx tsx packages/server/src/scripts/measureBalance.ts [draft] [sens] [baseConv]`.)
 
 **İki kolun birlikte ayarlanması gerekir.** `strengthSensitivity` tek başına
@@ -485,7 +506,7 @@ beraberliği yalnız 6.5 puan düşürüyor) — uzatma zaten bunun için var.
   avantaj. Çift devreli bir format gelirse çağıran taraf açıkça 1.05 geçer.
 - `baseConversion` **gol sayısı kolu**, güç ayrımına dokunmaz. Hedef maç başı
   ~3.67 gol; `strengthSensitivity` ya da `FORM_SPREAD` değişirse gol sayısı
-  kayar ve bununla geri kalibre edilmelidir (güncel: 0.094, sens 5.0 +
+  kayar ve bununla geri kalibre edilmelidir (güncel: 0.0815, sens 7.0 +
   akıllı botlar için;
   kalibrasyonu gerçek draft kadrolarıyla — `measureBalance.ts` — yapın).
 - **ASIL TAVAN MOTOR DEĞİL, DRAFT.** (27 Eylül 2026 bot zekâsından sonra
