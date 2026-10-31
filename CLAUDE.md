@@ -547,7 +547,7 @@ maç istatistiği yanıltır çünkü asıl soru "en güçlü takım şampiyon o
   - **Zaman aşımı kuralı:** seçmeyen BAĞLI insan → **orta** (dikkatsizlik
     cezası, öngörülebilir); kopuk insan ya da bot → **bot zekâsı** (aksi
     halde rakip kopan oyuncuya karşı her vuruşu ortaya atarak bedava kazanır).
-    Kopan oyuncu 60 sn içinde dönmezse zaten bota dönüşür.
+    Kopan oyuncu 180 sn içinde dönmezse zaten bota dönüşür (`DISCONNECT_GRACE_MS`).
   - İnsan–bot maçında insan hem kendi vuruşlarının köşesini hem kalecisinin
     dalış yönünü seçer; insan–insan maçında iki taraf eş zamanlı ve gizli
     seçer. Maçta olmayan insanlar izler (seçim reddedilir: "rolün yok").
@@ -693,7 +693,7 @@ Oyun bitince (`phase === 'finished'`) `RematchPanel` (client) →
   sıfırlar: kabul edenler kalır (bütçe/kadro sıfır, `isReady=false`),
   botlar (asıl botlar + bota dönüşmüş çıkanlar) atılır, `gameNumber` artar,
   `auction/tournament/rematch` null. `maybeStartRematch()` insan sayısı her
-  değiştiğinde çağrılır (kabul, `room:leave`, 60 sn bot devri) — "son
+  değiştiğinde çağrılır (kabul, `room:leave`, 180 sn bot devri) — "son
   bekleyen çıktı" durumunda da tamamlanır.
 - **Host kabul etmek zorunda değil.** Host çıkarsa (`room:leave` → finished
   fazında `convertToBot`) hostluk sırayla: mevcut host kaldıysa o → teklif
@@ -707,7 +707,7 @@ Oyun bitince (`phase === 'finished'`) `RematchPanel` (client) →
   (kimse çıkarılmaz). Teklif eden çıkarsa teklif kabul etmiş birine
   devrolur, kimse yoksa iptal. "Çık" her durumda `room:leave` + oturum
   silme → ana ekran.
-- **Bağlantı kopması**: finished'ta kopan insan 60 sn beklenir (pending
+- **Bağlantı kopması**: finished'ta kopan insan 180 sn beklenir (pending
   sayılır), sonra bota dönüşür → beklenmez. Bot devri timer'ı oda bu arada
   lobiye döndüyse bot EKLEMEZ, lobi kuralıyla katılımcıyı siler.
 - **İstemci**: `updateRoom` faz `lobby`'ye dönünce `tournament/liveMatch/
