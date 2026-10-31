@@ -28,7 +28,7 @@ export interface SimulateMatchOptions {
   /** Dakika başına pozisyon (fırsat) üretme oranı. */
   chanceRate?: number;
   /**
-   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.094).
+   * Bir pozisyonun gole dönme taban oranı (varsayılan: 0.0841).
    *
    * MAÇ BAŞINA GOL bu değere neredeyse doğrusal bağlı — heyecan kolu budur.
    * Hedef maç başı ~3.5 gol; `strengthSensitivity`, `FORM_SPREAD` ya da
@@ -43,7 +43,9 @@ export interface SimulateMatchOptions {
    * çıkınca (18 Eylül 2026) yine 3.67 için 0.110'a, aynı gün 3.5'e çıkınca
    * 0.108'e, yıldızlar havuza mevkisiz dağılınca (forvet yıldızı daha sık →
    * hücum ölçeği yükseldi, gol 3.82) 0.104'e, sens 3.7'ye çıkınca 0.102'ye
-   * çekildi, akıllı botlarla sens 5.0'a çıkınca (27 Eylül 2026) 0.094'e
+   * çekildi, akıllı botlarla sens 5.0'a çıkınca (27 Eylül 2026) 0.094'e,
+   * sens 7.0'a çıkınca (31 Ekim 2026) 0.0815'e, aynı gün form ±%2'ye
+   * daralınca (gol 3.54'e düştü) 0.0841'e
    * — kalibrasyon GERÇEK bot draft kadrolarıyla yapılır (`scripts/measureBalance.ts`);
    * rastgele kadrolar aynı sens'te 0.106 verir, fark draft'ın kadroları
    * güçlendirip birbirine yaklaştırmasından.
@@ -60,7 +62,7 @@ export interface SimulateMatchOptions {
    */
   baseConversion?: number;
   /**
-   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 5.0).
+   * Takım gücü farkının sonuca ne kadar yansıyacağı (varsayılan: 7.0).
    * Hem pozisyon payına hem de gole çevirme oranına uygulanır.
    *
    * ⚠️ TEK BAŞINA ZAYIF BİR KOL. Yükseltmek gol sayısını da şişirdiği için
@@ -110,6 +112,14 @@ export interface SimulateMatchOptions {
    * 5.0, baseConv 0.094 (gol/maç ~3.67): en güçlü zor/normal/kolay botlarla
    * %43.7 / %44.9 / %45.2 (3000 draft; gürültü ~±1 puan).
    *
+   * 5.0 → 7.0 (31 Ekim 2026): kullanıcı "güç farkı maç motorunda daha etkili
+   * olsun" dedi. Tarama (3000 draft × 4 bracket, gol/maç her satırda ~3.66):
+   * 6.0/0.088, 7.0/0.0815, 8.0/0.0758. 7.0 seçildi: 3p %72 → %76, 4p %77 →
+   * %82, 5p %83 → %87; en güçlü şampiyon %44.9 → %48.7 (8 takım %33.8 →
+   * %37.1). 1–2 puan hiçbir ayarda kıpırdamıyor (%57 → %59) — orada belirleyen
+   * maç günü formu (±%4) ve seri penaltı. Yan etki: penaltıya giden %14.3 →
+   * %16.6, uzatma %29 → %31.
+   *
    * ⚠️ ASIL TAVAN MOTOR DEĞİL, DRAFT. Gerçek draft'larda takımlar arası güç
    * farkı ortalama sadece ~5.2 puan (ölçüm: 3000 gerçek bot draft'ı; medyan
    * 5.0, p90 8.0). Havuz tam denk olduğu için herkes benzer kalitede kadro
@@ -147,7 +157,7 @@ export interface SimulateMatchOptions {
 /* ------------------------------ ayarlar ------------------------------ */
 
 /**
- * Maç günü formu — aynı takım her maç aynı oynamasın diye (±%4).
+ * Maç günü formu — aynı takım her maç aynı oynamasın diye (±%2).
  *
  * NEDEN BU KADAR DAR — bu, motordaki EN BÜYÜK rastgelelik kaynağı ve doğrudan
  * güç duyarlılığıyla yarışır. Gerçek draft'larda takımlar arası tipik güç farkı
@@ -165,8 +175,16 @@ export interface SimulateMatchOptions {
  * karşılaşmada birbirine benzer maçlar üretmeye başlar. Ayrıca denk takımlar
  * denk kaldığı için beraberlik — dolayısıyla seri penaltı — sıklığı artar.
  * Daha da daraltmak maçları tekdüzeleştirir.
+ *
+ * ±%4 → ±%2 (31 Ekim 2026): kullanıcı uyarıyı bilerek "şans faktörünü
+ * azaltalım" dedi. Ölçüm (sens 7.0, gol/maç 3.66; baseConv 0.0815 → 0.0841):
+ * 2p %68 → %71, 3p %76 → %81, 4p %82 → %87, 5p %87 → %93; en güçlü şampiyon
+ * %48.7 → %53.5 (8 takım %37.1 → %45.4). Bedeli: 90'da beraberlik %29.9 →
+ * %33.6, seriye giden %16.6 → %18.2 (seri yazı-turaya yakın — şansın bir
+ * kısmı seriye kayıyor); farklı skor 86 → 80, en sık skor (1-1) %11.0 → %12.0.
+ * Bundan daha dara inmeden önce seriyi ele alın.
  */
-const FORM_SPREAD = 0.08;
+export const FORM_SPREAD = 0.04;
 const FORM_MIN = 1 - FORM_SPREAD / 2;
 
 /** Geride kalan takım öne çıkar: hücumu artar, arkası açılır. */
@@ -246,8 +264,8 @@ export function simulateMatch(options: SimulateMatchOptions): MatchResult {
     seed = stringToSeed(`${matchId}:${homeTeam.participantId}:${awayTeam.participantId}`),
     homeAdvantage = 1.0,
     chanceRate = 0.3,
-    baseConversion = 0.094,
-    strengthSensitivity = 5.0,
+    baseConversion = 0.0841,
+    strengthSensitivity = 7.0,
     isTournament = true,
     interactiveShootout = false,
   } = options;
